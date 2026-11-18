@@ -1119,8 +1119,8 @@ fun AppearanceSettings(
             Material3SettingsItem(
               isHighlighted = (highlightKey == stringResource(R.string.legacy_icon)),
               icon = painterResource(R.drawable.grid_view),
-              title = { Text("App Icon") },
-              description = { Text("Choose your launcher icon") },
+              title = { Text("App name & icon") },
+              description = { Text("Choose launcher icons or create a custom shortcut") },
               onClick = { navController.navigate("settings/appearance/app_icon") },
             )
           )

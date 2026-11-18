@@ -114,9 +114,14 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$RELEASE_TAG" =~ ^[A-Za-z0-9._-]+$ ]]
+          notes_file="release-notes/${RELEASE_TAG}.md"
+          if [[ ! -s "$notes_file" ]]; then
+            echo "Missing release notes: $notes_file"
+            exit 1
+          fi
           gh release create "$RELEASE_TAG" "$APK_PATH" \
             --title "Himangshu Music $RELEASE_TAG" \
-            --notes 'Signed universal GMS release APK. This fork retains GPL-3.0 notices and upstream attribution; source is available on main.'
+            --notes-file "$notes_file"
       - name: Explain why no release was published
         if: steps.signing.outputs.configured != 'true'
         run: echo 'No existing release signing keystore and complete signing secrets are configured; only a debug preview artifact was built, and no GitHub Release was created.'

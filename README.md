@@ -26,6 +26,7 @@ Himangshu Music delivers a seamless, premium listening experience by leveraging 
 - [Overview](#overview)
 - [Screenshots](#screenshots)
 - [Features](#features)
+- [Custom Home-Screen Shortcut](#custom-home-screen-shortcut)
 - [320 kbps Audio Extension](#320-kbps-audio-extension)
 - [Lossless Audio Extension](#lossless-audio-extension)
 - [Installation & Setup](#installation--setup)
@@ -149,8 +150,17 @@ Himangshu Music delivers a seamless, premium listening experience by leveraging 
 - **Crop Album Art** — Adjust album art display to fit your style.
 - **Hide Video Songs** — Filter out video content from your feed.
 - **Hide YouTube Shorts** — Keep Shorts out of your music browsing.
+- **Custom home-screen shortcut** — Set a shortcut name and choose an image for a pinned home-screen shortcut. This does not rename the installed app or change its app-drawer identity; preset launcher-icon themes remain a separate option.
 
 </details>
+
+---
+
+## Custom Home-Screen Shortcut
+
+Open **Settings → Appearance → App name & icon**. Enter a shortcut name, choose an image to preview it, then tap **Add shortcut to home screen**. Android may ask you to confirm the pin request. The app accepts up to 40 characters; Android's shorter shortcut label is limited to 25 characters, so a launcher may display a shortened name. Images are center-cropped to a square and resized for the shortcut; a square image gives the best result.
+
+This custom name and image apply only to the pinned home-screen shortcut. They do not change the installed app's name in the app drawer or system settings, its package identity, or its regular app icon. The separate preset launcher-icon choices can change the app icon. Pinning depends on launcher support, and each launcher controls how shortcuts are displayed.
 
 ---
 
