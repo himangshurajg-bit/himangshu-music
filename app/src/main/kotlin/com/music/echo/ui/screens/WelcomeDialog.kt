@@ -58,51 +58,22 @@ fun WelcomeDialog(onDismissRequest: () -> Unit) {
         // Main Header
         WelcomeAppCard()
 
-        WelcomeSectionCard(title = "Follow Developer") {
+        WelcomeSectionCard(title = "Developer") {
           WelcomeActionRow(
-            icon = painterResource(R.drawable.ic_instagram_new),
-            title = "Instagram",
-            subtitle = "@iad1tya",
-            onClick = { uriHandler.openUri("https://instagram.com/iad1tya") }
-          )
-          WelcomeDivider()
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.ic_x_new),
-            title = "X (Twitter)",
-            subtitle = "@xad1tya",
-            onClick = { uriHandler.openUri("https://x.com/xad1tya") }
-          )
-          WelcomeDivider()
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.github),
-            title = "GitHub",
-            subtitle = "iad1tya",
-            onClick = { uriHandler.openUri("https://github.com/iad1tya") }
+            icon = painterResource(R.drawable.website),
+            title = "Himangshu Raj Gogoi",
+            subtitle = "Himangshu Music fork maintainer",
           )
         }
 
-        WelcomeSectionCard(title = "Support Echo") {
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.coffee),
-            title = "Buy Me a Coffee",
-            subtitle = "buymeacoffee.com/iad1tya",
-            onClick = { uriHandler.openUri("https://buymeacoffee.com/iad1tya") }
-          )
-          WelcomeDivider()
-          WelcomeActionRow(
-            icon = painterResource(R.drawable.ic_patreon_new),
-            title = "Patreon",
-            subtitle = "patreon.com/cw/iad1tya",
-            onClick = { uriHandler.openUri("https://www.patreon.com/cw/iad1tya") }
-          )
-          WelcomeDivider()
+        WelcomeSectionCard(title = "Support Himangshu Music") {
           WelcomeActionRow(
             icon = painterResource(R.drawable.upi_new),
-            title = "UPI",
-            subtitle = "iad1tya@upi",
+            title = "Support via UPI",
+            subtitle = "himangshurajg@okicici",
             onClick = {
               uriHandler.openUri(
-                "https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=iad1tya@upi&pn=Aditya%20Yadav&am=&tn=Thank%20You%20so%20much%20for%20this%20support"
+                "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&tn=Support%20Himangshu%20Music"
               )
             }
           )
@@ -120,7 +91,7 @@ fun WelcomeDialog(onDismissRequest: () -> Unit) {
         Spacer(modifier = Modifier.height(4.dp))
 
         Button(
-          onClick = { uriHandler.openUri("https://github.com/EchoMusicApp/Echo-Music") },
+          onClick = { uriHandler.openUri("https://github.com/himangshurajg-bit/himangshu-music") },
           modifier = Modifier.fillMaxWidth().height(50.dp),
           shape = RoundedCornerShape(16.dp),
           colors =
@@ -243,7 +214,7 @@ private fun WelcomeActionRow(
   icon: Painter,
   title: String,
   subtitle: String? = null,
-  onClick: () -> Unit,
+  onClick: (() -> Unit)? = null,
 ) {
   val interactionSource = remember { MutableInteractionSource() }
   val isPressed by interactionSource.collectIsPressedAsState()
@@ -264,10 +235,14 @@ private fun WelcomeActionRow(
           scaleY = scale
         }
         .clip(RoundedCornerShape(22.dp))
-        .clickable(
-          interactionSource = interactionSource,
-          indication = ripple(),
-          onClick = onClick,
+        .then(
+          if (onClick != null)
+            Modifier.clickable(
+              interactionSource = interactionSource,
+              indication = ripple(),
+              onClick = onClick,
+            )
+          else Modifier
         ),
   ) {
     Row(
@@ -311,12 +286,14 @@ private fun WelcomeActionRow(
           )
         }
       }
-      Icon(
-        painter = painterResource(R.drawable.arrow_forward),
-        contentDescription = null,
-        modifier = Modifier.size(18.dp),
-        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
-      )
+      if (onClick != null) {
+        Icon(
+          painter = painterResource(R.drawable.arrow_forward),
+          contentDescription = null,
+          modifier = Modifier.size(18.dp),
+          tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+        )
+      }
     }
   }
 }

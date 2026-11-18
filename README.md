@@ -1,8 +1,11 @@
-> Himangshu is a modified personal rebrand of the open-source Echo Music Android app, first modified on 18 November 2026. It retains upstream features and attribution, and is distributed under GPL-3.0; the launcher name and selected in-app displays are customized. Upstream project: [EchoMusicApp/Echo-Music](https://github.com/EchoMusicApp/Echo-Music).
+# Himangshu Music
+
+> Himangshu is a modified personal rebrand of the open-source Echo Music Android app, first modified on 18 November 2026. It retains upstream features and attribution, and is distributed under GPL-3.0; the launcher name and selected in-app displays are customized. This fork is maintained by Himangshu Raj Gogoi. Upstream project: [EchoMusicApp/Echo-Music](https://github.com/EchoMusicApp/Echo-Music).
 > This fork omits the upstream Firebase configuration and hardcoded Last.fm credentials. Configure your own Firebase/Last.fm credentials locally if you want those integrations.
+> Himangshu Music fork maintainer: Himangshu Raj Gogoi. The About screen includes an in-app UPI support option; support payments are optional and are never processed by the app itself.
 
 <div align="center">
-  <img src="assets/banner.png" alt="Echo Music Logo"/>
+  <img src="assets/banner.png" alt="Himangshu Music Logo"/>
 
   <p><b>A modern Android music app with ad-free streaming, synced lyrics, offline playback, and an intuitive user experience.</b></p>
 </div>
@@ -43,7 +46,7 @@ Echo Music delivers a seamless, premium listening experience by leveraging YouTu
 - [320 kbps Audio Extension](#320-kbps-audio-extension)
 - [Lossless Audio Extension](#lossless-audio-extension)
 - [Installation & Setup](#installation--setup)
-- [Support the Project](#support-the-project)
+- [Support Himangshu Music](#support-himangshu-music)
 - [Contributors](#contributors)
 - [Special Thanks](#special-thanks)
 
@@ -277,45 +280,15 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
 
 ---
 
-## Support the Project
+## Support Himangshu Music
 
-If Echo Music has been useful to you, consider supporting its development.
-
-<div align="left">
-  <table style="margin: 0 auto; border-collapse: collapse; border: none;">
-    <tr>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href="https://buymeacoffee.com/iad1tya" style="text-decoration:none;"><img src="assets/bmac.png" alt="Buy Me A Coffee Logo" width="140" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href="https://intradeus.github.io/http-protocol-redirector/?r=upi://pay?pa=iad1tya@upi&pn=Aditya%20Yadav&am=&tn=Thank%20You" style="text-decoration:none;"><img src="assets/UPI.png" alt="UPI Logo" width="140" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-      <td align="center" style="padding: 15px; border: none;">
-        <a href="https://www.patreon.com/cw/iad1tya" style="text-decoration:none;"><img src="assets/patreon3.webp" alt="Patreon Logo" width="140" style="border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"/></a>
-      </td>
-    </tr>
-  </table>
-</div>
-
-<br>
-
-<details>
-<summary><b>Cryptocurrency Options</b></summary>
-<br>
-
-| Network      | Address                                        |
-| :----------- | :--------------------------------------------- |
-| **Bitcoin**  | `bc1qcvyr7eekha8uytmffcvgzf4h7xy7shqzke35fy`   |
-| **Ethereum** | `0x51bc91022E2dCef9974D5db2A0e22d57B360e700`   |
-| **Solana**   | `9wjca3EQnEiqzqgy7N5iqS1JGXJiknMQv6zHgL96t94S` |
-
-</details>
+The app offers an optional UPI support link in its About screen. The app does not process or initiate payments; any payment is reviewed and completed by the user in their own UPI app.
 
 ---
 
 ## Contributors
 
-Without the support of this incredible open-source community, none of this would be possible. Thank you to everyone who has contributed to Echo Music!
+This fork builds on Echo Music and its open-source contributors; their upstream credits and GPL-3.0 license are preserved.
 
 <!-- readme: contributors -start -->
 <table>
