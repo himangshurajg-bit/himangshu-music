@@ -20,6 +20,8 @@ val SpotifyAccessTokenExpiresAtKey = longPreferencesKey("spotify_access_token_ex
 val EnableDynamicIconKey = booleanPreferencesKey("enableDynamicIcon")
 val EnableLegacyIconKey = booleanPreferencesKey("enableLegacyIcon")
 val AppIconTypeKey = stringPreferencesKey("app_icon_type")
+val CustomShortcutNameKey = stringPreferencesKey("custom_shortcut_name")
+val CustomShortcutIconPathKey = stringPreferencesKey("custom_shortcut_icon_path")
 
 val EnableHighRefreshRateKey = booleanPreferencesKey("enableHighRefreshRate")
 val EnableHapticsKey = booleanPreferencesKey("enableHaptics")

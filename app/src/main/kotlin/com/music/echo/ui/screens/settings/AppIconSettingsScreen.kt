@@ -3,6 +3,7 @@
 package echo.music.iad1tya.ui.screens.settings
 
 import android.app.Activity
+import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,8 +23,14 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +45,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,10 +61,15 @@ import androidx.navigation.NavController
 import echo.music.iad1tya.LocalPlayerAwareWindowInsets
 import echo.music.iad1tya.R
 import echo.music.iad1tya.constants.AppIconTypeKey
+import echo.music.iad1tya.constants.CustomShortcutIconPathKey
+import echo.music.iad1tya.constants.CustomShortcutNameKey
 import echo.music.iad1tya.utils.AppIconType
+import echo.music.iad1tya.utils.CustomHomeShortcut
 import echo.music.iad1tya.utils.IconUtils
 import echo.music.iad1tya.utils.rememberEnumPreference
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AppIconSettingsScreen(
@@ -66,6 +80,49 @@ fun AppIconSettingsScreen(
   val (appIconType, onAppIconTypeChange) =
     rememberEnumPreference(AppIconTypeKey, defaultValue = AppIconType.DEFAULT)
   val coroutineScope = rememberCoroutineScope()
+  val context = LocalContext.current
+  val (shortcutName, onShortcutNameChange) =
+    echo.music.iad1tya.utils.rememberPreference(CustomShortcutNameKey, "Himangshu Music")
+  val (shortcutIconPath, onShortcutIconPathChange) =
+    echo.music.iad1tya.utils.rememberPreference(CustomShortcutIconPathKey, "")
+
+  val iconPickerLauncher =
+    rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+      if (uri != null) {
+        coroutineScope.launch {
+          val result =
+            runCatching { withContext(Dispatchers.IO) { CustomHomeShortcut.saveIcon(context, uri) } }
+          result.onSuccess { file ->
+            onShortcutIconPathChange(file.absolutePath)
+            snackbarHostState.showSnackbar("Custom shortcut icon selected")
+          }.onFailure { error ->
+            snackbarHostState.showSnackbar(error.message ?: "Couldn’t use that image")
+          }
+        }
+      }
+    }
+
+  fun addCustomShortcut() {
+    val customBitmap = CustomHomeShortcut.loadIcon(shortcutIconPath)
+    val iconBitmap =
+      customBitmap
+        ?: ContextCompat.getDrawable(activity, R.mipmap.ic_launcher)?.toBitmap(512, 512)
+    if (iconBitmap == null) {
+      coroutineScope.launch { snackbarHostState.showSnackbar("Couldn’t load an app icon") }
+      return
+    }
+    val requested = CustomHomeShortcut.requestPin(context, shortcutName, iconBitmap)
+    if (customBitmap == null) iconBitmap.recycle()
+    if (requested) {
+      coroutineScope.launch {
+        snackbarHostState.showSnackbar("Shortcut request sent; confirm it on your home screen")
+      }
+    } else {
+      coroutineScope.launch {
+        snackbarHostState.showSnackbar("This launcher doesn’t support pinned shortcuts")
+      }
+    }
+  }
 
   fun handleIconChange(iconType: AppIconType) {
     if (appIconType == iconType) return
@@ -94,7 +151,7 @@ fun AppIconSettingsScreen(
     containerColor = MaterialTheme.colorScheme.surface,
     topBar = {
       TopAppBar(
-        title = { Text("App Icon", fontWeight = FontWeight.Bold) },
+        title = { Text("App name & icon", fontWeight = FontWeight.Bold) },
         navigationIcon = {
           IconButton(onClick = { navController.navigateUp() }) {
             Icon(painter = painterResource(R.drawable.arrow_back), contentDescription = "Back")
@@ -180,6 +237,86 @@ fun AppIconSettingsScreen(
           .padding(horizontal = 16.dp)
     ) {
       Spacer(modifier = Modifier.height(8.dp))
+
+      Card(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+      ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+          Text(
+            "Custom home-screen shortcut",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+          )
+          Spacer(modifier = Modifier.height(6.dp))
+          Text(
+            "Choose a name and image for a home-screen shortcut. Android keeps the app-drawer name fixed; this creates a customizable shortcut.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+          Spacer(modifier = Modifier.height(12.dp))
+          OutlinedTextField(
+            value = shortcutName,
+            onValueChange = { onShortcutNameChange(it.take(40)) },
+            label = { Text("Shortcut name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+          )
+          Spacer(modifier = Modifier.height(12.dp))
+          val previewBitmap =
+            remember(shortcutIconPath) {
+              CustomHomeShortcut.loadIcon(shortcutIconPath)?.asImageBitmap()
+                ?: ContextCompat.getDrawable(context, R.mipmap.ic_launcher)
+                  ?.toBitmap(192, 192)
+                  ?.asImageBitmap()
+            }
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            if (previewBitmap != null) {
+              Image(
+                bitmap = previewBitmap,
+                contentDescription = "Shortcut icon preview",
+                modifier = Modifier.size(56.dp).clip(RoundedCornerShape(14.dp))
+              )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                if (shortcutIconPath.isBlank()) "Using the app icon" else "Custom image selected",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+              )
+              Text(
+                "Pick a square image for best results",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+            }
+          }
+          Spacer(modifier = Modifier.height(12.dp))
+          Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(
+              onClick = {
+                iconPickerLauncher.launch(
+                  PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+              }
+            ) {
+              Text("Choose image")
+            }
+            if (shortcutIconPath.isNotBlank()) {
+              OutlinedButton(onClick = { onShortcutIconPathChange("") }) {
+                Text("Use app icon")
+              }
+            }
+          }
+          Spacer(modifier = Modifier.height(8.dp))
+          Button(onClick = ::addCustomShortcut, modifier = Modifier.fillMaxWidth()) {
+            Text("Add shortcut to home screen")
+          }
+        }
+      }
 
       Text(
         text = "Choose your launcher icon",
