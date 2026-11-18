@@ -75,14 +75,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mapfile -t apks < <(find app/build/outputs/apk -type f -name '*.apk' -print)
           if [[ "${{ steps.signing.outputs.configured }}" == "true" ]]; then
-            apk="$(find app/build/outputs/apk/universal/gms/release -maxdepth 1 -type f -name '*.apk' -print -quit)"
             name='Himangshu-Music-universal-gms-release.apk'
+            expected_build_type='release'
           else
-            apk="$(find app/build/outputs/apk/universal/gms/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
             name='Himangshu-Music-universal-gms-debug.apk'
+            expected_build_type='debug'
           fi
-          test -n "$apk"
+          if [[ "${#apks[@]}" -ne 1 ]]; then
+            echo "Expected exactly one APK from the $expected_build_type variant; found ${#apks[@]}"
+            printf '%s\n' "${apks[@]}"
+            exit 1
+          fi
+          apk="${apks[0]}"
           mkdir -p dist
           cp "$apk" "dist/$name"
           test -s "dist/$name"
