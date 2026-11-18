@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Modified for the Himangshu rebrand on 2026-11-18; upstream Echo Music GPL-3.0 code retained. -->
+<resources>
+    <string name="app_name">Himangshu</string>
+</resources>
