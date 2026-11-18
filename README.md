@@ -1,6 +1,6 @@
 # Himangshu Music
 
-> Himangshu is a modified personal rebrand of the open-source Echo Music Android app, first modified on 18 November 2026. It retains upstream features and attribution, and is distributed under GPL-3.0; the launcher name and selected in-app displays are customized. This fork is maintained by Himangshu Raj Gogoi. Upstream project: [EchoMusicApp/Echo-Music](https://github.com/EchoMusicApp/Echo-Music).
+> Himangshu Music is an Android music-player fork maintained by Himangshu Raj Gogoi and distributed under GPL-3.0. It is based on an open-source project; its exact origin, required attribution and license notices are documented in [HIMANGSHU_FORK_NOTICES.md](HIMANGSHU_FORK_NOTICES.md) and [LICENSE](LICENSE). This fork is not affiliated with or endorsed by the upstream author.
 > This fork omits the upstream Firebase configuration and hardcoded Last.fm credentials. Configure your own Firebase/Last.fm credentials locally if you want those integrations.
 > Himangshu Music fork maintainer: Himangshu Raj Gogoi. The About screen includes an in-app UPI support option; support payments are optional and are never processed by the app itself.
 
@@ -12,29 +12,12 @@
 
 ---
 
-## Achievements
-<a href="https://trendshift.io/repositories/160234?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-160234" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/160234" alt="EchoMusicApp%2FEcho-Music | Trendshift" width="250" height="55"/></a> <a href="https://trendshift.io/repositories/160234?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-160234" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/160234/daily?language=Kotlin" alt="EchoMusicApp%2FEcho-Music | Trendshift" width="250" height="55"/></a> <a href="https://trendshift.io/repositories/160234?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-160234" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/160234/monthly?language=Kotlin" alt="EchoMusicApp%2FEcho-Music | Trendshift" width="250" height="55"/></a>
-
----
-
 ## Overview
 
-Echo Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, and environment-aware music recognition.
+Himangshu Music delivers a seamless, premium listening experience by leveraging YouTube Music's vast library — without the ads. It adds powerful extras including offline downloads, real-time synchronized lyrics, and environment-aware music recognition.
 
 > [!IMPORTANT]
-> **In-app OTA updates have been permanently removed.** Please update manually via the website. Echo Music is completely free and ad-free; the few ads shown during a manual download help support the ongoing development of this project. Please do not open issues requesting to bring this back. Thank you for your support!
-
----
-
-## Community
-
-**Discord**: [Join the Echo Music Discord server](https://discord.gg/Xt5hgsJJuA)
-
----
-
-## Sponsor
-
-[![Sponsor](https://readme.cash/i/qx6lmx2nwz.svg)](https://readme.cash/c/qx6lmx2nwz)
+> Updates are published on this repository’s [GitHub Releases](https://github.com/himangshurajg-bit/himangshu-music/releases) page; the app checks this fork for its releases.
 
 ---
 
@@ -93,7 +76,7 @@ Echo Music delivers a seamless, premium listening experience by leveraging YouTu
 
 ### What's New
 
-> **Music DNA (New!)** — Instantly uncover the backstory of any track. Echo Music queries Genius for deep track annotations, and intelligently falls back to Wikipedia API extracts for regional or obscure tracks where crowd-sourced meanings are missing.
+> **Music DNA (New!)** — Instantly uncover the backstory of any track. Himangshu Music queries Genius for deep track annotations, and intelligently falls back to Wikipedia API extracts for regional or obscure tracks where crowd-sourced meanings are missing.
 
 <br>
 
@@ -114,11 +97,11 @@ Echo Music delivers a seamless, premium listening experience by leveraging YouTu
 </details>
 
 <details>
-<summary><b>Discovery & Echo Find</b></summary>
+<summary><b>Discovery & Song Recognition</b></summary>
 <br>
 
-- **Echo Find** — Identify songs playing around you using advanced audio recognition.
-- **Echo Brain** — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue.
+- **Song Recognition** — Identify songs playing around you using advanced audio recognition.
+- **Listening Insights** — An intelligent, on-device engine that analyzes your listening momentum and auto-injects perfectly aligned tracks into your queue.
 - **Smart Recommendations** — Personalized suggestions based on your listening history.
 - **Comprehensive Browsing** — Explore Charts, Podcasts, Moods, and Genres.
 
@@ -173,9 +156,9 @@ Echo Music delivers a seamless, premium listening experience by leveraging YouTu
 
 ## 320 kbps Audio Extension
 
-Want to experience crystal-clear, high-bitrate **320 kbps** audio in Echo Music?
+Want to experience crystal-clear, high-bitrate **320 kbps** audio in Himangshu Music?
 
-By default, YouTube Music delivers standard streaming quality. Echo Music includes built-in support for third-party extension sources, allowing you to stream high-fidelity **320 kbps** audio directly within the app using the official 320 kbps extension!
+By default, YouTube Music delivers standard streaming quality. Himangshu Music includes built-in support for third-party extension sources, allowing you to stream high-fidelity **320 kbps** audio directly within the app using the official 320 kbps extension!
 
 Visit the official repository to get started:  
 **[https://github.com/EchoMusicApp/320kbs-extension](https://github.com/EchoMusicApp/320kbs-extension)**
@@ -186,8 +169,8 @@ Visit the official repository to get started:
    - Go to [EchoMusicApp/320kbs-extension](https://github.com/EchoMusicApp/320kbs-extension).
    - Follow the setup and deployment instructions in the repository to deploy or obtain your extension server endpoint.
 
-2. **Add the Server in Echo Music**:
-   - Open the Echo Music app on your Android device.
+2. **Add the Server in Himangshu Music**:
+   - Open the Himangshu Music app on your Android device.
    - Tap your profile avatar in the top-right corner to open the **Account** sheet.
    - Tap **Extensions** to open the Extension Sources settings.
    - Scroll down to the **Add new** section and tap **Add Custom Server**.
@@ -196,16 +179,16 @@ Visit the official repository to get started:
 
 3. **Set Playback Priority**:
    - In the **Extensions** menu, ensure **Prefer Extension Audio** is toggled **ON**.
-   - With this enabled, Echo Music will automatically search and stream high-bitrate 320 kbps audio from your extension before falling back to YouTube Music.
+   - With this enabled, Himangshu Music will automatically search and stream high-bitrate 320 kbps audio from your extension before falling back to YouTube Music.
    - Enjoy studio-quality 320 kbps playback with real-time format and bitrate indicators on the now playing screen!
 
 ---
 
 ## Lossless Audio Extension
 
-Want to experience studio-master **Lossless (FLAC / ALAC)** and **Hi-Res Audio** (up to 24-bit / 192 kHz) directly in Echo Music?
+Want to experience studio-master **Lossless (FLAC / ALAC)** and **Hi-Res Audio** (up to 24-bit / 192 kHz) directly in Himangshu Music?
 
-Echo Music features a dedicated lossless audio pipeline with bit-perfect DAC pass-through, real-time Bluetooth codec telemetry (LDAC, aptX HD), and live format badges (`FLAC`, `Hi-Res`, `Bit-Perfect`). By connecting the official **Lossless Extension**, you can stream uncompressed, bit-perfect music from lossless providers directly within the app!
+Himangshu Music features a dedicated lossless audio pipeline with bit-perfect DAC pass-through, real-time Bluetooth codec telemetry (LDAC, aptX HD), and live format badges (`FLAC`, `Hi-Res`, `Bit-Perfect`). By connecting the official **Lossless Extension**, you can stream uncompressed, bit-perfect music from lossless providers directly within the app!
 
 Visit the official repository to get started:  
 **[https://github.com/EchoMusicApp/lossless-extension](https://github.com/EchoMusicApp/lossless-extension)**
@@ -216,8 +199,8 @@ Visit the official repository to get started:
    - Go to [EchoMusicApp/lossless-extension](https://github.com/EchoMusicApp/lossless-extension).
    - Follow the setup and deployment instructions to deploy your lossless provider instance (e.g., via Vercel, Railway, Docker, or self-hosted server) or obtain your custom lossless endpoint URL.
 
-2. **Add the Lossless Server in Echo Music**:
-   - Open the Echo Music app on your Android device.
+2. **Add the Lossless Server in Himangshu Music**:
+   - Open the Himangshu Music app on your Android device.
    - Tap your profile avatar (or the **Settings** gear icon) to open the **Account / Settings** sheet.
    - Tap **Extensions** to open the Extension Sources screen.
    - Scroll down to the **Add new** section and tap **Add Custom Server**.
@@ -228,9 +211,9 @@ Visit the official repository to get started:
 
 3. **Configure Playback Priority & Audio Pipeline**:
    - In the **Extensions** menu, ensure **Prefer Extension Audio** is toggled **ON**.
-   - When enabled, Echo Music will prioritize searching and streaming uncompressed FLAC/ALAC audio from your lossless server before falling back to YouTube Music.
+   - When enabled, Himangshu Music will prioritize searching and streaming uncompressed FLAC/ALAC audio from your lossless server before falling back to YouTube Music.
    - *(Optional — Audiophile Hardware)*:
-     - **External USB DAC**: Connect a USB DAC via OTG to automatically activate Echo Music's **Bit-Perfect Audio Pipeline**, bypassing Android's OS resampling engine (`Bit-Perfect • 24-bit / 192 kHz`).
+     - **External USB DAC**: Connect a USB DAC via OTG to automatically activate Himangshu Music's **Bit-Perfect Audio Pipeline**, bypassing Android's OS resampling engine (`Bit-Perfect • 24-bit / 192 kHz`).
      - **Hi-Res Bluetooth**: Connect headphones supporting LDAC, aptX HD, or LC3 to view real-time Bluetooth telemetry and the gold **Hi-Res** badge on the player.
 
 4. **Verify Lossless Playback**:
@@ -243,7 +226,7 @@ Visit the official repository to get started:
 
 ### Android Installation
 
-Download the latest pre-compiled APK from the [Releases Page](https://github.com/EchoMusicApp/Echo-Music/releases/latest).
+Download the latest signed APK from the [Himangshu Music Releases](https://github.com/himangshurajg-bit/himangshu-music/releases/latest).
 
 <details>
 <summary><b>Building from Source</b></summary>
@@ -252,8 +235,8 @@ Download the latest pre-compiled APK from the [Releases Page](https://github.com
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/EchoMusicApp/Echo-Music.git
-   cd Echo-Music
+   git clone https://github.com/himangshurajg-bit/himangshu-music.git
+   cd himangshu-music
    ```
 
 2. **Configure Android SDK**
@@ -288,7 +271,7 @@ The app offers an optional UPI support link in its About screen. The app does no
 
 ## Contributors
 
-This fork builds on Echo Music and its open-source contributors; their upstream credits and GPL-3.0 license are preserved.
+This fork is maintained by Himangshu Raj Gogoi and retains required original-source credits and GPL-3.0 notices.
 
 <!-- readme: contributors -start -->
 <table>
@@ -301,7 +284,7 @@ This fork builds on Echo Music and its open-source contributors; their upstream 
 
 ## Special Thanks
 
-Echo Music stands on the shoulders of several excellent open-source projects. Sincere thanks to:
+Himangshu Music stands on the shoulders of several excellent open-source projects. Sincere thanks to:
 
 | Project                                                                                                                   | Description                                         |
 | :------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------- |
@@ -309,7 +292,7 @@ Echo Music stands on the shoulders of several excellent open-source projects. Si
 | **[ArchiveTune](https://github.com/koiverse/ArchiveTune)**                                                                | Material You UI inspiration                         |
 | **[Better Lyrics](https://better-lyrics.boidu.dev/)**                                                                     | Lyrics enhancement and synchronization              |
 | **[SimpMusic](https://github.com/maxrave-dev/SimpMusic)**                                                                 | Lyrics implementation reference                     |
-| **[Music Recognizer](https://github.com/aleksey-saenko/MusicRecognizer)**                                                 | Audio recognition (Echo Find)                       |
+| **[Music Recognizer](https://github.com/aleksey-saenko/MusicRecognizer)**                                                 | Audio recognition (Song Recognition)                       |
 | **[BravePipe](https://github.com/bravepipeproject/BravePipe)**                                                            | Decryption handling and backup playback engine      |
 
 ---
@@ -318,15 +301,15 @@ Echo Music stands on the shoulders of several excellent open-source projects. Si
 
 ### 1. 100% Free, Open-Source & Strictly Non-Commercial
 
-Echo Music is a fully open-source project (FOSS) created purely for educational purposes and personal use. We do not sell this application, nor do we monetize it in any way. There are no advertisements, no premium features, no subscriptions, and no hidden fees within the app. This project has absolutely no commercial value or financial intent.
+Himangshu Music is a fully open-source project (FOSS) created purely for educational purposes and personal use. We do not sell this application, nor do we monetize it in any way. There are no advertisements, no premium features, no subscriptions, and no hidden fees within the app. This project has absolutely no commercial value or financial intent.
 
 ### 2. A Custom Browser with Content Filtering
 
-Echo Music acts strictly as a specialized, third-party web browser and client. It simply parses the publicly available website content and APIs of YouTube and YouTube Music, rendering them in a custom user interface. The ad-free experience it provides is fundamentally no different from using a standard web browser (like Chrome, Firefox, or Brave) equipped with a common ad-blocking extension (such as uBlock Origin).
+Himangshu Music acts strictly as a specialized, third-party web browser and client. It simply parses the publicly available website content and APIs of YouTube and YouTube Music, rendering them in a custom user interface. The ad-free experience it provides is fundamentally no different from using a standard web browser (like Chrome, Firefox, or Brave) equipped with a common ad-blocking extension (such as uBlock Origin).
 
 ### 3. Support Content Creators
 
-We deeply respect the hard work of artists, musicians, and content creators. We strongly encourage all users to subscribe to [YouTube Premium](https://www.youtube.com/premium). Purchasing a Premium subscription is the best way to financially support the creators you listen to and ensure the continued growth of the platform. Echo Music is built as a proof-of-concept for developers and enthusiasts, not to harm creators' revenues.
+We deeply respect the hard work of artists, musicians, and content creators. We strongly encourage all users to subscribe to [YouTube Premium](https://www.youtube.com/premium). Purchasing a Premium subscription is the best way to financially support the creators you listen to and ensure the continued growth of the platform. Himangshu Music is built as a proof-of-concept for developers and enthusiasts, not to harm creators' revenues.
 
 ### 4. No Hosting of Copyrighted Material
 
@@ -334,9 +317,9 @@ We do not host, upload, distribute, or store any audio, video, or copyrighted me
 
 ### 5. User Responsibility & Legal Contact
 
-The software is provided "AS IS", without warranty of any kind. The developers of Echo Music do not encourage or condone piracy. Users are solely responsible for ensuring their usage of this app complies with their local copyright laws and the Terms of Service of the platforms they access.
+The software is provided "AS IS", without warranty of any kind. The developers of Himangshu Music do not encourage or condone piracy. Users are solely responsible for ensuring their usage of this app complies with their local copyright laws and the Terms of Service of the platforms they access.
 
-Because we do not host any media files, we cannot process DMCA takedown requests for audio or video content. However, if you represent a copyright holder or have legal concerns regarding the open-source code itself, please contact us via email at: [hello@echomusic.fun](mailto:hello@echomusic.fun)
+Because this app does not host media files, it cannot process DMCA takedown requests for audio or video content. For concerns about this fork’s source code, use the repository’s [GitHub contact page](https://github.com/himangshurajg-bit/himangshu-music).
 
 ---
 

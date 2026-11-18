@@ -1,4 +1,4 @@
-// Modified for the Himangshu rebrand on 2026-11-18; upstream Echo Music GPL-3.0 code retained.
+// Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices and attribution retained.
 package com.music.echo.ui.screens.wrapped
 
 import android.widget.Toast

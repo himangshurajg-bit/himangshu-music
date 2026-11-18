@@ -1,4 +1,4 @@
-// Modified for the Himangshu rebrand on 2026-11-18; upstream Echo Music GPL-3.0 code retained.
+// Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices and attribution retained.
 package com.music.echo.ui.screens.wrapped
 
 import android.content.Context
@@ -486,7 +486,7 @@ object WrappedShareHelper {
     }
     canvas.drawText("${data.uniqueSongsCount} SONGS PLAYED", marginX, trioY, statTrioPaint)
     canvas.drawText("${data.uniqueArtistsCount} ARTISTS DISCOVERED", marginX + 330f, trioY, statTrioPaint)
-    canvas.drawText("ECHO MUSIC", marginX + 710f, trioY, statTrioAccentPaint)
+    canvas.drawText("HIMANGSHU MUSIC", marginX + 710f, trioY, statTrioAccentPaint)
 
     // 8. Watermark Footer
     val footerPaint = Paint().apply {
@@ -498,7 +498,7 @@ object WrappedShareHelper {
       typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
     canvas.drawText(
-      "CRAFTED WITH ECHO MUSIC • ${data.yearLabel} REPLAY • echomusic.app/wrapped",
+      "MADE WITH HIMANGSHU MUSIC • ${data.yearLabel} REPLAY",
       width / 2f,
       1750f,
       footerPaint

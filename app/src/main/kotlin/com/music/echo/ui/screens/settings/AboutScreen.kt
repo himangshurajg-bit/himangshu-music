@@ -1,4 +1,4 @@
-// Modified for the Himangshu rebrand on 2026-11-18; upstream Echo Music GPL-3.0 code retained.
+// Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices and attribution retained.
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
 package echo.music.iad1tya.ui.screens.settings
@@ -65,7 +65,7 @@ fun AboutScreen(
   LaunchedEffect(Unit) {
     withContext(Dispatchers.IO) {
       try {
-        val url = java.net.URL("https://api.github.com/repos/EchoMusicApp/Echo-Music/contributors")
+        val url = java.net.URL("https://api.github.com/repos/himangshurajg-bit/himangshu-music/contributors")
         val json = url.openStream().bufferedReader().use { it.readText() }
         val array = JSONArray(json)
         val list = mutableListOf<Contributor>()
@@ -144,7 +144,7 @@ fun AboutScreen(
       if (contributors.isNotEmpty()) {
         item {
           Column(modifier = Modifier.fillMaxWidth()) {
-            echo.music.iad1tya.ui.component.PreferenceGroupTitle(title = "Contributors")
+            echo.music.iad1tya.ui.component.PreferenceGroupTitle(title = "Himangshu Music contributors")
             Row(
               modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
               horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -200,43 +200,24 @@ fun AboutScreen(
 
       item {
         Material3SettingsGroup(
-          title = "Community",
+          title = "Open source",
           items =
             listOf(
               Material3SettingsItem(
-                icon = painterResource(R.drawable.ic_discord_new),
-                title = { Text("Discord") },
-                description = { Text("discord.gg/Xt5hgsJJuA") },
-                onClick = { uriHandler.openUri("https://discord.gg/Xt5hgsJJuA") }
+                icon = painterResource(R.drawable.github),
+                title = { Text("Himangshu Music on GitHub") },
+                description = { Text("Source code and releases") },
+                onClick = { uriHandler.openUri("https://github.com/himangshurajg-bit/himangshu-music") }
+              ),
+              Material3SettingsItem(
+                icon = painterResource(R.drawable.github),
+                title = { Text("Original project source") },
+                description = { Text("GPL-3.0 source and attribution") },
+                onClick = { uriHandler.openUri("https://github.com/EchoMusicApp/Echo-Music") }
               )
             )
         )
       }
-
-      /* item {
-          AboutSectionCard(title = "App") {
-              AboutActionRow(
-                  icon = painterResource(R.drawable.github),
-                  title = "GitHub",
-                  subtitle = "EchoMusicApp/Echo-Music",
-                  onClick = { uriHandler.openUri("https://github.com/EchoMusicApp/Echo-Music") },
-              )
-              AboutDivider()
-              AboutActionRow(
-                  icon = painterResource(R.drawable.ic_discord_new),
-                  title = "Discord",
-                  subtitle = "discord.gg/EcfV3AxH5c",
-                  onClick = { uriHandler.openUri("https://discord.gg/EcfV3AxH5c") },
-              )
-              AboutDivider()
-              AboutActionRow(
-                  icon = painterResource(R.drawable.ic_telegram_new),
-                  title = "Telegram",
-                  subtitle = "t.me/EchoMusicApp",
-                  onClick = { uriHandler.openUri("https://t.me/EchoMusicApp") },
-              )
-          }
-      } */
 
     }
   }

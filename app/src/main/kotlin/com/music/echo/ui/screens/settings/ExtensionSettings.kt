@@ -126,7 +126,7 @@ fun ExtensionSettingsScreen(
                 ),
                 Material3SettingsItem(
                     title = { Text("High Quality (320kbps) Music Quality") },
-                    description = { Text("Visit 320kbps.echomusic.fun for setup guide") },
+                    description = { Text("Open the audio-quality extension setup guide") },
                     icon = painterResource(R.drawable.ic_hq),
                     trailingContent = {
                         Icon(
