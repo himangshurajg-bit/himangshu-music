@@ -1,0 +1,62 @@
+name: Build and publish Himangshu APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag for this preview APK
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Build universal GMS debug APK
+        run: >-
+          ./gradlew --no-daemon --max-workers=2
+          -Pkotlin.compiler.execution.strategy=in-process
+          -Dorg.gradle.jvmargs='-Xmx4g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8'
+          :app:assembleUniversalGmsDebug
+      - name: Verify and stage APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="$(find app/build/outputs/apk/universal/gms/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$apk"
+          mkdir -p dist
+          cp "$apk" dist/Himangshu-Music-universal-gms-debug.apk
+          test -s dist/Himangshu-Music-universal-gms-debug.apk
+          unzip -tqq dist/Himangshu-Music-universal-gms-debug.apk
+          sha256sum dist/Himangshu-Music-universal-gms-debug.apk
+      - name: Keep APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Himangshu-Music-APK
+          path: dist/Himangshu-Music-universal-gms-debug.apk
+          if-no-files-found: error
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^[A-Za-z0-9._-]+$ ]]
+          gh release create "$RELEASE_TAG" dist/Himangshu-Music-universal-gms-debug.apk \
+            --title "Himangshu Music Preview $RELEASE_TAG" \
+            --notes 'Universal GMS debug APK. This is a debug-signed preview build, not a production-signed stable release. The corresponding source and GPL-3.0 notices are available on main.'
