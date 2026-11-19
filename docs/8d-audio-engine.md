@@ -12,8 +12,7 @@ The engine changes the played stereo samples; its moving dot is only a visual pr
 
 The settings screen reports wired, Bluetooth and USB headset-type outputs when Android exposes them. That is device-type detection only: it does not prove that the selected route is stereo, test left/right channels, or establish compatibility. Hardware headphone/audio-device tests remain necessary. Multichannel input is rejected by this processor so Media3 can select its normal supported path; mono cannot be panned into stereo. The processor is in Media3's normal sink chain; the separate USB bit-perfect sink is not validated for 8D processing, and bit-perfect/offload routing may bypass app DSP.
 
-This implementation is Android/Kotlin-specific and does not add native Oboe/AAudio or C++ code. The controls and settings are local app preferences. No release is created by this change.
-
+This implementation is Android/Kotlin-specific and does not add native Oboe/AAudio or C++ code. The controls and settings are local app preferences.
 ## Repeatable verification
 
 1. Run `./gradlew :audio-dsp:testDebugUnitTest --no-daemon --console=plain`. `EightDAudioProcessorTest` covers exact disabled PCM16 bypass, changing stereo samples in fast orbit, width control affecting the signal, float PCM clipping bounds, and safe multichannel rejection.
