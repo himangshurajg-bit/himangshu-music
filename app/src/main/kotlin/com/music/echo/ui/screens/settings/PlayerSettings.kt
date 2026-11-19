@@ -1397,6 +1397,12 @@ fun PlayerSettings(
             onClick = { onAutoplayOnAutomotiveConnectChange(!autoplayOnAutomotiveConnect) }
           ),
           Material3SettingsItem(
+            icon = painterResource(R.drawable.screenshot),
+            title = { Text("Always-on player (AOD)") },
+            description = { Text("Open a dim, minimal player screen while you listen") },
+            onClick = { navController.navigate("aod_screen") }
+          ),
+          Material3SettingsItem(
             isHighlighted =
               (highlightKey == stringResource(R.string.keep_screen_on_when_player_is_expanded)),
             icon = painterResource(R.drawable.screenshot),
