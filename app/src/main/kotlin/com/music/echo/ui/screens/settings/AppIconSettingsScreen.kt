@@ -222,30 +222,6 @@ fun AppIconSettingsScreen(
           "Millie Bobby Brown",
           "Millie Bobby Brown on community demand",
           R.mipmap.ic_launcher_millie
-        ),
-        AppIconOption(
-          AppIconType.HIMANGSHU_HEADPHONES,
-          "Neon Headphones",
-          "Glowing blue-violet music note with headphones",
-          R.mipmap.himangshu_music_headphones
-        ),
-        AppIconOption(
-          AppIconType.HIMANGSHU_ANIME_MUSIC,
-          "Anime Music",
-          "Music-player artwork with an anime night-sky scene",
-          R.mipmap.himangshu_music_anime
-        ),
-        AppIconOption(
-          AppIconType.HIMANGSHU_ITACHI_CRIMSON,
-          "Itachi Crimson",
-          "Red moon and crimson anime artwork",
-          R.mipmap.himangshu_music_itachi_crimson
-        ),
-        AppIconOption(
-          AppIconType.HIMANGSHU_ITACHI_MOON,
-          "Itachi Moon",
-          "Itachi beneath a bright red moon",
-          R.mipmap.himangshu_music_itachi_moon
         )
       ).sortedBy { it.title.lowercase() }
 

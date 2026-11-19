@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,36 +40,38 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import java.net.URLEncoder
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
-private data class FocusMode(
+internal data class StudyFocusPreset(
   val title: String,
   val description: String,
   val query: String,
   val timerType: String? = null,
 )
 
-private val focusModes = listOf(
-  FocusMode("Deep Focus", "Steady instrumental textures with minimal vocals or abrupt changes.", "instrumental deep focus ambient music playlist"),
-  FocusMode("Mathematics Mode", "Repetitive electronic and ambient soundscapes, without lyrics.", "instrumental electronic ambient math study music playlist"),
-  FocusMode("Physics Mode", "Calm, structured instrumental soundscapes for problem-solving.", "calm structured instrumental ambient physics study music"),
-  FocusMode("Reading Mode", "Gentle ambient and acoustic instrumentals kept in the background.", "gentle ambient acoustic instrumental reading music playlist"),
-  FocusMode("Memory & Revision", "Quiet, low-variation background music for review sessions.", "calm minimal instrumental memory revision study music"),
-  FocusMode("Coding Mode", "Instrumental electronic ambience with a consistent feel.", "instrumental electronic ambient coding focus music playlist"),
-  FocusMode("Exam Preparation", "Choose a concentration-session length, then find matching music.", "instrumental exam preparation concentration music", "focus"),
-  FocusMode("Relaxed Study", "Soft piano and ambient instrumentals for a gentler study pace.", "soft piano ambient relaxed study instrumental music"),
-  FocusMode("Pomodoro Focus", "A 25-minute focus / 5-minute break timer, with music searches for both.", "instrumental pomodoro focus study music playlist", "pomodoro"),
-  FocusMode("Night Study", "Low-stimulation ambient music; keep device brightness comfortable.", "low stimulation ambient instrumental night study music"),
+internal val studyFocusPresets = listOf(
+  StudyFocusPreset("Deep Focus", "Try steady instrumental search results; switch to silence if they distract you.", "instrumental deep focus ambient music playlist"),
+  StudyFocusPreset("Mathematics Mode", "A no-lyrics search for problem sets; music is not proven to improve calculation.", "instrumental electronic ambient math study music playlist"),
+  StudyFocusPreset("Physics Mode", "An instrumental starting point for problem-solving, not a proven performance aid.", "calm structured instrumental ambient physics study music"),
+  StudyFocusPreset("Reading Mode", "Try instrumental results at low volume; lyrics may compete with reading.", "gentle ambient acoustic instrumental reading music playlist"),
+  StudyFocusPreset("Memory & Revision", "Try low-variation instrumentals—or silence, which may suit verbal recall better.", "calm minimal instrumental memory revision study music"),
+  StudyFocusPreset("Coding Mode", "Instrumental electronic search results; choose silence if the task feels demanding.", "instrumental electronic ambient coding focus music playlist"),
+  StudyFocusPreset("Exam Preparation", "Set a visual session timer and search for instrumental background music.", "instrumental exam preparation concentration music", "focus"),
+  StudyFocusPreset("Relaxed Study", "Explore soft piano or ambient results; the right choice depends on you.", "soft piano ambient relaxed study instrumental music"),
+  StudyFocusPreset("Pomodoro Focus", "Optional 25/5 visual timer plus an instrumental music search; music plays independently.", "instrumental pomodoro focus study music playlist", "pomodoro"),
+  StudyFocusPreset("Night Study", "Explore quieter instrumental results; set screen brightness to your comfort.", "low stimulation ambient instrumental night study music"),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusModesScreen(navController: NavController) {
   BackHandler { navController.popBackStack() }
+  val uriHandler = LocalUriHandler.current
   var concentrationMinutes by rememberSaveable { mutableIntStateOf(25) }
   var timerType by rememberSaveable { mutableStateOf("focus") }
   var isBreak by rememberSaveable { mutableStateOf(false) }
@@ -114,10 +117,13 @@ fun FocusModesScreen(navController: NavController) {
     ) {
       item {
         Text(
-          "Pick a listening profile and explore matching music. These are low-distraction starting points, not a promise that music improves focus.",
+          "These ten task-aware presets are search starting points, not vetted playlists or a promise of better focus. Results vary; silence may work better, especially for difficult tasks.",
           style = MaterialTheme.typography.bodyMedium,
           color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        TextButton(onClick = { uriHandler.openUri("https://journals.sagepub.com/doi/full/10.1177/20592043221134392") }) {
+          Text("Why these are cautious · Cheah et al. (2022)")
+        }
       }
       item {
         Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
@@ -158,7 +164,7 @@ fun FocusModesScreen(navController: NavController) {
           }
         }
       }
-      items(focusModes, key = { it.title }) { mode ->
+      items(studyFocusPresets, key = { it.title }) { mode ->
         Card(
           shape = RoundedCornerShape(24.dp),
           colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),

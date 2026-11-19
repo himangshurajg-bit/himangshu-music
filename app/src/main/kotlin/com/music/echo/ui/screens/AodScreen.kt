@@ -73,9 +73,10 @@ fun AodScreen(navController: NavController) {
     } ?: false
     val controller = window?.let { WindowInsetsControllerCompat(it, it.decorView) }
     val systemBars = WindowInsetsCompat.Type.systemBars()
-    val wereSystemBarsVisible = window?.let {
-      WindowInsetsCompat.toWindowInsetsCompat(it.decorView.rootWindowInsets).isVisible(systemBars)
+    val wereSystemBarsVisible = window?.decorView?.rootWindowInsets?.let {
+      WindowInsetsCompat.toWindowInsetsCompat(it).isVisible(systemBars)
     } ?: true
+    val originalBarsBehavior = controller?.systemBarsBehavior
     if (window != null) {
       window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       window.attributes = window.attributes.apply { screenBrightness = 0.06f }
@@ -87,6 +88,7 @@ fun AodScreen(navController: NavController) {
         if (hadKeepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.attributes = window.attributes.apply { screenBrightness = originalBrightness }
+        controller?.systemBarsBehavior = originalBarsBehavior ?: WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
         if (wereSystemBarsVisible) controller?.show(systemBars) else controller?.hide(systemBars)
       }
     }

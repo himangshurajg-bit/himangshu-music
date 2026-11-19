@@ -433,11 +433,7 @@ fun SettingsScreen(
       )
     } else if (searchQuery.isNotEmpty()) {
       Spacer(modifier = Modifier.height(16.dp))
-      Material3SettingsGroup(
-        scrollState = scrollState,
-        items = finalItemsList,
-        enableBackdropGlass = false,
-      )
+      Material3SettingsGroup(scrollState = scrollState, items = finalItemsList)
     } else {
       Spacer(modifier = Modifier.height(16.dp))
 
@@ -449,43 +445,23 @@ fun SettingsScreen(
       val systemGroup = itemsList.drop(11) // Update, Links, About
 
       if (accountGroup.isNotEmpty()) {
-        Material3SettingsGroup(
-          scrollState = scrollState,
-          items = accountGroup,
-          enableBackdropGlass = false,
-        )
+        Material3SettingsGroup(scrollState = scrollState, items = accountGroup)
         Spacer(modifier = Modifier.height(16.dp))
       }
       if (listeningSummaryGroup.isNotEmpty()) {
-        Material3SettingsGroup(
-          scrollState = scrollState,
-          items = listeningSummaryGroup,
-          enableBackdropGlass = false,
-        )
+        Material3SettingsGroup(scrollState = scrollState, items = listeningSummaryGroup)
         Spacer(modifier = Modifier.height(16.dp))
       }
       if (playerGroup.isNotEmpty()) {
-        Material3SettingsGroup(
-          scrollState = scrollState,
-          items = playerGroup,
-          enableBackdropGlass = false,
-        )
+        Material3SettingsGroup(scrollState = scrollState, items = playerGroup)
         Spacer(modifier = Modifier.height(16.dp))
       }
       if (dataGroup.isNotEmpty()) {
-        Material3SettingsGroup(
-          scrollState = scrollState,
-          items = dataGroup,
-          enableBackdropGlass = false,
-        )
+        Material3SettingsGroup(scrollState = scrollState, items = dataGroup)
         Spacer(modifier = Modifier.height(16.dp))
       }
       if (systemGroup.isNotEmpty()) {
-        Material3SettingsGroup(
-          scrollState = scrollState,
-          items = systemGroup,
-          enableBackdropGlass = false,
-        )
+        Material3SettingsGroup(scrollState = scrollState, items = systemGroup)
       }
     }
 

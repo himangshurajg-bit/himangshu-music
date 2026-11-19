@@ -12,8 +12,7 @@ The engine changes the played stereo samples; its moving dot is only a visual pr
 
 The settings screen reports wired, Bluetooth and USB headset-type outputs when Android exposes them. That is device-type detection only: it does not prove that the selected route is stereo, test left/right channels, or establish compatibility. Hardware headphone/audio-device tests remain necessary. Multichannel input is rejected by this processor so Media3 can select its normal supported path; mono cannot be panned into stereo. The processor is in Media3's normal sink chain; the separate USB bit-perfect sink is not validated for 8D processing, and bit-perfect/offload routing may bypass app DSP.
 
-This implementation is Android/Kotlin-specific and does not add native Oboe/AAudio or C++ code. The controls and settings are local app preferences. No release is created by this change.
-
+This implementation is Android/Kotlin-specific and does not add native Oboe/AAudio or C++ code. The controls and settings are local app preferences.
 ## Repeatable verification
 
 1. Run `./gradlew :audio-dsp:testDebugUnitTest --no-daemon --console=plain`. `EightDAudioProcessorTest` covers exact disabled PCM16 bypass, changing stereo samples in fast orbit, width control affecting the signal, float PCM clipping bounds, and safe multichannel rejection.
@@ -21,6 +20,6 @@ This implementation is Android/Kotlin-specific and does not add native Oboe/AAud
 3. On a test phone, use stereo headphones and a stereo music source. Compare 8D off/on on the same passage; try each motion mode and move speed, depth, width, bass, ambience, echo and intensity sliders while audio is playing. Confirm playback, seek, queue, pause/resume, background playback and audio-route changes still work.
 4. Listen for clicks when toggling, changing sliders, and switching modes. At high volume, check peak-heavy material for obvious distortion; test mono and multichannel material and verify they remain on the documented fallback path. Compare bypass against the original source and separately test wired, Bluetooth and USB outputs. Record devices, Android versions, route types, and findings before making compatibility claims.
 
-## Current verification status
+## Verification status
 
-Source-level diff checks pass, and `:audio-dsp:testDebugUnitTest` passes. The Android app integration compile is not verified. One attempt reported a Kotlin backend OutOfMemoryError while transforming an existing large `FloatingTabBar.kt` composable; a higher-heap, in-process retry reached app compilation but was terminated at the 600-second limit with exit code -9. No phone, headphone, USB DAC or Bluetooth hardware test has been run as part of this implementation. Do not describe the feature as hardware-verified until those checks are performed.
+Automated processor tests are included in the Android CI workflow, and app unit tests/build compile the integration. Check the current branch's CI result before treating this implementation as build-verified; an earlier branch's test result does not validate later source changes. No Android phone, wired/Bluetooth headphone, USB DAC or bit-perfect/offload route test is claimed.

@@ -1,9 +1,6 @@
 package echo.music.iad1tya.ui.screens.ambient
 
-import android.provider.Settings
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -38,22 +35,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun AmbientGlowBackground(
-  mediaMetadata: MediaMetadata?,
-  modifier: Modifier = Modifier,
-  intensity: Float = 1f,
-  animate: Boolean = true,
-) {
-  val glowIntensity = intensity.coerceIn(0f, 1f)
-  val context = LocalContext.current
-  val animationsDisabled =
-    Settings.Global.getFloat(
-      context.contentResolver,
-      Settings.Global.ANIMATOR_DURATION_SCALE,
-      1f,
-    ) == 0f
-  val shouldAnimate = animate && !animationsDisabled
+fun AmbientGlowBackground(mediaMetadata: MediaMetadata?, modifier: Modifier = Modifier) {
   var gradientColors by remember { mutableStateOf<List<Color>>(emptyList()) }
+  val context = LocalContext.current
 
   LaunchedEffect(mediaMetadata?.id) {
     val currentMetadata = mediaMetadata ?: return@LaunchedEffect
@@ -90,32 +74,24 @@ fun AmbientGlowBackground(
 
   AnimatedContent(
     targetState = gradientColors,
-    transitionSpec = {
-      if (shouldAnimate) fadeIn(tween(1200)) togetherWith fadeOut(tween(1200))
-      else EnterTransition.None togetherWith ExitTransition.None
-    },
+    transitionSpec = { fadeIn(tween(1200)) togetherWith fadeOut(tween(1200)) },
     label = "GlowAnimatedContent",
     modifier = modifier
   ) { colors ->
     if (colors.isNotEmpty()) {
-      val progress =
-        if (shouldAnimate) {
-          val infiniteTransition = rememberInfiniteTransition(label = "GlowAnimation")
-          val animatedProgress by
-            infiniteTransition.animateFloat(
-              initialValue = 0f,
-              targetValue = 1f,
-              animationSpec =
-                infiniteRepeatable(
-                  animation = tween(24000, easing = LinearEasing),
-                  repeatMode = RepeatMode.Restart
-                ),
-              label = "glowProgress"
-            )
-          animatedProgress
-        } else {
-          0f
-        }
+      val infiniteTransition = rememberInfiniteTransition(label = "GlowAnimation")
+
+      val progress by
+        infiniteTransition.animateFloat(
+          initialValue = 0f,
+          targetValue = 1f,
+          animationSpec =
+            infiniteRepeatable(
+              animation = tween(20000, easing = LinearEasing),
+              repeatMode = RepeatMode.Restart
+            ),
+          label = "glowProgress"
+        )
 
       fun rotatedColorAt(index: Int): Color {
         val size = colors.size
@@ -176,72 +152,48 @@ fun AmbientGlowBackground(
             val brush1 =
               Brush.radialGradient(
                 colors =
-                  listOf(
-                    color1.copy(alpha = 0.85f * glowIntensity),
-                    color1.copy(alpha = 0.5f * glowIntensity),
-                    Color.Transparent,
-                  ),
+                  listOf(color1.copy(alpha = 0.85f), color1.copy(alpha = 0.5f), Color.Transparent),
                 center = Offset(width * o1x, height * o1y),
                 radius = width * r1
               )
             val brush2 =
               Brush.radialGradient(
                 colors =
-                  listOf(
-                    color2.copy(alpha = 0.8f * glowIntensity),
-                    color2.copy(alpha = 0.45f * glowIntensity),
-                    Color.Transparent,
-                  ),
+                  listOf(color2.copy(alpha = 0.8f), color2.copy(alpha = 0.45f), Color.Transparent),
                 center = Offset(width * o2x, height * o2y),
                 radius = width * r2
               )
             val brush3 =
               Brush.radialGradient(
                 colors =
-                  listOf(
-                    color3.copy(alpha = 0.75f * glowIntensity),
-                    color3.copy(alpha = 0.4f * glowIntensity),
-                    Color.Transparent,
-                  ),
+                  listOf(color3.copy(alpha = 0.75f), color3.copy(alpha = 0.4f), Color.Transparent),
                 center = Offset(width * o3x, height * o3y),
                 radius = width * r3
               )
             val brush4 =
               Brush.radialGradient(
                 colors =
-                  listOf(
-                    color4.copy(alpha = 0.7f * glowIntensity),
-                    color4.copy(alpha = 0.35f * glowIntensity),
-                    Color.Transparent,
-                  ),
+                  listOf(color4.copy(alpha = 0.7f), color4.copy(alpha = 0.35f), Color.Transparent),
                 center = Offset(width * o4x, height * o4y),
                 radius = width * r4
               )
             val brush5 =
               Brush.radialGradient(
                 colors =
-                  listOf(
-                    color5.copy(alpha = 0.65f * glowIntensity),
-                    color5.copy(alpha = 0.3f * glowIntensity),
-                    Color.Transparent,
-                  ),
+                  listOf(color5.copy(alpha = 0.65f), color5.copy(alpha = 0.3f), Color.Transparent),
                 center = Offset(width * o5x, height * o5y),
                 radius = width * r5
               )
             val brush6 =
               Brush.radialGradient(
                 colors =
-                  listOf(
-                    color6.copy(alpha = 0.6f * glowIntensity),
-                    color6.copy(alpha = 0.25f * glowIntensity),
-                    Color.Transparent,
-                  ),
+                  listOf(color6.copy(alpha = 0.6f), color6.copy(alpha = 0.25f), Color.Transparent),
                 center = Offset(width * o6x, height * o6y),
                 radius = width * r6
               )
 
             onDrawBehind {
-              if (glowIntensity >= 0.99f) drawRect(color = baseColor)
+              drawRect(color = baseColor)
               drawRect(brush = brush1)
               drawRect(brush = brush2)
               drawRect(brush = brush3)
