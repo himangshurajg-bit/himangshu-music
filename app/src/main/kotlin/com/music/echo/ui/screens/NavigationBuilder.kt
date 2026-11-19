@@ -60,6 +60,7 @@ import echo.music.iad1tya.ui.screens.settings.DislikedSongsScreen
 import echo.music.iad1tya.ui.screens.settings.GlassEffectSettings
 import echo.music.iad1tya.ui.screens.settings.MusicFlowSettings
 import echo.music.iad1tya.ui.screens.settings.PlayerSettings
+import echo.music.iad1tya.ui.screens.settings.EightDAudioSettingsScreen
 import echo.music.iad1tya.ui.screens.settings.PrivacySettings
 import echo.music.iad1tya.ui.screens.settings.SettingsScreen
 import echo.music.iad1tya.ui.screens.settings.StorageSettings
@@ -466,6 +467,10 @@ fun NavGraphBuilder.navigationBuilder(
       scrollBehavior,
       highlightKey = backStackEntry.arguments?.getString("highlightKey"),
     )
+  }
+
+  composable("settings/8d-audio") {
+    EightDAudioSettingsScreen(navController)
   }
 
   composable(
