@@ -902,6 +902,15 @@ fun PlayerSettings(
           )
           add(
             Material3SettingsItem(
+              isHighlighted = false,
+              icon = painterResource(R.drawable.graphic_eq),
+              title = { Text("8D stereo audio") },
+              description = { Text("Real-time stereo motion, EQ and ambience controls") },
+              onClick = { navController.navigate("settings/8d-audio") },
+            )
+          )
+          add(
+            Material3SettingsItem(
               isHighlighted = (highlightKey == stringResource(R.string.audio_offload)),
               icon = painterResource(R.drawable.graphic_eq),
               title = { Text(stringResource(R.string.audio_offload)) },
@@ -1386,6 +1395,12 @@ fun PlayerSettings(
               )
             },
             onClick = { onAutoplayOnAutomotiveConnectChange(!autoplayOnAutomotiveConnect) }
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.screenshot),
+            title = { Text("Always-on player (AOD)") },
+            description = { Text("Open a dim, minimal player screen while you listen") },
+            onClick = { navController.navigate("aod_screen") }
           ),
           Material3SettingsItem(
             isHighlighted =

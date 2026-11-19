@@ -973,6 +973,28 @@ fun HomeScreen(
           )
         }
 
+        if (selectedChip == null) {
+          item(key = "study_focus_entry") {
+            Card(
+              onClick = { navController.navigate("focus_modes") },
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+              shape = RoundedCornerShape(24.dp),
+              colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+              ),
+            ) {
+              Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                Text("Study focus", style = MaterialTheme.typography.titleMedium)
+                Text(
+                  "Explore ten listening modes and concentration timers",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+              }
+            }
+          }
+        }
+
         if (selectedChip == null && !isWrappedDismissed) {
           item(key = "echo_wrapped_banner") {
             com.music.echo.ui.screens.wrapped.WrappedBannerCard(

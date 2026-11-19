@@ -2483,6 +2483,30 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
           "Appearance",
           "settings/appearance/app_icon",
         ),
+        SearchableSetting(
+          "Neon Headphones Icon",
+          "Blue and violet music note with headphones launcher icon",
+          "Appearance",
+          "settings/appearance/app_icon",
+        ),
+        SearchableSetting(
+          "Anime Music Icon",
+          "Anime music-player artwork launcher icon",
+          "Appearance",
+          "settings/appearance/app_icon",
+        ),
+        SearchableSetting(
+          "Itachi Crimson Icon",
+          "Red moon anime artwork launcher icon",
+          "Appearance",
+          "settings/appearance/app_icon",
+        ),
+        SearchableSetting(
+          "Itachi Moon Icon",
+          "Itachi beneath a red moon launcher icon",
+          "Appearance",
+          "settings/appearance/app_icon",
+        ),
         // Cloud & Self-Hosted Media Servers
         SearchableSetting(
           "Subsonic / Navidrome",
