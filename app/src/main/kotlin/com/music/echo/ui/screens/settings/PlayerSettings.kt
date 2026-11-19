@@ -902,6 +902,15 @@ fun PlayerSettings(
           )
           add(
             Material3SettingsItem(
+              isHighlighted = false,
+              icon = painterResource(R.drawable.graphic_eq),
+              title = { Text("8D stereo audio") },
+              description = { Text("Real-time stereo motion, EQ and ambience controls") },
+              onClick = { navController.navigate("settings/8d-audio") },
+            )
+          )
+          add(
+            Material3SettingsItem(
               isHighlighted = (highlightKey == stringResource(R.string.audio_offload)),
               icon = painterResource(R.drawable.graphic_eq),
               title = { Text(stringResource(R.string.audio_offload)) },

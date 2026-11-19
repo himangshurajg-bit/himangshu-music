@@ -163,6 +163,16 @@ val DownloadWithMetadataKey = booleanPreferencesKey("downloadWithMetadata")
 val AudioOffload = booleanPreferencesKey("enableOffload")
 
 val SpatialAudioKey = booleanPreferencesKey("spatialAudio")
+val EightDAudioEnabledKey = booleanPreferencesKey("eight_d_audio_enabled")
+val EightDAudioModeKey = stringPreferencesKey("eight_d_audio_mode")
+val EightDAudioSpeedKey = floatPreferencesKey("eight_d_audio_speed")
+val EightDAudioDepthKey = floatPreferencesKey("eight_d_audio_depth")
+val EightDAudioWidthKey = floatPreferencesKey("eight_d_audio_width")
+val EightDAudioBassKey = floatPreferencesKey("eight_d_audio_bass")
+val EightDAudioReverbKey = floatPreferencesKey("eight_d_audio_reverb")
+val EightDAudioDelayKey = floatPreferencesKey("eight_d_audio_delay")
+val EightDAudioIntensityKey = floatPreferencesKey("eight_d_audio_intensity")
+val EightDAudioReverseKey = booleanPreferencesKey("eight_d_audio_reverse")
 
 val AudioLoudnessPresetKey = stringPreferencesKey("audioLoudnessPreset")
 

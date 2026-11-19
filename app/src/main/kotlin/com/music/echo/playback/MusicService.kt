@@ -125,6 +125,16 @@ import echo.music.iad1tya.constants.SimilarContent
 import echo.music.iad1tya.constants.SkipSilenceInstantKey
 import echo.music.iad1tya.constants.SkipSilenceKey
 import echo.music.iad1tya.constants.SpatialAudioKey
+import echo.music.iad1tya.constants.EightDAudioEnabledKey
+import echo.music.iad1tya.constants.EightDAudioModeKey
+import echo.music.iad1tya.constants.EightDAudioSpeedKey
+import echo.music.iad1tya.constants.EightDAudioDepthKey
+import echo.music.iad1tya.constants.EightDAudioWidthKey
+import echo.music.iad1tya.constants.EightDAudioBassKey
+import echo.music.iad1tya.constants.EightDAudioReverbKey
+import echo.music.iad1tya.constants.EightDAudioDelayKey
+import echo.music.iad1tya.constants.EightDAudioIntensityKey
+import echo.music.iad1tya.constants.EightDAudioReverseKey
 import echo.music.iad1tya.db.MusicDatabase
 import echo.music.iad1tya.db.entities.BeatInfoEntity
 import echo.music.iad1tya.db.entities.Event
@@ -138,6 +148,9 @@ import echo.music.iad1tya.echomusic.updater.downloadmanager.EchoNotificationProv
 import echo.music.dsp.audio.AutomixDuckAudioProcessor
 import echo.music.dsp.audio.CustomEqualizerAudioProcessor
 import echo.music.dsp.audio.StereoWidenerAudioProcessor
+import echo.music.dsp.audio.EightDAudioProcessor
+import echo.music.dsp.audio.EightDAudioParameters
+import echo.music.dsp.audio.EightDMotionMode
 import echo.music.dsp.controller.DspController
 import echo.music.dsp.data.EQProfileRepository
 import echo.music.iad1tya.playback.AudioSinkSelector
@@ -525,6 +538,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
   private val playerSilenceProcessors = HashMap<Player, SilenceDetectorAudioProcessor>()
   private val playerDuckProcessors = HashMap<Player, AutomixDuckAudioProcessor>()
   private val playerStereoWideners = HashMap<Player, StereoWidenerAudioProcessor>()
+  private val playerEightDAudioProcessors = HashMap<Player, EightDAudioProcessor>()
   private val playerEqProcessors = HashMap<Player, CustomEqualizerAudioProcessor>()
   private val cutoffGuard = PlaybackCutoffGuard()
 
@@ -988,6 +1002,28 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
       .collectLatest(scope) { spatialAudioEnabled ->
         val width = if (spatialAudioEnabled) SPATIAL_AUDIO_WIDTH else 1f
         playerStereoWideners.values.forEach { it.width = width }
+      }
+
+    dataStore.data
+      .map { preferences ->
+        EightDAudioParameters(
+          enabled = preferences[EightDAudioEnabledKey] ?: false,
+          mode = EightDMotionMode.values().firstOrNull {
+            it.name == preferences[EightDAudioModeKey]
+          } ?: EightDMotionMode.ORBIT,
+          rotationSpeed = preferences[EightDAudioSpeedKey] ?: 1f,
+          spatialDepth = preferences[EightDAudioDepthKey] ?: 0.7f,
+          stereoWidth = preferences[EightDAudioWidthKey] ?: 0.5f,
+          bassEnhancement = preferences[EightDAudioBassKey] ?: 0f,
+          reverb = preferences[EightDAudioReverbKey] ?: 0f,
+          delay = preferences[EightDAudioDelayKey] ?: 0f,
+          intensity = preferences[EightDAudioIntensityKey] ?: 0.8f,
+          reverseDirection = preferences[EightDAudioReverseKey] ?: false,
+        )
+      }
+      .distinctUntilChanged()
+      .collectLatest(scope) { parameters ->
+        playerEightDAudioProcessors.values.forEach { it.parameters = parameters }
       }
 
     dataStore.data
@@ -1625,19 +1661,33 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
     val silenceProcessor = SilenceDetectorAudioProcessor { handleLongSilenceDetected() }
 
     val stereoWidener = StereoWidenerAudioProcessor()
+    val eightDAudioProcessor = EightDAudioProcessor()
 
     runBlocking {
       val skipSilence = dataStore.get(SkipSilenceKey, false)
       val instantSkip = dataStore.get(SkipSilenceInstantKey, false)
       silenceProcessor.instantModeEnabled = skipSilence && instantSkip
       stereoWidener.width = if (dataStore.get(SpatialAudioKey, false)) SPATIAL_AUDIO_WIDTH else 1f
+      eightDAudioProcessor.parameters = EightDAudioParameters(
+        enabled = dataStore.get(EightDAudioEnabledKey, false),
+        mode = EightDMotionMode.values().firstOrNull { it.name == dataStore.get(EightDAudioModeKey, "ORBIT") }
+          ?: EightDMotionMode.ORBIT,
+        rotationSpeed = dataStore.get(EightDAudioSpeedKey, 1f),
+        spatialDepth = dataStore.get(EightDAudioDepthKey, 0.7f),
+        stereoWidth = dataStore.get(EightDAudioWidthKey, 0.5f),
+        bassEnhancement = dataStore.get(EightDAudioBassKey, 0f),
+        reverb = dataStore.get(EightDAudioReverbKey, 0f),
+        delay = dataStore.get(EightDAudioDelayKey, 0f),
+        intensity = dataStore.get(EightDAudioIntensityKey, 0.8f),
+        reverseDirection = dataStore.get(EightDAudioReverseKey, false),
+      )
     }
 
     val player =
       ExoPlayer.Builder(this)
         .setMediaSourceFactory(createMediaSourceFactory())
         .setRenderersFactory(
-          createRenderersFactory(eqProcessor, silenceProcessor, duckProcessor, stereoWidener)
+          createRenderersFactory(eqProcessor, silenceProcessor, duckProcessor, stereoWidener, eightDAudioProcessor)
         )
         .setLoadControl(
           DefaultLoadControl.Builder()
@@ -1667,6 +1717,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
     playerSilenceProcessors[player] = silenceProcessor
     playerDuckProcessors[player] = duckProcessor
     playerStereoWideners[player] = stereoWidener
+    playerEightDAudioProcessors[player] = eightDAudioProcessor
     playerEqProcessors[player] = eqProcessor
 
     player.apply {
@@ -4529,6 +4580,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
     silenceProcessor: SilenceDetectorAudioProcessor,
     duckProcessor: AutomixDuckAudioProcessor,
     stereoWidener: StereoWidenerAudioProcessor,
+    eightDAudioProcessor: EightDAudioProcessor,
   ) =
     object : DefaultRenderersFactory(this) {
       override fun buildAudioSink(
@@ -4546,6 +4598,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
                 duckProcessor,
                 silenceProcessor,
                 stereoWidener,
+                eightDAudioProcessor,
               ),
               SilenceSkippingAudioProcessor(2_000_000, 20_000, 256),
               SonicAudioProcessor(),
@@ -4770,6 +4823,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
     player.removeListener(sleepTimer)
     playerSilenceProcessors.remove(player)
     playerStereoWideners.remove(player)
+    playerEightDAudioProcessors.remove(player)
     playerEqProcessors.remove(player)?.let { dspController.removeAudioProcessor(it) }
 
     player.release()
@@ -5447,6 +5501,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
     playerDuckProcessors.remove(pb.player)
     playerSilenceProcessors.remove(pb.player)
     playerStereoWideners.remove(pb.player)
+    playerEightDAudioProcessors.remove(pb.player)
     playerEqProcessors.remove(pb.player)?.let { dspController.removeAudioProcessor(it) }
     try {
       pb.player.removeListener(secondaryPlayerListener)
@@ -5800,6 +5855,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
     }
     fadingPlayer?.let { playerDuckProcessors.remove(it) }
     fadingPlayer?.let { playerStereoWideners.remove(it) }
+    fadingPlayer?.let { playerEightDAudioProcessors.remove(it) }
     fadingPlayer?.let { playerEqProcessors.remove(it)?.let { eq -> dspController.removeAudioProcessor(eq) } }
     fadingPlayer?.stop()
     fadingPlayer?.clearMediaItems()
