@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main", "feature/spatial-8d" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 

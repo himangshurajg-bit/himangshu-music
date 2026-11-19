@@ -48,6 +48,19 @@
         </intent>
     </queries>
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="http" />
+        </intent>
+    </queries>
+
 
     <application
         android:name=".App"
@@ -422,58 +435,6 @@
             android:icon="@mipmap/ic_launcher_millie"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_millie_round"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".MainActivityHimangshuHeadphones"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/himangshu_music_headphones"
-            android:label="@string/app_name"
-            android:roundIcon="@mipmap/himangshu_music_headphones"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".MainActivityHimangshuAnimeMusic"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/himangshu_music_anime"
-            android:label="@string/app_name"
-            android:roundIcon="@mipmap/himangshu_music_anime"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".MainActivityHimangshuItachiCrimson"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/himangshu_music_itachi_crimson"
-            android:label="@string/app_name"
-            android:roundIcon="@mipmap/himangshu_music_itachi_crimson"
-            android:targetActivity=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".MainActivityHimangshuItachiMoon"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/himangshu_music_itachi_moon"
-            android:label="@string/app_name"
-            android:roundIcon="@mipmap/himangshu_music_itachi_moon"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

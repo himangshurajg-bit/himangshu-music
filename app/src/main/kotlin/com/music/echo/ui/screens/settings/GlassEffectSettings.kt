@@ -69,7 +69,7 @@ fun GlassEffectSettings(
   scrollBehavior: TopAppBarScrollBehavior,
 ) {
   val (globalEnabled, onGlobalEnabledChange) =
-    rememberPreference(LiquidGlassGlobalEnabledKey, defaultValue = true)
+    rememberPreference(LiquidGlassGlobalEnabledKey, defaultValue = false)
   val (vibrancy, onVibrancyChange) = rememberPreference(LiquidGlassVibrancyKey, defaultValue = 1f)
   val (blurRadius, onBlurRadiusChange) =
     rememberPreference(LiquidGlassBlurRadiusKey, defaultValue = 8f)
@@ -134,29 +134,6 @@ fun GlassEffectSettings(
   ) {
     Spacer(
       Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top))
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    val (ambientLightEnabled, onAmbientLightEnabledChange) =
-      rememberPreference(AmbientLightEnabledKey, defaultValue = true)
-
-    Material3SettingsGroup(
-      title = "Live ambient light",
-      items =
-        listOf(
-          Material3SettingsItem(
-            icon = painterResource(R.drawable.music_note),
-            title = { Text("Album-art ambient light") },
-            description = {
-              Text("A subtle, slowly shifting glow follows the currently playing artwork; motion stops when Android animations are turned off.")
-            },
-            trailingContent = {
-              Switch(checked = ambientLightEnabled, onCheckedChange = onAmbientLightEnabledChange)
-            },
-            onClick = { onAmbientLightEnabledChange(!ambientLightEnabled) }
-          )
-        )
     )
 
     Spacer(modifier = Modifier.height(16.dp))

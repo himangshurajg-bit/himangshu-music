@@ -19,11 +19,7 @@ enum class AppIconType(val value: Int) {
   CRAFT(16),
   SADIE(17),
   NEON_GLASS(18),
-  MILLIE_BOBBY_BROWN(19),
-  HIMANGSHU_HEADPHONES(20),
-  HIMANGSHU_ANIME_MUSIC(21),
-  HIMANGSHU_ITACHI_CRIMSON(22),
-  HIMANGSHU_ITACHI_MOON(23)
+  MILLIE_BOBBY_BROWN(19)
 }
 
 object IconUtils {
@@ -45,11 +41,6 @@ object IconUtils {
     val sadie = ComponentName(context, "echo.music.iad1tya.MainActivitySadie")
     val neonGlass = ComponentName(context, "echo.music.iad1tya.MainActivityNeonGlass")
     val millie = ComponentName(context, "echo.music.iad1tya.MainActivityMillie")
-    val headphones = ComponentName(context, "echo.music.iad1tya.MainActivityHimangshuHeadphones")
-    val animeMusic = ComponentName(context, "echo.music.iad1tya.MainActivityHimangshuAnimeMusic")
-    val itachiCrimson =
-      ComponentName(context, "echo.music.iad1tya.MainActivityHimangshuItachiCrimson")
-    val itachiMoon = ComponentName(context, "echo.music.iad1tya.MainActivityHimangshuItachiMoon")
 
     pm.setComponentEnabledSetting(
       dynamic,
@@ -139,34 +130,6 @@ object IconUtils {
     pm.setComponentEnabledSetting(
       millie,
       if (iconType == AppIconType.MILLIE_BOBBY_BROWN) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-      PackageManager.DONT_KILL_APP
-    )
-    pm.setComponentEnabledSetting(
-      headphones,
-      if (iconType == AppIconType.HIMANGSHU_HEADPHONES)
-        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-      PackageManager.DONT_KILL_APP
-    )
-    pm.setComponentEnabledSetting(
-      animeMusic,
-      if (iconType == AppIconType.HIMANGSHU_ANIME_MUSIC)
-        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-      PackageManager.DONT_KILL_APP
-    )
-    pm.setComponentEnabledSetting(
-      itachiCrimson,
-      if (iconType == AppIconType.HIMANGSHU_ITACHI_CRIMSON)
-        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-      PackageManager.DONT_KILL_APP
-    )
-    pm.setComponentEnabledSetting(
-      itachiMoon,
-      if (iconType == AppIconType.HIMANGSHU_ITACHI_MOON)
-        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
       else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
       PackageManager.DONT_KILL_APP
     )

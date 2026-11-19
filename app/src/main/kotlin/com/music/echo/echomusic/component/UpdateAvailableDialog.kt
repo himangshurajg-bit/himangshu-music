@@ -1,6 +1,5 @@
 package echo.music.iad1tya.echomusic.component
 
-import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,6 +17,7 @@ import echo.music.iad1tya.R
 import echo.music.iad1tya.echomusic.updater.ChangelogSection
 import echo.music.iad1tya.ui.utils.parseMarkdownToSections
 import echo.music.iad1tya.ui.utils.parseSimpleMarkdown
+import echo.music.iad1tya.ui.utils.safeOpenUri
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 
 /**
@@ -196,9 +196,7 @@ fun UpdateAvailableDialog(
           Button(
             onClick = {
               onDismiss()
-              val intent =
-                Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/himangshurajg-bit/himangshu-music/releases"))
-              context.startActivity(intent)
+              context.safeOpenUri("https://github.com/himangshurajg-bit/himangshu-music/releases")
             },
             shape = actionShape,
           ) {

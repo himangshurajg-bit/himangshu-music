@@ -27,7 +27,6 @@ Himangshu Music delivers a seamless, premium listening experience by leveraging 
 - [Screenshots](#screenshots)
 - [Features](#features)
 - [Custom Home-Screen Shortcut](#custom-home-screen-shortcut)
-- [8D Stereo Audio](#8d-stereo-audio)
 - [320 kbps Audio Extension](#320-kbps-audio-extension)
 - [Lossless Audio Extension](#lossless-audio-extension)
 - [Installation & Setup](#installation--setup)
@@ -92,7 +91,6 @@ Himangshu Music delivers a seamless, premium listening experience by leveraging 
 - **Data Saver Mode** — Reduce data consumption when streaming on cellular networks.
 - **Seamless Playback** — Switch effortlessly between audio-only and video modes.
 - **Background Playback** — Listen while using other apps or with the screen off.
-- **8D Stereo Audio (experimental)** — Real-time stereo panning modes, width, bass lift, short ambience and delay controls with an exact bypass toggle. This is not HRTF or binaural audio.
 - **Offline Mode** — Download tracks, albums, and playlists via a dedicated download manager.
 - **Crossfade** — Smooth transitions between tracks.
 - **Canvas Animations** — Visual animations while playing music.
@@ -163,14 +161,6 @@ Himangshu Music delivers a seamless, premium listening experience by leveraging 
 Open **Settings → Appearance → App name & icon**. Enter a shortcut name, choose an image to preview it, then tap **Add shortcut to home screen**. Android may ask you to confirm the pin request. The app accepts up to 40 characters; Android's shorter shortcut label is limited to 25 characters, so a launcher may display a shortened name. Images are center-cropped to a square and resized for the shortcut; a square image gives the best result.
 
 This custom name and image apply only to the pinned home-screen shortcut. They do not change the installed app's name in the app drawer or system settings, its package identity, or its regular app icon. The separate preset launcher-icon choices can change the app icon. Pinning depends on launcher support, and each launcher controls how shortcuts are displayed.
-
----
-
-## 8D Stereo Audio
-
-Open **Settings → Player → 8D stereo audio** for the stereo motion modes and controls. The Media3 audio path applies equal-power left/right panning, stereo width, low-frequency enhancement, optional short ambience and echo, smoothed control changes and peak limiting. Turning the feature off returns an unprocessed PCM path.
-
-This is stereo motion, not HRTF, binaural or true 360-degree localization. Mono cannot be spatially panned, multichannel input uses Media3's fallback path, and the detected headset label does not test its stereo response. USB bit-perfect/offload routing and physical audio devices still need testing. See the [8D audio engine notes](docs/8d-audio-engine.md) for architecture, limitations and repeatable checks.
 
 ---
 
