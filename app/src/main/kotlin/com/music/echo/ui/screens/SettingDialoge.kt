@@ -81,6 +81,7 @@ fun SettingDialoge(
       Material3SettingsGroup(
         title = "Account",
         compact = true,
+        enableBackdropGlass = false,
         items =
           buildList {
             add(
@@ -177,6 +178,7 @@ fun SettingDialoge(
         Material3SettingsGroup(
           title = "Preferences",
           compact = true,
+          enableBackdropGlass = false,
           items =
             listOf(
               Material3SettingsItem(
@@ -231,6 +233,7 @@ fun SettingDialoge(
       Material3SettingsGroup(
         title = "App",
         compact = true,
+        enableBackdropGlass = false,
         items =
           listOf(
             Material3SettingsItem(
