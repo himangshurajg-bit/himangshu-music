@@ -110,6 +110,10 @@ fun NavGraphBuilder.navigationBuilder(
 
   composable("ambient_mode") { AmbientModeScreen(navController) }
 
+  composable("focus_modes") { FocusModesScreen(navController) }
+
+  composable("aod_screen") { AodScreen(navController) }
+
   composable("music_flow") { MusicFlowScreen(navController) }
 
   composable(
