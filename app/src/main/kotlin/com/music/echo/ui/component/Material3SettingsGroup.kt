@@ -40,11 +40,12 @@ fun Material3SettingsGroup(
   title: String? = null,
   compact: Boolean = false,
   scrollState: ScrollState? = null,
-  items: List<Material3SettingsItem>
+  items: List<Material3SettingsItem>,
+  enableBackdropGlass: Boolean = true,
 ) {
   val glassConfig = LocalGlassEffectConfig.current
   val glassEnabled = glassConfig.globalEnabled
-  val useBackdropGlass = glassEnabled && isGlassSupported()
+  val useBackdropGlass = enableBackdropGlass && glassEnabled && isGlassSupported()
 
   Column(modifier = Modifier.fillMaxWidth()) {
     title?.let {
