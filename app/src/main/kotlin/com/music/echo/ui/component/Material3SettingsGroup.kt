@@ -35,6 +35,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import echo.music.iad1tya.ui.utils.scrollToOnHighlight
 
+/** Central gate for the expensive backdrop pipeline; kept pure for regression tests. */
+internal fun shouldUseBackdropGlass(
+  enableBackdropGlass: Boolean,
+  globalEnabled: Boolean,
+  sdkInt: Int,
+): Boolean = enableBackdropGlass && globalEnabled && isGlassSupported(sdkInt)
+
 @Composable
 fun Material3SettingsGroup(
   title: String? = null,
@@ -45,7 +52,8 @@ fun Material3SettingsGroup(
 ) {
   val glassConfig = LocalGlassEffectConfig.current
   val glassEnabled = glassConfig.globalEnabled
-  val useBackdropGlass = enableBackdropGlass && glassEnabled && isGlassSupported()
+  val useBackdropGlass =
+    shouldUseBackdropGlass(enableBackdropGlass, glassEnabled, android.os.Build.VERSION.SDK_INT)
 
   Column(modifier = Modifier.fillMaxWidth()) {
     title?.let {
