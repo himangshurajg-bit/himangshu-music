@@ -160,6 +160,8 @@ enum class DownloadQuality {
 
 val DownloadOnWifiOnlyKey = booleanPreferencesKey("downloadOnWifiOnly")
 val DownloadWithMetadataKey = booleanPreferencesKey("downloadWithMetadata")
+val ExternalDownloaderAppKey = stringPreferencesKey("externalDownloaderApp")
+const val DefaultExternalDownloaderPackage = "com.deniscerri.ytdl"
 
 val AudioOffload = booleanPreferencesKey("enableOffload")
 
@@ -357,6 +359,7 @@ val MusicFlowLyricsKey = booleanPreferencesKey("music_flow_lyrics")
 val MusicFlowCellularPrefetchKey = booleanPreferencesKey("music_flow_cellular_prefetch")
 val MusicFlowHideRecentKey = booleanPreferencesKey("music_flow_hide_recent")
 val PreferExtensionAudioKey = booleanPreferencesKey("prefer_extension_audio")
+val PreferredAudioAddonIdKey = stringPreferencesKey("preferred_audio_addon_id")
 
 enum class LibraryViewType {
   LIST,
@@ -496,6 +499,7 @@ enum class PlayerBackgroundStyle {
   GLOW_ANIMATED,
   APPLE_MUSIC,
   LIVE_MESH,
+  LIQUID_GLASS,
 }
 
 val TopSize = stringPreferencesKey("topSize")
@@ -846,6 +850,19 @@ val PreloadNextSongEnabledKey = booleanPreferencesKey("preload_next_song_enabled
 val PreloadNextSongLimitKey = intPreferencesKey("preload_next_song_limit")
 val PreloadLyricsEnabledKey = booleanPreferencesKey("preload_lyrics_enabled")
 
+val LiquidGlassGlobalEnabledKey = booleanPreferencesKey("liquidGlassGlobalEnabled")
+val LiquidGlassTextColorKey = intPreferencesKey("liquidGlassTextColor")
+val LiquidGlassSurfaceTintColorKey = intPreferencesKey("liquidGlassSurfaceTintColor")
+val LiquidGlassSurfaceOpacityKey = floatPreferencesKey("liquidGlassSurfaceOpacity")
+val LiquidGlassVibrancyKey = floatPreferencesKey("liquidGlassVibrancy")
+val LiquidGlassBlurRadiusKey = floatPreferencesKey("liquidGlassBlurRadius")
+val LiquidGlassLensHeightKey = floatPreferencesKey("liquidGlassLensHeight")
+val LiquidGlassLensAmountKey = floatPreferencesKey("liquidGlassLensAmount")
+val LiquidGlassChromaticAberrationKey = booleanPreferencesKey("liquidGlassChromaticAberration")
+val LiquidGlassDepthEffectKey = booleanPreferencesKey("liquidGlassDepthEffect")
+val LiquidGlassPlayerEnabledKey = booleanPreferencesKey("liquidGlassPlayerEnabled")
+val LiquidGlassMiniPlayerEnabledKey = booleanPreferencesKey("liquidGlassMiniPlayerEnabled")
+val LiquidGlassNavBarEnabledKey = booleanPreferencesKey("liquidGlassNavBarEnabled")
 
 val UseFloatingNavBarKey = booleanPreferencesKey("useFloatingNavBar")
 val SavedAccountsKey = stringPreferencesKey("savedAccounts")

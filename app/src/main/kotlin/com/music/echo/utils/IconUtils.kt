@@ -35,7 +35,14 @@ enum class AppIconType(val value: Int) {
   CLEF_MAGENTA_ORANGE(36),
   CLEF_GOLD_BLUE(37),
   CLEF_MONOCHROME(38),
-  CLEF_MONOCHROME_ALT(39)
+  CLEF_MONOCHROME_ALT(39),
+  USER_CLEF_MONOCHROME(40),
+  ITACHI_RED_1(41),
+  BEE_YELLOW(42),
+  CLEF_RED_CIRCLE(43),
+  ITACHI_RED_2(44),
+  ANIME_MUSIC_BLUE(45),
+  HEADPHONES_NEON(46)
 }
 
 object IconUtils {
@@ -73,6 +80,13 @@ object IconUtils {
     val clefGoldBlue = ComponentName(context, "echo.music.iad1tya.MainActivityClefGoldBlue")
     val clefMonochrome = ComponentName(context, "echo.music.iad1tya.MainActivityClefMonochrome")
     val clefMonochromeAlt = ComponentName(context, "echo.music.iad1tya.MainActivityClefMonochromeAlt")
+    val userClefMonochrome = ComponentName(context, "echo.music.iad1tya.MainActivityUserClefMonochrome")
+    val itachiRed1 = ComponentName(context, "echo.music.iad1tya.MainActivityItachiRed1")
+    val beeYellow = ComponentName(context, "echo.music.iad1tya.MainActivityBeeYellow")
+    val clefRedCircle = ComponentName(context, "echo.music.iad1tya.MainActivityClefRedCircle")
+    val itachiRed2 = ComponentName(context, "echo.music.iad1tya.MainActivityItachiRed2")
+    val animeMusicBlue = ComponentName(context, "echo.music.iad1tya.MainActivityAnimeMusicBlue")
+    val headphonesNeon = ComponentName(context, "echo.music.iad1tya.MainActivityHeadphonesNeon")
 
     pm.setComponentEnabledSetting(
       dynamic,
@@ -258,6 +272,48 @@ object IconUtils {
     pm.setComponentEnabledSetting(
       clefMonochromeAlt,
       if (iconType == AppIconType.CLEF_MONOCHROME_ALT) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      userClefMonochrome,
+      if (iconType == AppIconType.USER_CLEF_MONOCHROME) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      itachiRed1,
+      if (iconType == AppIconType.ITACHI_RED_1) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      beeYellow,
+      if (iconType == AppIconType.BEE_YELLOW) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefRedCircle,
+      if (iconType == AppIconType.CLEF_RED_CIRCLE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      itachiRed2,
+      if (iconType == AppIconType.ITACHI_RED_2) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      animeMusicBlue,
+      if (iconType == AppIconType.ANIME_MUSIC_BLUE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      headphonesNeon,
+      if (iconType == AppIconType.HEADPHONES_NEON) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
       else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
       PackageManager.DONT_KILL_APP
     )

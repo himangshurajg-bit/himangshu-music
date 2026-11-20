@@ -542,6 +542,43 @@
     <string name="minutes_label">Minutos</string>
     <string name="seconds_label">Segundos</string>
 
+    <!-- Liquid Glass Effects -->
+    <string name="liquid_glass">Liquid Glass (Beta)</string>
+    <string name="player_background_liquid_glass">Liquid Glass</string>
+    <string name="liquid_glass_settings">Liquid Glass (Beta)</string>
+    <string name="liquid_glass_global_enabled">Activar Liquid Glass</string>
+    <string name="liquid_glass_effects">Efectos</string>
+    <string name="liquid_glass_appearance">Apariencia</string>
+    <string name="liquid_glass_per_component">Por componente</string>
+    <string name="liquid_glass_vibrancy">Intensidad de color (Vibrancy)</string>
+    <string name="liquid_glass_vibrancy_desc">Aumenta la saturación del fondo de cristal</string>
+    <string name="liquid_glass_blur_radius">Radio de desenfoque</string>
+    <string name="liquid_glass_blur_radius_desc">Nivel de desenfoque en la superficie de cristal</string>
+    <string name="liquid_glass_lens_height">Altura de refracción de lente</string>
+    <string name="liquid_glass_lens_amount">Cantidad de refracción de lente</string>
+    <string name="liquid_glass_chromatic_aberration">Aberración cromática</string>
+    <string name="liquid_glass_depth_effect">Efecto de profundidad</string>
+    <string name="liquid_glass_surface_opacity">Opacidad de la superficie</string>
+    <string name="liquid_glass_surface_opacity_desc">Opacidad de la capa de tinte del cristal para mejorar la legibilidad</string>
+    <string name="liquid_glass_surface_tint">Tinte de la superficie</string>
+    <string name="liquid_glass_surface_tint_desc">Color de tinte aplicado a la superficie de cristal</string>
+    <string name="liquid_glass_text_color">Color del texto sobre cristal</string>
+    <string name="liquid_glass_text_color_desc">Color del texto utilizado sobre superficies de cristal</string>
+    <string name="liquid_glass_player">Reproductor de cristal</string>
+    <string name="liquid_glass_mini_player">Minirreproductor de cristal</string>
+    <string name="liquid_glass_nav_bar">Barra de navegación de cristal</string>
+    <string name="liquid_glass_performance_warning">Renderizar Liquid Glass exige muchos recursos y puede reducir la fluidez y la duración de batería en algunos dispositivos</string>
+    <string name="liquid_glass_requires_floating_nav_bar">Requiere tener activada la barra de navegación flotante</string>
+    <string name="liquid_glass_global_enabled_desc">Activa o desactiva Liquid Glass</string>
+    <string name="liquid_glass_lens_height_desc">Ajusta la altura de refracción de lente</string>
+    <string name="liquid_glass_lens_amount_desc">Ajusta la cantidad de refracción de lente</string>
+    <string name="liquid_glass_chromatic_aberration_desc">Ajusta las opciones de aberración cromática</string>
+    <string name="liquid_glass_depth_effect_desc">Ajusta las opciones del efecto de profundidad</string>
+    <string name="liquid_glass_player_desc">Gestiona los ajustes del reproductor de cristal</string>
+    <string name="liquid_glass_mini_player_desc">Gestiona los ajustes del minirreproductor de cristal</string>
+    <string name="liquid_glass_nav_bar_desc">Gestiona los ajustes de la barra de navegación de cristal</string>
+    <string name="liquid_glass_settings_desc">Gestiona los ajustes de Liquid Glass (Beta)</string>
+    <string name="liquid_glass_desc">Gestiona los ajustes de Liquid Glass (Beta)</string>
 
     <string name="nav_bar_style">Estilo de barra de navegación</string>
     <string name="floating_nav_bar">Barra de navegación estilo Apple</string>

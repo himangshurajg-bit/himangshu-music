@@ -1149,11 +1149,7 @@ fun Queue(
                     coroutineScope.launch {
                       val snackbarResult =
                         snackbarHostState.showSnackbar(
-                          message =
-                            context.getString(
-                              R.string.removed_song_from_playlist,
-                              currentItem.mediaItem.metadata?.title,
-                            ),
+                          message = context.getString(R.string.removed_from_queue),
                           actionLabel = context.getString(R.string.undo),
                           duration = SnackbarDuration.Short,
                         )
@@ -1491,7 +1487,8 @@ private fun PlayerQueueButton(
             PlayerBackgroundStyle.GLOW_ANIMATED,
             PlayerBackgroundStyle.APPLE_MUSIC,
             PlayerBackgroundStyle.LIVE_MESH,
-              PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            PlayerBackgroundStyle.LIQUID_GLASS -> Color.White
+            PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
           }
         }
       val finalTint = if (enabled) baseTint else baseTint.copy(alpha = 0.5f)

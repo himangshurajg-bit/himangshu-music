@@ -216,6 +216,48 @@ fun AppIconSettingsScreen(
           R.mipmap.clef_monochrome_alt
         ),
         AppIconOption(
+          AppIconType.USER_CLEF_MONOCHROME,
+          "Black & White Clef",
+          "Monochrome treble clef supplied by you",
+          R.mipmap.user_clef_mono
+        ),
+        AppIconOption(
+          AppIconType.ITACHI_RED_1,
+          "Itachi Red Moon I",
+          "Red-moon Itachi artwork supplied by you",
+          R.mipmap.itachi_red_1
+        ),
+        AppIconOption(
+          AppIconType.BEE_YELLOW,
+          "Yellow Bee",
+          "Yellow bee logo supplied by you",
+          R.mipmap.bee_yellow
+        ),
+        AppIconOption(
+          AppIconType.CLEF_RED_CIRCLE,
+          "Red Circle Clef",
+          "Red treble clef in a circle supplied by you",
+          R.mipmap.clef_red_circle
+        ),
+        AppIconOption(
+          AppIconType.ITACHI_RED_2,
+          "Itachi Red Moon II",
+          "Second red-moon Itachi artwork supplied by you",
+          R.mipmap.itachi_red_2
+        ),
+        AppIconOption(
+          AppIconType.ANIME_MUSIC_BLUE,
+          "Blue-Purple Anime Music",
+          "Blue-purple anime music scene supplied by you",
+          R.mipmap.anime_music_blue
+        ),
+        AppIconOption(
+          AppIconType.HEADPHONES_NEON,
+          "Neon Music Headphones",
+          "Neon blue-purple headphones and music icon supplied by you",
+          R.mipmap.headphones_neon
+        ),
+        AppIconOption(
           AppIconType.CLEF_SILVER_BLUE,
           "Clef Silver Blue",
           "Silver, blue and purple treble clef",
