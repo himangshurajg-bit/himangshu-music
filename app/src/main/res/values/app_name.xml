@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices retained. -->
+<!-- Updated for the RajTune app name on 2026-11-20; upstream GPL-3.0 notices retained. -->
 <resources>
-    <string name="app_name">Himangshu Music</string>
+    <string name="app_name">RajTune</string>
 </resources>

@@ -71,7 +71,7 @@ object CustomHomeShortcut {
         addCategory(Intent.CATEGORY_LAUNCHER)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
       } ?: return false
-    val label = name.trim().take(40).ifBlank { "Himangshu Music" }
+    val label = name.trim().take(40).ifBlank { "RajTune" }
     val shortcut =
       ShortcutInfo.Builder(context, SHORTCUT_ID)
         .setShortLabel(label.take(25))

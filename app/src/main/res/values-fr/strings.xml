@@ -3,7 +3,7 @@
 <!-- Upstream InnerTune strings -->
 <!-- Do not add new features here -->
 <!-- Try to re-use strings here, but be careful on its usage e.g. verb vs noun -->
-<!-- "InnerTune" is replaced with "Himangshu Music" -->
+<!-- "InnerTune" is replaced with "RajTune" -->
 <!-- Translators: Do not modify this file for translations, use InnerTune's Weblate instead. -->
 
 <resources>
@@ -436,7 +436,7 @@
     <string name="restore_failed">Échec de la restauration de la sauvegarde</string>
 
     <string name="discord_integration">Intégration Discord</string>
-    <string name="discord_information">Himangshu Music utilise la bibliothèque KizzyRPC pour définir le statut de votre compte Discord. Cela implique l\'utilisation de la passerelle Discord, ce qui peut être considéré comme une violation des CGU de Discord. Cependant, aucun bannissement de compte n\'a été signalé pour cette raison. À utiliser à vos propres risques.\nHimangshu Music ne fera qu\'extraire votre jeton et tout le reste est stocké localement.</string>
+    <string name="discord_information">RajTune utilise la bibliothèque KizzyRPC pour définir le statut de votre compte Discord. Cela implique l\'utilisation de la passerelle Discord, ce qui peut être considéré comme une violation des CGU de Discord. Cependant, aucun bannissement de compte n\'a été signalé pour cette raison. À utiliser à vos propres risques.\nRajTune ne fera qu\'extraire votre jeton et tout le reste est stocké localement.</string>
     <string name="dismiss">Ignorer</string>
     <string name="options">Options</string>
     <string name="preview">Aperçu</string>
@@ -464,7 +464,7 @@
     <string name="listen_together_smart_resync">Resynchronisation réseau intelligente</string>
     <string name="listen_together_smart_resync_desc">Rattraper automatiquement la lecture de l\'hôte après une perte de connexion</string>
     <string name="spotify_import_title">Importer depuis Spotify</string>
-    <string name="spotify_import_desc">Connectez Spotify, choisissez des playlists et dupliquez-les dans vos playlists locales Himangshu Music.</string>
+    <string name="spotify_import_desc">Connectez Spotify, choisissez des playlists et dupliquez-les dans vos playlists locales RajTune.</string>
     <string name="spotify_connect">Connecter Spotify</string>
     <string name="spotify_refresh">Actualiser la bibliothèque Spotify</string>
     <string name="spotify_select_sources">Sélectionner les playlists Spotify</string>
@@ -517,7 +517,7 @@
     <string name="recognition_notification_processing">Identification en cours…</string>
     <string name="recognition_notification_no_match">Aucun résultat trouvé</string>
     <string name="recognition_notification_failed">Échec de la reconnaissance</string>
-    <string name="listen_on_echo_music">Écouter sur Himangshu Music</string>
+    <string name="listen_on_echo_music">Écouter sur RajTune</string>
     <string name="qs_tile_music_recognizer">Reconnaître la musique</string>
     <string name="listenbrainz_scrobbling">Scrobbling ListenBrainz</string>
     <string name="listenbrainz_scrobbling_description">Soumettre automatiquement vos titres écoutés à ListenBrainz</string>

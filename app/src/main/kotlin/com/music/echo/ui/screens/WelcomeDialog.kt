@@ -1,4 +1,4 @@
-// Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices and attribution retained.
+// Modified for the RajTune rebrand on 2026-11-20; upstream GPL-3.0 notices and attribution retained.
 package echo.music.iad1tya.ui.screens
 
 import androidx.compose.animation.core.Spring
@@ -62,18 +62,18 @@ fun WelcomeDialog(onDismissRequest: () -> Unit) {
           WelcomeActionRow(
             icon = painterResource(R.drawable.website),
             title = "Himangshu Raj Gogoi",
-            subtitle = "Himangshu Music fork maintainer",
+            subtitle = "RajTune fork maintainer",
           )
         }
 
-        WelcomeSectionCard(title = "Support Himangshu Music") {
+        WelcomeSectionCard(title = "Support RajTune") {
           WelcomeActionRow(
             icon = painterResource(R.drawable.upi_new),
             title = "Support via UPI",
             subtitle = "himangshurajg@okicici",
             onClick = {
               uriHandler.openUri(
-                "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&tn=Support%20Himangshu%20Music"
+                "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&tn=Support%20RajTune"
               )
             }
           )
@@ -153,7 +153,7 @@ private fun WelcomeAppCard() {
       )
       Spacer(Modifier.height(4.dp))
       Text(
-        text = "Himangshu",
+        text = "RajTune",
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface,

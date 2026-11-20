@@ -1,8 +1,10 @@
 package echo.music.iad1tya.ui.menu
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -360,6 +362,33 @@ fun YouTubeSongMenu(
                   }
                 context.startActivity(Intent.createChooser(intent, null))
                 onDismiss()
+              }
+            ),
+            NewAction(
+              icon = {
+                Icon(
+                  painter = painterResource(R.drawable.download),
+                  contentDescription = null,
+                  modifier = Modifier.size(28.dp),
+                  tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+              },
+              text = stringResource(R.string.download_with_ytdlnis),
+              onClick = {
+                onDismiss()
+                val intent =
+                  Intent(Intent.ACTION_SEND).apply {
+                    type = "text/*"
+                    putExtra(Intent.EXTRA_TEXT, song.shareLink)
+                    putExtra("TYPE", "audio")
+                    putExtra("BACKGROUND", false)
+                    setPackage("com.deniscerri.ytdl")
+                  }
+                try {
+                  context.startActivity(intent)
+                } catch (_: ActivityNotFoundException) {
+                  Toast.makeText(context, R.string.ytdlnis_not_installed, Toast.LENGTH_LONG).show()
+                }
               }
             )
           ),

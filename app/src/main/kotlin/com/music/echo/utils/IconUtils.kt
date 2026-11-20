@@ -19,7 +19,23 @@ enum class AppIconType(val value: Int) {
   CRAFT(16),
   SADIE(17),
   NEON_GLASS(18),
-  MILLIE_BOBBY_BROWN(19)
+  MILLIE_BOBBY_BROWN(19),
+  CLEF_SILVER_BLUE(24),
+  CLEF_VIOLET_BLUE(25),
+  CLEF_SILVER(26),
+  CLEF_CRIMSON(27),
+  CLEF_GOLD(28),
+  CLEF_ELECTRIC_BLUE(29),
+  CLEF_AMETHYST(30),
+  CLEF_MIDNIGHT(31),
+  CLEF_OPAL(32),
+  CLEF_TURQUOISE(33),
+  CLEF_ROYAL_BLUE(34),
+  CLEF_ROSE_COPPER(35),
+  CLEF_MAGENTA_ORANGE(36),
+  CLEF_GOLD_BLUE(37),
+  CLEF_MONOCHROME(38),
+  CLEF_MONOCHROME_ALT(39)
 }
 
 object IconUtils {
@@ -41,6 +57,22 @@ object IconUtils {
     val sadie = ComponentName(context, "echo.music.iad1tya.MainActivitySadie")
     val neonGlass = ComponentName(context, "echo.music.iad1tya.MainActivityNeonGlass")
     val millie = ComponentName(context, "echo.music.iad1tya.MainActivityMillie")
+    val clefSilverBlue = ComponentName(context, "echo.music.iad1tya.MainActivityClefSilverBlue")
+    val clefVioletBlue = ComponentName(context, "echo.music.iad1tya.MainActivityClefVioletBlue")
+    val clefSilver = ComponentName(context, "echo.music.iad1tya.MainActivityClefSilver")
+    val clefCrimson = ComponentName(context, "echo.music.iad1tya.MainActivityClefCrimson")
+    val clefGold = ComponentName(context, "echo.music.iad1tya.MainActivityClefGold")
+    val clefElectricBlue = ComponentName(context, "echo.music.iad1tya.MainActivityClefElectricBlue")
+    val clefAmethyst = ComponentName(context, "echo.music.iad1tya.MainActivityClefAmethyst")
+    val clefMidnight = ComponentName(context, "echo.music.iad1tya.MainActivityClefMidnight")
+    val clefOpal = ComponentName(context, "echo.music.iad1tya.MainActivityClefOpal")
+    val clefTurquoise = ComponentName(context, "echo.music.iad1tya.MainActivityClefTurquoise")
+    val clefRoyalBlue = ComponentName(context, "echo.music.iad1tya.MainActivityClefRoyalBlue")
+    val clefRoseCopper = ComponentName(context, "echo.music.iad1tya.MainActivityClefRoseCopper")
+    val clefMagentaOrange = ComponentName(context, "echo.music.iad1tya.MainActivityClefMagentaOrange")
+    val clefGoldBlue = ComponentName(context, "echo.music.iad1tya.MainActivityClefGoldBlue")
+    val clefMonochrome = ComponentName(context, "echo.music.iad1tya.MainActivityClefMonochrome")
+    val clefMonochromeAlt = ComponentName(context, "echo.music.iad1tya.MainActivityClefMonochromeAlt")
 
     pm.setComponentEnabledSetting(
       dynamic,
@@ -130,6 +162,102 @@ object IconUtils {
     pm.setComponentEnabledSetting(
       millie,
       if (iconType == AppIconType.MILLIE_BOBBY_BROWN) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefSilverBlue,
+      if (iconType == AppIconType.CLEF_SILVER_BLUE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefVioletBlue,
+      if (iconType == AppIconType.CLEF_VIOLET_BLUE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefSilver,
+      if (iconType == AppIconType.CLEF_SILVER) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefCrimson,
+      if (iconType == AppIconType.CLEF_CRIMSON) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefGold,
+      if (iconType == AppIconType.CLEF_GOLD) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefElectricBlue,
+      if (iconType == AppIconType.CLEF_ELECTRIC_BLUE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefAmethyst,
+      if (iconType == AppIconType.CLEF_AMETHYST) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefMidnight,
+      if (iconType == AppIconType.CLEF_MIDNIGHT) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefOpal,
+      if (iconType == AppIconType.CLEF_OPAL) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefTurquoise,
+      if (iconType == AppIconType.CLEF_TURQUOISE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefRoyalBlue,
+      if (iconType == AppIconType.CLEF_ROYAL_BLUE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefRoseCopper,
+      if (iconType == AppIconType.CLEF_ROSE_COPPER) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefMagentaOrange,
+      if (iconType == AppIconType.CLEF_MAGENTA_ORANGE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefGoldBlue,
+      if (iconType == AppIconType.CLEF_GOLD_BLUE) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefMonochrome,
+      if (iconType == AppIconType.CLEF_MONOCHROME) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+      else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+      PackageManager.DONT_KILL_APP
+    )
+    pm.setComponentEnabledSetting(
+      clefMonochromeAlt,
+      if (iconType == AppIconType.CLEF_MONOCHROME_ALT) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
       else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
       PackageManager.DONT_KILL_APP
     )

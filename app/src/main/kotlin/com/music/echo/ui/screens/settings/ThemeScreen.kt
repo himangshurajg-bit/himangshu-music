@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -76,7 +77,9 @@ import echo.music.iad1tya.constants.IsMonochromeThemeKey
 import echo.music.iad1tya.constants.PureBlackKey
 import echo.music.iad1tya.constants.PureBlackMiniPlayerKey
 import echo.music.iad1tya.constants.SelectedThemeColorKey
+import echo.music.iad1tya.constants.SelectedThemePaletteKey
 import echo.music.iad1tya.ui.theme.DefaultThemeColor
+import echo.music.iad1tya.ui.theme.MusicThemePalette
 import echo.music.iad1tya.utils.rememberEnumPreference
 import echo.music.iad1tya.utils.rememberPreference
 
@@ -97,13 +100,23 @@ fun ThemeScreen(navController: NavController, highlightKey: String? = null) {
   val (selectedThemeColorInt, onSelectedThemeColorChange) =
     rememberPreference(SelectedThemeColorKey, DefaultThemeColor.toArgb())
   val (_, onDynamicThemeChange) = rememberPreference(DynamicThemeKey, defaultValue = true)
+  val (selectedPaletteId, onSelectedPaletteChange) =
+    rememberPreference(SelectedThemePaletteKey, "")
 
   val selectedThemeColor = Color(selectedThemeColorInt)
 
   val handleColorSelection: (Color) -> Unit = { color ->
     onMonochromeChange(false)
+    onSelectedPaletteChange("")
     onSelectedThemeColorChange(color.toArgb())
     onDynamicThemeChange(color == DefaultThemeColor)
+  }
+
+  val handlePaletteSelection: (MusicThemePalette) -> Unit = { palette ->
+    onMonochromeChange(false)
+    onSelectedPaletteChange(palette.id)
+    onSelectedThemeColorChange(palette.lightPrimary.toArgb())
+    onDynamicThemeChange(false)
   }
 
   Scaffold(
@@ -250,6 +263,98 @@ fun ThemeScreen(navController: NavController, highlightKey: String? = null) {
           fontWeight = FontWeight.Bold,
           modifier = Modifier.padding(bottom = 16.dp, start = 4.dp)
         )
+
+        Card(
+          modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp),
+          shape = RoundedCornerShape(28.dp),
+          colors =
+            CardDefaults.cardColors(
+              containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.6f)
+            ),
+          elevation = CardDefaults.cardElevation(0.dp),
+          border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+        ) {
+          Column(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+          ) {
+            Text(
+              text = "Personal AI palettes",
+              style = MaterialTheme.typography.titleMedium,
+              fontWeight = FontWeight.SemiBold,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+              text = "Choose Aurora, Solar, Deep Space, Forest, or Crimson.",
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+              MusicThemePalette.all.chunked(3).forEach { rowPalettes ->
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                  rowPalettes.forEach { palette ->
+                    val selected = selectedPaletteId == palette.id
+                    Card(
+                      modifier =
+                        Modifier.weight(1f)
+                          .clickable { handlePaletteSelection(palette) },
+                      shape = RoundedCornerShape(16.dp),
+                      colors =
+                        CardDefaults.cardColors(
+                          containerColor =
+                            if (selected)
+                              palette.lightPrimary.copy(alpha = 0.10f)
+                            else MaterialTheme.colorScheme.surface
+                        ),
+                      elevation = CardDefaults.cardElevation(0.dp),
+                      border =
+                        BorderStroke(
+                          if (selected) 2.dp else 1.dp,
+                          if (selected) palette.lightPrimary
+                          else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+                        )
+                    ) {
+                      Column(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 9.dp, horizontal = 4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                      ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                          listOf(palette.lightPrimary, palette.lightSecondary, palette.lightTertiary)
+                            .forEach { swatch ->
+                              Box(
+                                modifier =
+                                  Modifier.size(14.dp)
+                                    .clip(RoundedCornerShape(5.dp))
+                                    .background(swatch)
+                              )
+                            }
+                        }
+                        Text(
+                          text = palette.name,
+                          style = MaterialTheme.typography.labelMedium,
+                          fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                          color = MaterialTheme.colorScheme.onSurface,
+                          maxLines = 1
+                        )
+                        Text(
+                          text = if (selected) "Selected" else palette.description,
+                          style = MaterialTheme.typography.labelSmall,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant,
+                          maxLines = 1
+                        )
+                      }
+                    }
+                  }
+                  repeat(3 - rowPalettes.size) { Spacer(modifier = Modifier.weight(1f)) }
+                }
+              }
+            }
+          }
+        }
 
         Card(
           modifier = Modifier.fillMaxWidth(),

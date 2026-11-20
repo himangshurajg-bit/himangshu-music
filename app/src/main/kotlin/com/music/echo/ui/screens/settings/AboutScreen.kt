@@ -1,4 +1,4 @@
-// Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices and attribution retained.
+// Modified for the RajTune rebrand on 2026-11-20; upstream GPL-3.0 notices and attribution retained.
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
 package echo.music.iad1tya.ui.screens.settings
@@ -144,7 +144,7 @@ fun AboutScreen(
       if (contributors.isNotEmpty()) {
         item {
           Column(modifier = Modifier.fillMaxWidth()) {
-            echo.music.iad1tya.ui.component.PreferenceGroupTitle(title = "Himangshu Music contributors")
+            echo.music.iad1tya.ui.component.PreferenceGroupTitle(title = "RajTune contributors")
             Row(
               modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
               horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -173,7 +173,7 @@ fun AboutScreen(
               Material3SettingsItem(
                 icon = painterResource(R.drawable.website),
                 title = { Text("Himangshu Raj Gogoi") },
-                description = { Text("Maintainer of this Himangshu Music fork") },
+                description = { Text("Maintainer of this RajTune fork") },
               )
             )
         )
@@ -181,7 +181,7 @@ fun AboutScreen(
 
       item {
         Material3SettingsGroup(
-          title = "Support Himangshu Music",
+          title = "Support RajTune",
           items =
             listOf(
               Material3SettingsItem(
@@ -190,7 +190,7 @@ fun AboutScreen(
                 description = { Text("himangshurajg@okicici") },
                 onClick = {
                   uriHandler.openUri(
-                    "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&tn=Support%20Himangshu%20Music"
+                    "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&tn=Support%20RajTune"
                   )
                 }
               )
@@ -205,7 +205,7 @@ fun AboutScreen(
             listOf(
               Material3SettingsItem(
                 icon = painterResource(R.drawable.github),
-                title = { Text("Himangshu Music on GitHub") },
+                title = { Text("RajTune on GitHub") },
                 description = { Text("Source code and releases") },
                 onClick = { uriHandler.openUri("https://github.com/himangshurajg-bit/himangshu-music") }
               ),

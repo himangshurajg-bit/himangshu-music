@@ -274,7 +274,7 @@ fun DiscordSettings(
   val (button2Label) =
     rememberPreference(
       key = DiscordActivityButton2LabelKey,
-      defaultValue = "Go to Himangshu Music",
+      defaultValue = "Go to RajTune",
     )
   val (button2Enabled) =
     rememberPreference(
@@ -1174,7 +1174,7 @@ fun RichPresence(
   button1Enabled: Boolean = true,
   button1UrlSource: String = "songurl",
   button1CustomUrl: String = "",
-  button2Label: String = "Go to Himangshu Music",
+  button2Label: String = "Go to RajTune",
   button2Enabled: Boolean = true,
   button2UrlSource: String = "custom",
   button2CustomUrl: String = "https://github.com/himangshurajg-bit/himangshu-music",

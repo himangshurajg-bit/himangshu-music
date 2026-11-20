@@ -136,7 +136,7 @@ fun ChangelogScreen(
           val changelogUrl =
             URL("https://github.com/himangshurajg-bit/himangshu-music/releases/download/$tag/changelog.json")
           val connection = changelogUrl.openConnection() as HttpURLConnection
-          connection.setRequestProperty("User-Agent", "Himangshu-Music-Changelog-App")
+          connection.setRequestProperty("User-Agent", "RajTune-Changelog-App")
           connection.setRequestProperty("Accept", "application/json")
 
           if (connection.responseCode == 200) {
@@ -212,7 +212,7 @@ fun ChangelogScreen(
       try {
         val releasesUrl = URL("https://api.github.com/repos/himangshurajg-bit/himangshu-music/releases")
         val connection = releasesUrl.openConnection() as HttpURLConnection
-        connection.setRequestProperty("User-Agent", "Himangshu-Music-Changelog-App")
+        connection.setRequestProperty("User-Agent", "RajTune-Changelog-App")
         connection.setRequestProperty("Accept", "application/vnd.github+json")
 
         if (connection.responseCode == 200) {

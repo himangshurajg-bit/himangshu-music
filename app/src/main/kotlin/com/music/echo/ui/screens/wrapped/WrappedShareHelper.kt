@@ -1,4 +1,4 @@
-// Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices and attribution retained.
+// Modified for the RajTune rebrand on 2026-11-20; upstream GPL-3.0 notices and attribution retained.
 package com.music.echo.ui.screens.wrapped
 
 import android.content.Context
@@ -188,7 +188,7 @@ object WrappedShareHelper {
       color = 0x24FFFFFF.toInt()
     }
 
-    // 2. Header: Himangshu wordmark + 2026 WRAPPED
+    // 2. Header: RajTune wordmark + 2026 WRAPPED
     try {
       val logoDrawable = androidx.core.content.ContextCompat.getDrawable(context, R.drawable.ic_launcher_nobg)
       if (logoDrawable != null) {
@@ -209,7 +209,7 @@ object WrappedShareHelper {
       letterSpacing = -0.04f
       typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
-    canvas.drawText("Himangshu", marginX + 70f, 156f, wordmarkPaint)
+    canvas.drawText("RajTune", marginX + 70f, 156f, wordmarkPaint)
 
     val yearPaint = Paint().apply {
       isAntiAlias = true
@@ -486,7 +486,7 @@ object WrappedShareHelper {
     }
     canvas.drawText("${data.uniqueSongsCount} SONGS PLAYED", marginX, trioY, statTrioPaint)
     canvas.drawText("${data.uniqueArtistsCount} ARTISTS DISCOVERED", marginX + 330f, trioY, statTrioPaint)
-    canvas.drawText("HIMANGSHU MUSIC", marginX + 710f, trioY, statTrioAccentPaint)
+    canvas.drawText("RajTune", marginX + 710f, trioY, statTrioAccentPaint)
 
     // 8. Watermark Footer
     val footerPaint = Paint().apply {
@@ -498,7 +498,7 @@ object WrappedShareHelper {
       typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
     canvas.drawText(
-      "MADE WITH HIMANGSHU MUSIC • ${data.yearLabel} REPLAY",
+      "MADE WITH RajTune • ${data.yearLabel} REPLAY",
       width / 2f,
       1750f,
       footerPaint
@@ -510,11 +510,11 @@ object WrappedShareHelper {
         ComposeToImage.saveBitmapAsFile(
           context = context,
           bitmap = bitmap,
-          fileName = "Himangshu_Wrapped_${data.yearLabel}_${System.currentTimeMillis()}"
+          fileName = "RajTune_Wrapped_${data.yearLabel}_${System.currentTimeMillis()}"
         )
       } catch (_: Exception) {
         val cachePath = java.io.File(context.cacheDir, "images").apply { mkdirs() }
-        val imageFile = java.io.File(cachePath, "Himangshu_Wrapped_${System.currentTimeMillis()}.png")
+        val imageFile = java.io.File(cachePath, "RajTune_Wrapped_${System.currentTimeMillis()}.png")
         java.io.FileOutputStream(imageFile).use { out ->
           bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
         }
@@ -526,11 +526,11 @@ object WrappedShareHelper {
         putExtra(Intent.EXTRA_STREAM, uri)
         putExtra(
           Intent.EXTRA_TEXT,
-          "Here is my ${data.yearLabel} Wrapped on Himangshu! 🎵\nTop Song: ${data.topSong?.title ?: "Various"}\nTop Artist: ${data.topArtist?.title ?: "Various"}\nPersona: ${data.dominantVibe}"
+          "Here is my ${data.yearLabel} Wrapped on RajTune! 🎵\nTop Song: ${data.topSong?.title ?: "Various"}\nTop Artist: ${data.topArtist?.title ?: "Various"}\nPersona: ${data.dominantVibe}"
         )
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
       }
-      val chooser = Intent.createChooser(intent, "Share Himangshu Wrapped").apply {
+      val chooser = Intent.createChooser(intent, "Share RajTune Wrapped").apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
       context.startActivity(chooser)

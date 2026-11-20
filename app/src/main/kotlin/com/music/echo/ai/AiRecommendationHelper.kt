@@ -34,7 +34,8 @@ object AiRecommendationHelper {
       .writeTimeout(30, TimeUnit.SECONDS)
       .build()
 
-  private const val PLAYLIST_NAME = "From your taste by Himangshu Music"
+  private const val PLAYLIST_NAME = "From your taste by RajTune"
+  private const val LEGACY_PLAYLIST_NAME = "From your taste by Himangshu Music"
 
   suspend fun generateRecommendations(context: Context, onLog: (suspend (String) -> Unit)? = null) =
     withContext(Dispatchers.IO) {
@@ -181,12 +182,19 @@ object AiRecommendationHelper {
 
       // 4. Update Playlist
       onLog?.invoke("Updating playlist...")
-      var playlist =
+      val currentPlaylist =
         database
           .searchPlaylists(PLAYLIST_NAME)
           .firstOrNull()
           ?.find { it.playlist.name == PLAYLIST_NAME }
           ?.playlist
+      val legacyPlaylist =
+        database
+          .searchPlaylists(LEGACY_PLAYLIST_NAME)
+          .firstOrNull()
+          ?.find { it.playlist.name == LEGACY_PLAYLIST_NAME }
+          ?.playlist
+      var playlist = currentPlaylist ?: legacyPlaylist
       if (playlist == null) {
         playlist =
           PlaylistEntity(
@@ -197,6 +205,10 @@ object AiRecommendationHelper {
           )
         database.insert(playlist)
       } else {
+        if (playlist.name == LEGACY_PLAYLIST_NAME) {
+          playlist = playlist.copy(name = PLAYLIST_NAME, lastUpdateTime = java.time.LocalDateTime.now())
+          database.update(playlist)
+        }
         // Clear existing songs in playlist
         database.clearPlaylist(playlist.id)
       }

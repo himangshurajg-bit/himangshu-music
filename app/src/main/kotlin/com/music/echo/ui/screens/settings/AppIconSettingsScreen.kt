@@ -82,7 +82,7 @@ fun AppIconSettingsScreen(
   val coroutineScope = rememberCoroutineScope()
   val context = LocalContext.current
   val (shortcutName, onShortcutNameChange) =
-    echo.music.iad1tya.utils.rememberPreference(CustomShortcutNameKey, "Himangshu Music")
+    echo.music.iad1tya.utils.rememberPreference(CustomShortcutNameKey, "RajTune")
   val (shortcutIconPath, onShortcutIconPathChange) =
     echo.music.iad1tya.utils.rememberPreference(CustomShortcutIconPathKey, "")
 
@@ -193,9 +193,105 @@ fun AppIconSettingsScreen(
         ),
         AppIconOption(
           AppIconType.DEFAULT,
-          "New Icon",
-          "The standard vibrant icon",
+          "Coral & White Clef",
+          "Pale treble clef on a coral-red tile",
           R.mipmap.ic_launcher
+        ),
+        AppIconOption(
+          AppIconType.CLEF_GOLD_BLUE,
+          "Gold & Blue Clef",
+          "Gold-and-blue treble clef on a vinyl-inspired badge",
+          R.mipmap.clef_gold_blue
+        ),
+        AppIconOption(
+          AppIconType.CLEF_MONOCHROME,
+          "Mono Clef",
+          "White treble clef on black",
+          R.mipmap.clef_monochrome
+        ),
+        AppIconOption(
+          AppIconType.CLEF_MONOCHROME_ALT,
+          "Mono Clef Alt",
+          "Alternate white treble-clef design on black",
+          R.mipmap.clef_monochrome_alt
+        ),
+        AppIconOption(
+          AppIconType.CLEF_SILVER_BLUE,
+          "Clef Silver Blue",
+          "Silver, blue and purple treble clef",
+          R.mipmap.clef_silver_blue
+        ),
+        AppIconOption(
+          AppIconType.CLEF_VIOLET_BLUE,
+          "Clef Violet Blue",
+          "Violet-blue glowing treble clef",
+          R.mipmap.clef_violet_blue
+        ),
+        AppIconOption(
+          AppIconType.CLEF_SILVER,
+          "Clef Silver",
+          "Polished silver treble clef",
+          R.mipmap.clef_silver
+        ),
+        AppIconOption(
+          AppIconType.CLEF_CRIMSON,
+          "Clef Crimson",
+          "Bright red treble clef",
+          R.mipmap.clef_crimson
+        ),
+        AppIconOption(
+          AppIconType.CLEF_GOLD,
+          "Clef Gold",
+          "Golden treble clef",
+          R.mipmap.clef_gold
+        ),
+        AppIconOption(
+          AppIconType.CLEF_ELECTRIC_BLUE,
+          "Clef Electric Blue",
+          "Bright electric-blue treble clef",
+          R.mipmap.clef_electric_blue
+        ),
+        AppIconOption(
+          AppIconType.CLEF_AMETHYST,
+          "Clef Amethyst",
+          "Faceted purple-pink treble clef",
+          R.mipmap.clef_amethyst
+        ),
+        AppIconOption(
+          AppIconType.CLEF_MIDNIGHT,
+          "Clef Midnight",
+          "Dark purple treble clef",
+          R.mipmap.clef_midnight
+        ),
+        AppIconOption(
+          AppIconType.CLEF_OPAL,
+          "Clef Opal",
+          "Iridescent white treble clef",
+          R.mipmap.clef_opal
+        ),
+        AppIconOption(
+          AppIconType.CLEF_TURQUOISE,
+          "Clef Turquoise",
+          "Turquoise-cyan treble clef",
+          R.mipmap.clef_turquoise
+        ),
+        AppIconOption(
+          AppIconType.CLEF_ROYAL_BLUE,
+          "Clef Royal Blue",
+          "Deep blue treble clef",
+          R.mipmap.clef_royal_blue
+        ),
+        AppIconOption(
+          AppIconType.CLEF_ROSE_COPPER,
+          "Clef Rose Copper",
+          "Rose-copper treble clef",
+          R.mipmap.clef_rose_copper
+        ),
+        AppIconOption(
+          AppIconType.CLEF_MAGENTA_ORANGE,
+          "Clef Magenta Orange",
+          "Magenta-orange treble clef",
+          R.mipmap.clef_magenta_orange
         ),
         AppIconOption(AppIconType.POOKIE, "Pookie Icon", "A Cute Pink icon", R.mipmap.pookie_icon),
         AppIconOption(
@@ -222,24 +318,7 @@ fun AppIconSettingsScreen(
           "Millie Bobby Brown",
           "Millie Bobby Brown on community demand",
           R.mipmap.ic_launcher_millie
-        )
-      ).sortedBy { it.title.lowercase() }
-
-    Column(
-      modifier =
-        Modifier.fillMaxSize()
-          .background(MaterialTheme.colorScheme.surface)
-          .verticalScroll(rememberScrollState())
-          .windowInsetsPadding(
-            LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal)
-          )
-          .padding(innerPadding)
-          .padding(horizontal = 16.dp)
-    ) {
-      Spacer(modifier = Modifier.height(8.dp))
-
-      Card(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+        ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
       ) {

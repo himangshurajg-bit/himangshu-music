@@ -67,7 +67,7 @@ object Wikipedia {
         val enc = java.net.URLEncoder.encode(query, "UTF-8")
         val url = java.net.URL("https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=$enc&utf8=&format=json")
         val conn = url.openConnection() as java.net.HttpURLConnection
-        conn.setRequestProperty("User-Agent", "Himangshu-Music/1.4.7 (Android; https://github.com/himangshurajg-bit/himangshu-music)")
+        conn.setRequestProperty("User-Agent", "RajTune/1.4.13 (Android; https://github.com/himangshurajg-bit/himangshu-music)")
         conn.connectTimeout = 4000
         conn.readTimeout = 4000
         val text = conn.inputStream.bufferedReader().use { it.readText() }

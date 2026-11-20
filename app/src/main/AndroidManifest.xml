@@ -59,6 +59,7 @@
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="http" />
         </intent>
+        <package android:name="com.deniscerri.ytdl" />
     </queries>
 
 
@@ -139,7 +140,7 @@
                 <data android:host="listen" />
             </intent-filter>
 
-            <!-- Himangshu Music Share Links -->
+            <!-- RajTune Share Links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -334,14 +335,14 @@
             </intent-filter>
         </activity-alias>
 
-        
 
-        
-        
 
-        
 
-        
+
+
+
+
+
 
         <activity-alias
             android:name=".MainActivityBillieEilish"
@@ -774,6 +775,217 @@
             </intent-filter>
         </service>
 
+
+
+        <!-- User-selectable treble-clef launcher icons -->
+<activity-alias
+            android:name=".MainActivityClefSilverBlue"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_silver_blue"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_silver_blue_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefVioletBlue"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_violet_blue"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_violet_blue_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefSilver"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_silver"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_silver_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefCrimson"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_crimson"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_crimson_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefGold"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_gold"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_gold_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefElectricBlue"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_electric_blue"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_electric_blue_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefAmethyst"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_amethyst"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_amethyst_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefMidnight"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_midnight"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_midnight_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefOpal"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_opal"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_opal_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefTurquoise"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_turquoise"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_turquoise_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefRoyalBlue"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_royal_blue"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_royal_blue_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefRoseCopper"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_rose_copper"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_rose_copper_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefMagentaOrange"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_magenta_orange"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_magenta_orange_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefGoldBlue"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_gold_blue"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_gold_blue_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefMonochrome"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_monochrome"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_monochrome_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+<activity-alias
+            android:name=".MainActivityClefMonochromeAlt"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/clef_monochrome_alt"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/clef_monochrome_alt_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
     </application>
 
 </manifest>
