@@ -131,8 +131,13 @@
     <string name="remove_from_library">Remove from library</string>
     <string name="remove_all_from_library">Remove all from library</string>
     <string name="action_download">Download</string>
-    <string name="download_with_ytdlnis">Download with YTDLnis</string>
+    <string name="download_with_external_app">Download with external app</string>
     <string name="ytdlnis_not_installed">YTDLnis is not installed.</string>
+    <string name="external_downloader">External Downloader</string>
+    <string name="external_downloader_desc">Download songs through an external app by package name</string>
+    <string name="downloader_app_package">Downloader App Package</string>
+    <string name="downloader_app_package_hint">Package name or app name of the external downloader (e.g. com.deniscerri.ytdl or YTDLnis)</string>
+    <string name="external_downloader_not_installed">The selected downloader app is not installed.</string>
     <string name="downloading">Downloading</string>
     <string name="loading">Loading</string>
     <string name="saving">Saving</string>
@@ -530,6 +535,7 @@
     <string name="spotify_live_library">Live Spotify Library</string>
     <string name="spotify_live_desc">Stream your Liked Songs and playlists directly without duplicating them into your local database.</string>
     <string name="spotify_connect_account">Connect Spotify Account</string>
+    <string name="spotify_already_connected_refresh">Already connected? Tap to refresh</string>
     <string name="spotify_view_all_tracks">View All Tracks</string>
     <string name="spotify_resolving_stream">Resolving stream…</string>
     <string name="spotify_playlists_title">Spotify Playlists</string>
@@ -574,7 +580,45 @@
     <string name="minutes_label">Minutes</string>
     <string name="seconds_label">Seconds</string>
 
+    <!-- Liquid Glass Effects -->
 
+    <!-- Liquid Glass Effects -->
+    <string name="liquid_glass">Liquid Glass (Beta)</string>
+    <string name="player_background_liquid_glass">Liquid Glass</string>
+    <string name="liquid_glass_settings">Liquid Glass (Beta)</string>
+    <string name="liquid_glass_global_enabled">Enable Liquid Glass</string>
+    <string name="liquid_glass_effects">Effects</string>
+    <string name="liquid_glass_appearance">Appearance</string>
+    <string name="liquid_glass_per_component">Per Component</string>
+    <string name="liquid_glass_vibrancy">Vibrancy</string>
+    <string name="liquid_glass_vibrancy_desc">Boost saturation of the glass backdrop</string>
+    <string name="liquid_glass_blur_radius">Blur Radius</string>
+    <string name="liquid_glass_blur_radius_desc">Amount of blur on the glass surface</string>
+    <string name="liquid_glass_lens_height">Lens Refraction Height</string>
+    <string name="liquid_glass_lens_amount">Lens Refraction Amount</string>
+    <string name="liquid_glass_chromatic_aberration">Chromatic Aberration</string>
+    <string name="liquid_glass_depth_effect">Depth Effect</string>
+    <string name="liquid_glass_surface_opacity">Surface Opacity</string>
+    <string name="liquid_glass_surface_opacity_desc">Opacity of the glass tint overlay for readability</string>
+    <string name="liquid_glass_surface_tint">Surface Tint</string>
+    <string name="liquid_glass_surface_tint_desc">Tint color applied to the glass surface</string>
+    <string name="liquid_glass_text_color">Glass Text Color</string>
+    <string name="liquid_glass_text_color_desc">Text color used on glass surfaces</string>
+    <string name="liquid_glass_player">Glass Player</string>
+    <string name="liquid_glass_mini_player">Glass Mini Player</string>
+    <string name="liquid_glass_nav_bar">Glass Navigation Bar</string>
+    <string name="liquid_glass_performance_warning">Rendering liquid glass is performance heavy and may reduce smoothness and battery life on some devices</string>
+    <string name="liquid_glass_requires_floating_nav_bar">Requires the floating navigation bar to be enabled</string>
+    <string name="liquid_glass_global_enabled_desc">Enable or disable Liquid Glass</string>
+    <string name="liquid_glass_lens_height_desc">Manage Lens Refraction Height settings</string>
+    <string name="liquid_glass_lens_amount_desc">Manage Lens Refraction Amount settings</string>
+    <string name="liquid_glass_chromatic_aberration_desc">Manage Chromatic Aberration settings</string>
+    <string name="liquid_glass_depth_effect_desc">Manage Depth Effect settings</string>
+    <string name="liquid_glass_player_desc">Manage Glass Player settings</string>
+    <string name="liquid_glass_mini_player_desc">Manage Glass Mini Player settings</string>
+    <string name="liquid_glass_nav_bar_desc">Manage Glass Navigation Bar settings</string>
+    <string name="liquid_glass_settings_desc">Manage Liquid Glass (Beta) settings</string>
+    <string name="liquid_glass_desc">Manage Liquid Glass (Beta) settings</string>
 
     <string name="nav_bar_style">Navigation Bar Style</string>
     <string name="floating_nav_bar">Apple style navigation bar</string>
@@ -965,8 +1009,8 @@
     <string name="typography_preview">Typography Preview</string>
     <string name="preview_text_quote">The quick brown fox jumps over the lazy dog</string>
     <string name="live_preview">Live Preview</string>
-    <string name="preview_song_title">Last Thing You Need</string>
-    <string name="preview_song_artist">Morgan Wallen</string>
+    <string name="preview_song_title">Sweet but Psycho</string>
+    <string name="preview_song_artist">Ava Max</string>
 
 
     <string name="recommendation_source">Recommendation provider</string>

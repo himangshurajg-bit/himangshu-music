@@ -22,9 +22,11 @@ Use the correct semantic color roles as defined by our theme:
 
 ---
 
-## 2. Surfaces and Effects
+## 2. Liquid Glass System (Glassmorphism)
 
-Use the app’s Material color roles and existing component-specific surfaces. The custom Liquid Glass/backdrop-refraction system is no longer part of RajTune; do not reintroduce it. Keep player and navigation surfaces on their standard Material styling, and use only the non-glass player backgrounds already supported by the app.
+RajTune keeps Echo Music’s original Liquid Glass implementation and placements only: the floating navigation bar, mini-player, and full-screen player. Use the existing `Modifier.liquidGlass()` and component settings; do not add glass treatments to other screens or controls, and do not add an album-art ambient-glow layer. The global switch defaults off, and unsupported Android versions use the existing non-glass fallback.
+
+The renderer and tuning controls live in `ui/component/GlassEffect.kt` and `ui/screens/settings/GlassEffectSettings.kt`. Keep those original controls and their per-component switches aligned with the three supported surfaces; avoid extra effects or new placements.
 
 ## 3. Components in Detail
 

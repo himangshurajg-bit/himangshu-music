@@ -87,6 +87,7 @@ fun playerBackgroundStyleLabel(style: PlayerBackgroundStyle): String {
     PlayerBackgroundStyle.GLOW_ANIMATED -> stringResource(R.string.glow_animated)
     PlayerBackgroundStyle.APPLE_MUSIC -> stringResource(R.string.apple_music)
     PlayerBackgroundStyle.LIVE_MESH -> stringResource(R.string.live_mesh)
+    PlayerBackgroundStyle.LIQUID_GLASS -> stringResource(R.string.player_background_liquid_glass)
   }
 }
 
@@ -205,6 +206,9 @@ fun FullPlayerPreview(
                 )
             )
           )
+        PlayerBackgroundStyle.LIQUID_GLASS ->
+          Modifier.background(colorScheme.surfaceContainer.copy(alpha = 0.7f))
+            .border(1.dp, colorScheme.outlineVariant.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
       }
     }
 
@@ -549,6 +553,9 @@ fun MiniPlayerPreview(
                 )
             )
           )
+        PlayerBackgroundStyle.LIQUID_GLASS ->
+          Modifier.background(colorScheme.surfaceContainerHighest.copy(alpha = 0.7f))
+            .border(1.dp, colorScheme.outlineVariant.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
       }
     }
 

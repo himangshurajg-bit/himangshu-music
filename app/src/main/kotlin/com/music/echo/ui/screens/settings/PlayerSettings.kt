@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import echo.music.iad1tya.BuildConfig
@@ -49,6 +51,8 @@ import echo.music.iad1tya.constants.CrossfadeGaplessKey
 import echo.music.iad1tya.constants.DisableLoadMoreWhenRepeatAllKey
 import echo.music.iad1tya.constants.DownloadOnWifiOnlyKey
 import echo.music.iad1tya.constants.DownloadWithMetadataKey
+import echo.music.iad1tya.constants.DefaultExternalDownloaderPackage
+import echo.music.iad1tya.constants.ExternalDownloaderAppKey
 import echo.music.iad1tya.constants.EnableBitPerfectUsbDacKey
 import echo.music.iad1tya.constants.EnableExportAsMp3Key
 import echo.music.iad1tya.constants.EnableGoogleCastKey
@@ -73,7 +77,9 @@ import echo.music.iad1tya.constants.SkipSilenceKey
 import echo.music.iad1tya.constants.StopMusicOnTaskClearKey
 import echo.music.iad1tya.ui.component.DefaultDialog
 import echo.music.iad1tya.ui.component.EnumDialog
+import echo.music.iad1tya.ui.component.TextFieldDialog
 import echo.music.iad1tya.ui.component.IconButton
+import echo.music.iad1tya.ui.component.InfoLabel
 import echo.music.iad1tya.ui.component.Material3SettingsGroup
 import echo.music.iad1tya.ui.component.Material3SettingsItem
 import echo.music.iad1tya.ui.utils.backToMain
@@ -176,6 +182,8 @@ fun PlayerSettings(
     rememberPreference(DownloadOnWifiOnlyKey, defaultValue = false)
   val (downloadWithMetadata, onDownloadWithMetadataChange) =
     rememberPreference(DownloadWithMetadataKey, defaultValue = true)
+  val (externalDownloaderApp, onExternalDownloaderAppChange) =
+    rememberPreference(ExternalDownloaderAppKey, defaultValue = DefaultExternalDownloaderPackage)
   val (similarContentEnabled, similarContentEnabledChange) =
     rememberPreference(key = SimilarContent, defaultValue = true)
   val (autoSkipNextOnError, onAutoSkipNextOnErrorChange) =
@@ -202,6 +210,7 @@ fun PlayerSettings(
   var showAudioQualityWifiDialog by remember { mutableStateOf(false) }
   var showAudioQualityCellularDialog by remember { mutableStateOf(false) }
   var showDownloadQualityDialog by remember { mutableStateOf(false) }
+  var showExternalDownloaderDialog by remember { mutableStateOf(false) }
   var showPlaybackEngineDialog by remember { mutableStateOf(false) }
 
   val (playbackEngine, onPlaybackEngineChange) =
@@ -253,6 +262,23 @@ fun PlayerSettings(
       ),
       valueText = { it.label },
       valueDescription = { "${it.detail} (${it.hourly})" }
+    )
+  }
+
+  if (showExternalDownloaderDialog) {
+    TextFieldDialog(
+      title = { Text(stringResource(R.string.downloader_app_package)) },
+      initialTextFieldValue =
+        TextFieldValue(
+          text = externalDownloaderApp,
+          selection = TextRange(externalDownloaderApp.length),
+        ),
+      placeholder = { Text(stringResource(R.string.downloader_app_package_hint)) },
+      extraContent = { InfoLabel(text = stringResource(R.string.downloader_app_package_hint)) },
+      onDone = { onExternalDownloaderAppChange(it.trim()) },
+      onReset = { onExternalDownloaderAppChange(DefaultExternalDownloaderPackage) },
+      resetText = stringResource(R.string.reset),
+      onDismiss = { showExternalDownloaderDialog = false },
     )
   }
 
@@ -457,6 +483,16 @@ fun PlayerSettings(
                 Text("${audioQualityCellular.label} · ${audioQualityCellular.detail} (${audioQualityCellular.hourly})")
               },
               onClick = { showAudioQualityCellularDialog = true }
+            )
+          )
+
+          add(
+            Material3SettingsItem(
+              isHighlighted = (highlightKey == stringResource(R.string.external_downloader)),
+              icon = painterResource(R.drawable.download),
+              title = { Text(stringResource(R.string.external_downloader)) },
+              description = { Text(stringResource(R.string.external_downloader_desc)) },
+              onClick = { showExternalDownloaderDialog = true }
             )
           )
 

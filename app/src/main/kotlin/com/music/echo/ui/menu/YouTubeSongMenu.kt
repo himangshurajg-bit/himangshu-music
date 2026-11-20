@@ -62,6 +62,8 @@ import echo.music.iad1tya.LocalPlayerConnection
 import echo.music.iad1tya.LocalSyncUtils
 import echo.music.iad1tya.R
 import echo.music.iad1tya.constants.EnableExportAsMp3Key
+import echo.music.iad1tya.constants.ExternalDownloaderAppKey
+import echo.music.iad1tya.constants.DefaultExternalDownloaderPackage
 import echo.music.iad1tya.constants.ExportDirectoryUriKey
 import echo.music.iad1tya.constants.ExportedSongIdsKey
 import echo.music.iad1tya.constants.ExportingSongIdsKey
@@ -84,6 +86,8 @@ import echo.music.iad1tya.ui.component.NewAction
 import echo.music.iad1tya.ui.component.NewActionGrid
 import echo.music.iad1tya.ui.utils.ShowMediaInfo
 import echo.music.iad1tya.ui.utils.resize
+import echo.music.iad1tya.utils.createExternalDownloaderIntent
+import echo.music.iad1tya.utils.findExternalDownloaderPackage
 import echo.music.iad1tya.utils.joinByBullet
 import echo.music.iad1tya.utils.makeTimeString
 import echo.music.iad1tya.utils.rememberPreference
@@ -121,6 +125,8 @@ fun YouTubeSongMenu(
   val (exportDirectoryUri) = rememberPreference(key = ExportDirectoryUriKey, defaultValue = "")
   val (exportingSongIds) = rememberPreference(key = ExportingSongIdsKey, defaultValue = "")
   val (exportedSongIds) = rememberPreference(key = ExportedSongIdsKey, defaultValue = "")
+  val (externalDownloaderApp) =
+    rememberPreference(ExternalDownloaderAppKey, defaultValue = DefaultExternalDownloaderPackage)
 
   val isExporting =
     remember(exportingSongIds, song.id) { exportingSongIds.split(",").contains(song.id) }
@@ -373,21 +379,30 @@ fun YouTubeSongMenu(
                   tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
               },
-              text = stringResource(R.string.download_with_ytdlnis),
+              text = stringResource(R.string.download_with_external_app),
               onClick = {
                 onDismiss()
-                val intent =
-                  Intent(Intent.ACTION_SEND).apply {
-                    type = "text/*"
-                    putExtra(Intent.EXTRA_TEXT, song.shareLink)
-                    putExtra("TYPE", "audio")
-                    putExtra("BACKGROUND", false)
-                    setPackage("com.deniscerri.ytdl")
-                  }
+                val downloaderPackage =
+                  findExternalDownloaderPackage(context.packageManager, externalDownloaderApp)
+                if (downloaderPackage == null) {
+                  Toast.makeText(
+                      context,
+                      R.string.external_downloader_not_installed,
+                      Toast.LENGTH_LONG
+                    )
+                    .show()
+                  return@NewAction
+                }
+                val intent = createExternalDownloaderIntent(downloaderPackage, song.shareLink)
                 try {
                   context.startActivity(intent)
                 } catch (_: ActivityNotFoundException) {
-                  Toast.makeText(context, R.string.ytdlnis_not_installed, Toast.LENGTH_LONG).show()
+                  Toast.makeText(
+                      context,
+                      R.string.external_downloader_not_installed,
+                      Toast.LENGTH_LONG
+                    )
+                    .show()
                 }
               }
             )
