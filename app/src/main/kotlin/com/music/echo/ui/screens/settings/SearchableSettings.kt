@@ -1948,13 +1948,13 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
     ),
 
     // About Screen - Social & Support Links
-    SearchableSetting("Website", "Visit the Himangshu Music website", "About", "settings/about"),
-    SearchableSetting("Instagram", "Follow Himangshu Music on Instagram", "About", "settings/about"),
-    SearchableSetting("X (Twitter)", "Follow Himangshu Music on X", "About", "settings/about"),
+    SearchableSetting("Website", "Visit the RajTune website", "About", "settings/about"),
+    SearchableSetting("Instagram", "Follow RajTune on Instagram", "About", "settings/about"),
+    SearchableSetting("X (Twitter)", "Follow RajTune on X", "About", "settings/about"),
     SearchableSetting("Buy Me a Coffee", "Support the developer", "About", "settings/about"),
     SearchableSetting("Patreon", "Support the developer on Patreon", "About", "settings/about"),
     SearchableSetting("UPI", "Support the developer via UPI", "About", "settings/about"),
-    SearchableSetting("Discord", "Join the Himangshu Music community", "About", "settings/about"),
+    SearchableSetting("Discord", "Join the RajTune community", "About", "settings/about"),
   ) +
     listOf(
         SearchableSetting(

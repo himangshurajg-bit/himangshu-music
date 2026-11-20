@@ -19,7 +19,7 @@ class NavidromeApiService @Inject constructor() {
   companion object {
     private const val TAG = "NavidromeApi"
     private const val API_VERSION = "1.16.1"
-    private const val CLIENT_ID = "Himangshu Music"
+    private const val CLIENT_ID = "RajTune"
   }
 
   private val okHttpClient: OkHttpClient =

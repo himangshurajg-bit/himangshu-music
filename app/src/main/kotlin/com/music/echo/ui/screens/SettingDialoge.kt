@@ -75,7 +75,7 @@ fun SettingDialoge(
       verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
       // Header
-      // Removed Himangshu Music text
+      // Removed RajTune text
 
       // Account Group
       Material3SettingsGroup(

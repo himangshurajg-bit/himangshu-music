@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -40,6 +42,10 @@ fun Material3SettingsGroup(
   scrollState: ScrollState? = null,
   items: List<Material3SettingsItem>
 ) {
+  val glassConfig = LocalGlassEffectConfig.current
+  val glassEnabled = glassConfig.globalEnabled
+  val useBackdropGlass = glassEnabled && isGlassSupported()
+
   Column(modifier = Modifier.fillMaxWidth()) {
     title?.let {
       Text(
@@ -80,15 +86,37 @@ fun Material3SettingsGroup(
             else -> RoundedCornerShape(4.dp)
           }
 
+        val surfaceModifier =
+          Modifier.fillMaxWidth()
+            .animateContentSize()
+            .then(
+              if (useBackdropGlass) {
+                Modifier.clip(shape)
+                  .liquidGlass(
+                    config = glassConfig,
+                    shape = shape,
+                    applyEdgeEffects = false,
+                    blurRadiusDp = glassConfig.blurRadius.coerceAtMost(6f),
+                  )
+                  .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+                    shape = shape,
+                  )
+              } else Modifier
+            )
+        val containerColor =
+          when {
+            useBackdropGlass -> Color.Transparent
+            glassEnabled -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f)
+            item.isHighlighted -> MaterialTheme.colorScheme.surfaceVariant
+            else -> MaterialTheme.colorScheme.surfaceContainerHigh
+          }
+
         Card(
-          modifier = Modifier.fillMaxWidth().animateContentSize(),
+          modifier = surfaceModifier,
           shape = shape,
-          colors =
-            CardDefaults.cardColors(
-              containerColor =
-                if (item.isHighlighted) MaterialTheme.colorScheme.surfaceVariant
-                else MaterialTheme.colorScheme.surfaceContainerHigh
-            ),
+          colors = CardDefaults.cardColors(containerColor = containerColor),
           elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
           Material3SettingsItemRow(item = item, compact = compact, scrollState = scrollState)

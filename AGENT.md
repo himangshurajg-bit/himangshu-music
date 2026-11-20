@@ -1,4 +1,4 @@
-# AGENT.md - Himangshu Music
+# AGENT.md - RajTune
 
 Context file for AI agents (Antigravity, Claude Code, etc.) working in this repo.
 Keep this file up to date as the project evolves — it's the fastest way to give
@@ -73,7 +73,7 @@ All UI work — new screens, new components, and edits to existing ones —
 applying standard Material Design 3 guidelines or Material You.
 
 We maintain a dedicated **[DESIGN.md](DESIGN.md)** file which serves as the central
-hub for all design decisions, component usage, and style choices in the Himangshu Music codebase.
+hub for all design decisions, component usage, and style choices in the RajTune codebase.
 
 **Key Requirements:**
 - **Clean and Minimal:** Emphasize the Nothing OS 5.0 aesthetic. Focus on high-contrast, typography-driven layouts, monochrome or minimal color palettes, and distinct geometry.
@@ -104,7 +104,7 @@ If a new feature needs a UI pattern not covered in `DESIGN.md`, create a minimal
 
 ## What this app is
 
-Himangshu Music is a native **Android** music streaming client (Kotlin + Jetpack
+RajTune is a native **Android** music streaming client (Kotlin + Jetpack
 Compose) that streams from YouTube Music's catalog ad-free, and layers on
 offline downloads, real-time synced lyrics, music recognition ("Song Recognition"),
 podcasts, local media playback, Spotify import, "Listen Together" (synced
@@ -375,3 +375,7 @@ Ambient Mode keeps the existing album-art square and layers muted Canvas artwork
 ## Library UI Separation
 
 `LibraryScreen.kt` separates the Library overview into two equal-width custom `Row`-based swipeable underlined source tabs (`In App Library` and `Spotify`, driven by `HorizontalPager` with a live sliding underline indicator and session UI state without a new DataStore preference) positioned directly below the `ChipsRow` category filter bar (`Playlists`, `Songs`, `Albums`, `Artists`, `Podcasts`, `Local`). `LibraryFilter.SPOTIFY` is omitted from `ChipsRow` and the Appearance Settings default-chip picker while remaining in `LibraryFilter` for legacy preference fallback (`SPOTIFY` maps to the `Spotify` source tab and resets `ChipSortTypeKey` to `LIBRARY`). `LibraryMixScreen.kt` has its own `SortHeader` (`MixSortType`), renders In-App shortcut cards (`AutoPlaylistButton` 2-column grid), a simple `Playlists` heading and horizontal circular `LazyRow` thumbnail preview (`PlaylistThumbnail` with `CircleShape`), followed by `Artists` and `Albums`. `LibrarySpotifyScreen.kt` renders exclusively inside the `Spotify` tab using `LazyVerticalGrid` + `GridItem` cards (`GridItemsSizeKey`), with its own `SortHeader` (`Default`, `Name`, `Song count`), shimmer placeholders while loading, existing Spotify content with an animated rotating refresh button and Toast sync feedback (`spotify_sync_success` / `spotify_sync_failed`) when available, and a minimal empty state with no login prompt or CTA when unavailable. `SpotifyPlaylistDetailScreen.kt` includes inline TopAppBar search filtering by track title or artist alongside an animated rotating refresh button and Toast sync feedback.
+## External audio download handoff
+
+- The YouTube song context menu can hand a track URL to YTDLnis (`com.deniscerri.ytdl`) using `ACTION_SEND`, MIME `text/*`, `EXTRA_TEXT`, and the app's `TYPE=audio` / `BACKGROUND=false` extras. Keep this separate from the existing in-app offline-download action.
+- Declare YTDLnis under manifest `<queries>` for Android package visibility. Catch `ActivityNotFoundException` and tell the user when the companion app is unavailable. Physical-device handoff testing is needed before claiming end-to-end verification.

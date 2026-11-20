@@ -1,4 +1,4 @@
-name: Build and publish Himangshu APK
+name: Build and publish RajTune APK
 
 on:
   workflow_dispatch:
@@ -77,10 +77,10 @@ jobs:
           set -euo pipefail
           mapfile -t apks < <(find app/build/outputs/apk -type f -name '*.apk' -print)
           if [[ "${{ steps.signing.outputs.configured }}" == "true" ]]; then
-            name='Himangshu-Music-universal-gms-release.apk'
+            name='RajTune-universal-gms-release.apk'
             expected_build_type='release'
           else
-            name='Himangshu-Music-universal-gms-debug.apk'
+            name='RajTune-universal-gms-debug.apk'
             expected_build_type='debug'
           fi
           if [[ "${#apks[@]}" -ne 1 ]]; then
@@ -102,7 +102,7 @@ jobs:
       - name: Keep APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Himangshu-Music-APK
+          name: RajTune-APK
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
       - name: Publish signed release APK
@@ -120,7 +120,7 @@ jobs:
             exit 1
           fi
           gh release create "$RELEASE_TAG" "$APK_PATH" \
-            --title "Himangshu Music $RELEASE_TAG" \
+            --title "RajTune $RELEASE_TAG" \
             --notes-file "$notes_file"
       - name: Explain why no release was published
         if: steps.signing.outputs.configured != 'true'

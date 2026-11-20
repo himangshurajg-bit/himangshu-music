@@ -1,6 +1,6 @@
 # Setup Instructions
 
-This document provides instructions for setting up the Himangshu Music project for development.
+This document provides instructions for setting up the RajTune project for development.
 
 ## Prerequisites
 
@@ -74,7 +74,7 @@ KEY_PASSWORD=your_key_password
 
 Open the project in Android Studio or build from the command line.
 
-Himangshu Music builds as a **GMS** variant with Cast and Firebase support.
+RajTune builds as a **GMS** variant with Cast and Firebase support.
 
 ```bash
 # Debug build
@@ -88,7 +88,7 @@ Himangshu Music builds as a **GMS** variant with Cast and Firebase support.
 
 ### 6. Configure AI Translation (Optional)
 
-Himangshu Music supports AI-powered lyrics translation. You can configure this in **Settings -> AI Settings**.
+RajTune supports AI-powered lyrics translation. You can configure this in **Settings -> AI Settings**.
 
 #### Option A: Using OpenRouter (Default)
 

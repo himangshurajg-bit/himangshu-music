@@ -1,4 +1,4 @@
-// Modified for the Himangshu rebrand on 2026-11-18; upstream GPL-3.0 notices and attribution retained.
+// Modified for the RajTune rebrand on 2026-11-20; upstream GPL-3.0 notices and attribution retained.
 package com.music.echo.ui.screens.wrapped
 
 import android.widget.Toast
@@ -332,7 +332,7 @@ fun WrappedScreen(
             }
           }
 
-          // Top Header: Himangshu wordmark + Year Selector + Controls
+          // Top Header: RajTune wordmark + Year Selector + Controls
           Row(
             modifier =
               Modifier.fillMaxWidth()
@@ -347,12 +347,12 @@ fun WrappedScreen(
             ) {
               Image(
                 painter = painterResource(R.drawable.ic_launcher_nobg),
-                contentDescription = "Himangshu Logo",
+                contentDescription = "RajTune Logo",
                 colorFilter = ColorFilter.tint(currentTheme.logoTint),
                 modifier = Modifier.size(24.dp)
               )
               Text(
-                "Himangshu",
+                "RajTune",
                 style = MaterialTheme.typography.titleMedium.copy(
                   fontWeight = FontWeight.Black,
                   letterSpacing = (-0.5).sp,
@@ -616,7 +616,7 @@ private fun IntroSlideSpotify(
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
       Text(
-        text = "Every beat, replay, and late-night obsession that soundtracked your life on Himangshu.",
+        text = "Every beat, replay, and late-night obsession that soundtracked your life on RajTune.",
         style = MaterialTheme.typography.bodyLarge.copy(
           fontSize = 16.sp,
           fontWeight = FontWeight.Medium,
@@ -2027,7 +2027,7 @@ private fun InsufficientDataView(
     ) {
       Image(
         painter = painterResource(R.drawable.ic_launcher_nobg),
-        contentDescription = "Himangshu",
+        contentDescription = "RajTune",
         colorFilter = ColorFilter.tint(Color(0xFF00F5D4)),
         modifier = Modifier.size(64.dp)
       )

@@ -199,6 +199,9 @@ import echo.music.iad1tya.ui.component.AppFloatingNavBar
 import echo.music.iad1tya.ui.component.GlassEffectConfig
 import echo.music.iad1tya.ui.component.LocalAppBackdrop
 import echo.music.iad1tya.ui.component.LocalGlassEffectConfig
+import echo.music.iad1tya.ui.component.isGlassSupported
+import echo.music.iad1tya.ui.component.liquidGlass
+import echo.music.iad1tya.ui.screens.ambient.AmbientGlowBackground
 import echo.music.iad1tya.ui.component.RingtoneProgressDialog
 import echo.music.iad1tya.ui.component.RingtoneTrimmerDialog
 import echo.music.iad1tya.ui.component.backdrop.backdrops.layerBackdrop
@@ -1019,6 +1022,7 @@ class MainActivity : ComponentActivity() {
 
         val mediaMetadata by
           playerConnection?.mediaMetadata?.collectAsState() ?: remember { mutableStateOf(null) }
+        val ambientLightEnabled by rememberPreference(AmbientLightEnabledKey, defaultValue = true)
         val hasDockedPlayerAccessory =
           useFloatingNavBar && mediaMetadata != null && !showRail && shouldShowNavigationBar
 
@@ -1172,7 +1176,7 @@ class MainActivity : ComponentActivity() {
 
         val currentTitle =
           when (navBackStackEntry?.destination?.route) {
-            Screens.Home.route -> "Himangshu Music"
+            Screens.Home.route -> "RajTune"
             Screens.Search.route -> stringResource(R.string.search)
             Screens.Library.route -> stringResource(R.string.filter_library)
             Screens.ListenTogether.route -> stringResource(R.string.together)
@@ -1187,7 +1191,7 @@ class MainActivity : ComponentActivity() {
         val baseBg = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
 
         val (liquidGlassGlobalEnabled) =
-          rememberPreference(LiquidGlassGlobalEnabledKey, defaultValue = false)
+          rememberPreference(LiquidGlassGlobalEnabledKey, defaultValue = true)
         val (liquidGlassVibrancy) = rememberPreference(LiquidGlassVibrancyKey, defaultValue = 1f)
         val (liquidGlassBlurRadius) =
           rememberPreference(LiquidGlassBlurRadiusKey, defaultValue = 8f)
@@ -1408,8 +1412,14 @@ class MainActivity : ComponentActivity() {
                     scrollBehavior = topAppBarScrollBehavior,
                     colors =
                       TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor =
+                          if (glassEffectConfig.globalEnabled && isGlassSupported()) Color.Transparent
+                          else if (glassEffectConfig.globalEnabled) MaterialTheme.colorScheme.surface.copy(alpha = 0.86f)
+                          else MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor =
+                          if (glassEffectConfig.globalEnabled && isGlassSupported()) Color.Transparent
+                          else if (glassEffectConfig.globalEnabled) MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f)
+                          else MaterialTheme.colorScheme.surfaceContainer,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                         actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1423,6 +1433,15 @@ class MainActivity : ComponentActivity() {
                         } else {
                           cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End)
                         }
+                      ).then(
+                        if (glassEffectConfig.globalEnabled && isGlassSupported()) {
+                          Modifier.liquidGlass(
+                            config = glassEffectConfig,
+                            shape = RoundedCornerShape(0.dp),
+                            applyEdgeEffects = false,
+                            blurRadiusDp = glassEffectConfig.blurRadius.coerceAtMost(6f),
+                          )
+                        } else Modifier
                       ),
                   )
                 }
@@ -1713,6 +1732,13 @@ class MainActivity : ComponentActivity() {
                 )
               }
               Box(Modifier.weight(1f)) {
+                if (ambientLightEnabled && mediaMetadata != null && currentRoute != "ambient_mode") {
+                  AmbientGlowBackground(
+                    mediaMetadata = mediaMetadata,
+                    modifier = Modifier.fillMaxSize(),
+                    intensity = 0.14f,
+                  )
+                }
                 NavHost(
                   navController = navController,
                   startDestination =

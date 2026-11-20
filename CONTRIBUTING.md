@@ -1,6 +1,6 @@
-# Contributing to Himangshu Music
+# Contributing to RajTune
 
-Thank you for your interest in contributing to Himangshu Music! This document provides comprehensive guidelines and information for contributors.
+Thank you for your interest in contributing to RajTune! This document provides comprehensive guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -107,7 +107,7 @@ If you want to test Firebase features:
 
 ## Handling Sensitive Information
 
-When contributing to Himangshu Music, it's crucial to handle sensitive information properly:
+When contributing to RajTune, it's crucial to handle sensitive information properly:
 
 ### Files That Should Never Be Committed
 
@@ -448,7 +448,7 @@ If you have questions about contributing:
 2. Create a new discussion
 3. Contact maintainers directly
 
-Thank you for contributing to Himangshu Music!
+Thank you for contributing to RajTune!
 
 ---
 <div align="center">

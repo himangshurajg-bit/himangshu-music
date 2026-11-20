@@ -25,7 +25,65 @@ import com.materialkolor.rememberDynamicColorScheme
 import com.materialkolor.score.Score
 import echo.music.iad1tya.constants.AppFont
 import echo.music.iad1tya.constants.SelectedFontKey
+import echo.music.iad1tya.constants.SelectedThemePaletteKey
 import echo.music.iad1tya.utils.rememberPreference
+
+/** Color presets ported from Personal AI's appearance palettes. */
+data class MusicThemePalette(
+  val id: String,
+  val name: String,
+  val description: String,
+  val darkPrimary: Color,
+  val darkSecondary: Color,
+  val darkTertiary: Color,
+  val lightPrimary: Color,
+  val lightSecondary: Color,
+  val lightTertiary: Color,
+  val darkBackground: Color,
+  val lightBackground: Color,
+) {
+  fun primary(dark: Boolean) = if (dark) darkPrimary else lightPrimary
+  fun secondary(dark: Boolean) = if (dark) darkSecondary else lightSecondary
+  fun tertiary(dark: Boolean) = if (dark) darkTertiary else lightTertiary
+  fun background(dark: Boolean) = if (dark) darkBackground else lightBackground
+
+  companion object {
+    val all = listOf(
+      MusicThemePalette(
+        "aurora", "Aurora", "Violet · teal",
+        Color(0xffc2a6ff), Color(0xff55ead5), Color(0xffff91c7),
+        Color(0xff6547b4), Color(0xff007c72), Color(0xffa44377),
+        Color(0xff0b0b1a), Color(0xfff6f3fc),
+      ),
+      MusicThemePalette(
+        "solar", "Solar", "Amber · coral",
+        Color(0xffffbd70), Color(0xffff7d8b), Color(0xffffe38d),
+        Color(0xff9a4b11), Color(0xffb52c52), Color(0xff775800),
+        Color(0xff180e17), Color(0xfffcf5f0),
+      ),
+      MusicThemePalette(
+        "deep_space", "Deep Space", "Ice blue · indigo",
+        Color(0xff7bdcff), Color(0xff858dff), Color(0xffb8a7ff),
+        Color(0xff075e91), Color(0xff4b4fae), Color(0xff6842a2),
+        Color(0xff080f20), Color(0xfff1f5fc),
+      ),
+      MusicThemePalette(
+        "forest", "Forest", "Forest green · moss",
+        Color(0xffa9c98a), Color(0xff6fa987), Color(0xffc9b276),
+        Color(0xff416a3c), Color(0xff39745d), Color(0xff78642e),
+        Color(0xff101812), Color(0xfff1f5ed),
+      ),
+      MusicThemePalette(
+        "crimson", "Crimson", "Deep red · rose",
+        Color(0xffffa0a0), Color(0xffe86d78), Color(0xffffc1a6),
+        Color(0xff9f3441), Color(0xffb24454), Color(0xff914a39),
+        Color(0xff1a1013), Color(0xfffaf1f1),
+      ),
+    )
+
+    fun fromId(id: String): MusicThemePalette? = all.firstOrNull { it.id == id }
+  }
+}
 
 val DefaultThemeColor = Color(0xFFED5564)
 
@@ -40,6 +98,10 @@ fun echomusicTheme(
   val context = LocalContext.current
   val selectedFontValue by rememberPreference(SelectedFontKey, AppFont.SYSTEM.value)
   val customFontPathValue by rememberPreference(echo.music.iad1tya.constants.CustomFontPathKey, "")
+  val selectedPaletteId by rememberPreference(SelectedThemePaletteKey, "")
+  val selectedPalette = remember(selectedPaletteId) { MusicThemePalette.fromId(selectedPaletteId) }
+  val palettePrimary = selectedPalette?.primary(darkTheme)
+  val effectiveThemeColor = palettePrimary ?: themeColor
 
   val brandFont =
     remember(selectedFontValue, customFontPathValue) {
@@ -65,7 +127,8 @@ fun echomusicTheme(
     }
 
   val useSystemDynamicColor =
-    !isMonochrome && (themeColor == DefaultThemeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+    !isMonochrome && selectedPalette == null &&
+      (themeColor == DefaultThemeColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
 
   val baseColorScheme =
     if (isMonochrome) {
@@ -81,19 +144,32 @@ fun echomusicTheme(
       if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else {
       rememberDynamicColorScheme(
-        seedColor = themeColor,
+        seedColor = effectiveThemeColor,
         isDark = darkTheme,
         specVersion = ColorSpec.SpecVersion.SPEC_2025,
         style = PaletteStyle.TonalSpot
       )
     }
 
+  val paletteColorScheme =
+    if (selectedPalette != null && !isMonochrome) {
+      baseColorScheme.copy(
+        primary = selectedPalette.primary(darkTheme),
+        secondary = selectedPalette.secondary(darkTheme),
+        tertiary = selectedPalette.tertiary(darkTheme),
+        background = selectedPalette.background(darkTheme),
+        surface = selectedPalette.background(darkTheme),
+      )
+    } else {
+      baseColorScheme
+    }
+
   val colorScheme =
-    remember(baseColorScheme, pureBlack, darkTheme, isMonochrome) {
+    remember(paletteColorScheme, pureBlack, darkTheme, isMonochrome) {
       if (darkTheme && pureBlack) {
-        baseColorScheme.pureBlack(true)
+        paletteColorScheme.pureBlack(true)
       } else {
-        baseColorScheme
+        paletteColorScheme
       }
     }
 
