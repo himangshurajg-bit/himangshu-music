@@ -59,6 +59,7 @@
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="http" />
         </intent>
+        <package android:name="com.deniscerri.ytdl" />
     </queries>
 
 
