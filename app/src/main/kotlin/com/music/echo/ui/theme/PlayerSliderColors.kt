@@ -28,8 +28,7 @@ object PlayerSliderColors {
         PlayerBackgroundStyle.GRADIENT,
         PlayerBackgroundStyle.GLOW_ANIMATED,
         PlayerBackgroundStyle.APPLE_MUSIC,
-        PlayerBackgroundStyle.LIVE_MESH,
-        PlayerBackgroundStyle.LIQUID_GLASS -> {
+        PlayerBackgroundStyle.LIVE_MESH -> {
           Color.White.copy(alpha = 0.4f)
         }
       }

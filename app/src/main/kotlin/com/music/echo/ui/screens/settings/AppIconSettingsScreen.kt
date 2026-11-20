@@ -193,8 +193,8 @@ fun AppIconSettingsScreen(
         ),
         AppIconOption(
           AppIconType.DEFAULT,
-          "Coral & White Clef",
-          "Pale treble clef on a coral-red tile",
+          "Sunset Pearl Clef",
+          "Pearlescent treble clef on a coral-to-red gradient",
           R.mipmap.ic_launcher
         ),
         AppIconOption(

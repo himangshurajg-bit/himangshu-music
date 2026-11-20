@@ -150,19 +150,6 @@ import echo.music.iad1tya.constants.FloatingToolbarBottomPadding
 import echo.music.iad1tya.constants.FloatingToolbarHorizontalPadding
 import echo.music.iad1tya.constants.IsMonochromeThemeKey
 import echo.music.iad1tya.constants.LastAiRecommendationUpdateDayKey
-import echo.music.iad1tya.constants.LiquidGlassBlurRadiusKey
-import echo.music.iad1tya.constants.LiquidGlassChromaticAberrationKey
-import echo.music.iad1tya.constants.LiquidGlassDepthEffectKey
-import echo.music.iad1tya.constants.LiquidGlassGlobalEnabledKey
-import echo.music.iad1tya.constants.LiquidGlassLensAmountKey
-import echo.music.iad1tya.constants.LiquidGlassLensHeightKey
-import echo.music.iad1tya.constants.LiquidGlassMiniPlayerEnabledKey
-import echo.music.iad1tya.constants.LiquidGlassNavBarEnabledKey
-import echo.music.iad1tya.constants.LiquidGlassPlayerEnabledKey
-import echo.music.iad1tya.constants.LiquidGlassSurfaceOpacityKey
-import echo.music.iad1tya.constants.LiquidGlassSurfaceTintColorKey
-import echo.music.iad1tya.constants.LiquidGlassTextColorKey
-import echo.music.iad1tya.constants.LiquidGlassVibrancyKey
 import echo.music.iad1tya.constants.ListenTogetherInTopBarKey
 import echo.music.iad1tya.constants.ListenTogetherUsernameKey
 import echo.music.iad1tya.constants.MiniPlayerBottomSpacing
@@ -196,16 +183,8 @@ import echo.music.iad1tya.playback.queues.ListQueue
 import echo.music.iad1tya.playback.queues.YouTubeQueue
 import echo.music.iad1tya.ui.component.*
 import echo.music.iad1tya.ui.component.AppFloatingNavBar
-import echo.music.iad1tya.ui.component.GlassEffectConfig
-import echo.music.iad1tya.ui.component.LocalAppBackdrop
-import echo.music.iad1tya.ui.component.LocalGlassEffectConfig
-import echo.music.iad1tya.ui.component.isGlassSupported
-import echo.music.iad1tya.ui.component.liquidGlass
-import echo.music.iad1tya.ui.screens.ambient.AmbientGlowBackground
 import echo.music.iad1tya.ui.component.RingtoneProgressDialog
 import echo.music.iad1tya.ui.component.RingtoneTrimmerDialog
-import echo.music.iad1tya.ui.component.backdrop.backdrops.layerBackdrop
-import echo.music.iad1tya.ui.component.backdrop.backdrops.rememberLayerBackdrop
 import echo.music.iad1tya.ui.component.floatingtabbar.rememberFloatingTabBarScrollConnection
 import echo.music.iad1tya.ui.component.shimmer.getShimmerTheme
 import echo.music.iad1tya.ui.menu.YouTubeSongMenu
@@ -1022,7 +1001,6 @@ class MainActivity : ComponentActivity() {
 
         val mediaMetadata by
           playerConnection?.mediaMetadata?.collectAsState() ?: remember { mutableStateOf(null) }
-        val ambientLightEnabled by rememberPreference(AmbientLightEnabledKey, defaultValue = true)
         val hasDockedPlayerAccessory =
           useFloatingNavBar && mediaMetadata != null && !showRail && shouldShowNavigationBar
 
@@ -1187,77 +1165,7 @@ class MainActivity : ComponentActivity() {
         val eventCount by database.eventCount().collectAsState(initial = 0)
         val showHistoryButton =
           remember(pauseListenHistory, eventCount) { !(pauseListenHistory && eventCount == 0) }
-
         val baseBg = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
-
-        val (liquidGlassGlobalEnabled) =
-          rememberPreference(LiquidGlassGlobalEnabledKey, defaultValue = true)
-        val (liquidGlassVibrancy) = rememberPreference(LiquidGlassVibrancyKey, defaultValue = 1f)
-        val (liquidGlassBlurRadius) =
-          rememberPreference(LiquidGlassBlurRadiusKey, defaultValue = 8f)
-        val (liquidGlassLensHeight) =
-          rememberPreference(LiquidGlassLensHeightKey, defaultValue = 0.5f)
-        val (liquidGlassLensAmount) =
-          rememberPreference(LiquidGlassLensAmountKey, defaultValue = 0.5f)
-        val (liquidGlassChromaticAberration) =
-          rememberPreference(LiquidGlassChromaticAberrationKey, defaultValue = true)
-        val (liquidGlassDepthEffect) =
-          rememberPreference(LiquidGlassDepthEffectKey, defaultValue = true)
-        val (liquidGlassSurfaceTintColorInt) =
-          rememberPreference(LiquidGlassSurfaceTintColorKey, defaultValue = 0)
-        val (liquidGlassSurfaceOpacity) =
-          rememberPreference(LiquidGlassSurfaceOpacityKey, defaultValue = 0.4f)
-        val (liquidGlassTextColorInt) =
-          rememberPreference(LiquidGlassTextColorKey, defaultValue = 0)
-        val (liquidGlassPlayerEnabled) =
-          rememberPreference(LiquidGlassPlayerEnabledKey, defaultValue = true)
-        val (liquidGlassMiniPlayerEnabled) =
-          rememberPreference(LiquidGlassMiniPlayerEnabledKey, defaultValue = true)
-        val (liquidGlassNavBarEnabled) =
-          rememberPreference(LiquidGlassNavBarEnabledKey, defaultValue = true)
-
-        val glassEffectConfig =
-          remember(
-            liquidGlassGlobalEnabled,
-            useFloatingNavBar,
-            liquidGlassVibrancy,
-            liquidGlassBlurRadius,
-            liquidGlassLensHeight,
-            liquidGlassLensAmount,
-            liquidGlassChromaticAberration,
-            liquidGlassDepthEffect,
-            liquidGlassSurfaceTintColorInt,
-            liquidGlassSurfaceOpacity,
-            liquidGlassTextColorInt,
-            liquidGlassPlayerEnabled,
-            liquidGlassMiniPlayerEnabled,
-            liquidGlassNavBarEnabled,
-          ) {
-            GlassEffectConfig(
-              globalEnabled = liquidGlassGlobalEnabled,
-              vibrancy = liquidGlassVibrancy,
-              blurRadius = liquidGlassBlurRadius,
-              lensHeight = liquidGlassLensHeight,
-              lensAmount = liquidGlassLensAmount,
-              chromaticAberration = liquidGlassChromaticAberration,
-              depthEffect = liquidGlassDepthEffect,
-              surfaceTintColor =
-                if (liquidGlassSurfaceTintColorInt == 0) Color.Unspecified
-                else Color(liquidGlassSurfaceTintColorInt),
-              surfaceOpacity = liquidGlassSurfaceOpacity,
-              textColor =
-                if (liquidGlassTextColorInt == 0) Color.Unspecified
-                else Color(liquidGlassTextColorInt),
-              playerEnabled = liquidGlassPlayerEnabled,
-              miniPlayerEnabled = liquidGlassMiniPlayerEnabled,
-              navBarEnabled = liquidGlassNavBarEnabled,
-            )
-          }
-
-        val appBackdrop = rememberLayerBackdrop {
-          drawRect(baseBg)
-          drawContent()
-        }
 
         val ringtoneViewModel: RingtoneViewModel = viewModel()
         val ringtoneUiState by ringtoneViewModel.uiState.collectAsState()
@@ -1284,8 +1192,6 @@ class MainActivity : ComponentActivity() {
           remember(playerBottomSheetState) { { playerBottomSheetState.expandSoft() } }
         CompositionLocalProvider(
           LocalHapticFeedback provides customHapticFeedback,
-          LocalGlassEffectConfig provides glassEffectConfig,
-          LocalAppBackdrop provides appBackdrop,
           LocalRingtoneViewModel provides ringtoneViewModel,
           LocalDatabase provides database,
           LocalContentColor provides
@@ -1412,14 +1318,8 @@ class MainActivity : ComponentActivity() {
                     scrollBehavior = topAppBarScrollBehavior,
                     colors =
                       TopAppBarDefaults.topAppBarColors(
-                        containerColor =
-                          if (glassEffectConfig.globalEnabled && isGlassSupported()) Color.Transparent
-                          else if (glassEffectConfig.globalEnabled) MaterialTheme.colorScheme.surface.copy(alpha = 0.86f)
-                          else MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor =
-                          if (glassEffectConfig.globalEnabled && isGlassSupported()) Color.Transparent
-                          else if (glassEffectConfig.globalEnabled) MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f)
-                          else MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                         actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1433,15 +1333,6 @@ class MainActivity : ComponentActivity() {
                         } else {
                           cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End)
                         }
-                      ).then(
-                        if (glassEffectConfig.globalEnabled && isGlassSupported()) {
-                          Modifier.liquidGlass(
-                            config = glassEffectConfig,
-                            shape = RoundedCornerShape(0.dp),
-                            applyEdgeEffects = false,
-                            blurRadiusDp = glassEffectConfig.blurRadius.coerceAtMost(6f),
-                          )
-                        } else Modifier
                       ),
                   )
                 }
@@ -1732,13 +1623,6 @@ class MainActivity : ComponentActivity() {
                 )
               }
               Box(Modifier.weight(1f)) {
-                if (ambientLightEnabled && mediaMetadata != null && currentRoute != "ambient_mode") {
-                  AmbientGlowBackground(
-                    mediaMetadata = mediaMetadata,
-                    modifier = Modifier.fillMaxSize(),
-                    intensity = 0.14f,
-                  )
-                }
                 NavHost(
                   navController = navController,
                   startDestination =
@@ -1815,9 +1699,7 @@ class MainActivity : ComponentActivity() {
                         it / 8
                       } + fadeOut(tween(400, easing = EmphasizedEasing))
                   },
-                  modifier =
-                    Modifier.layerBackdrop(appBackdrop)
-                      .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+                  modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
                 ) {
                   navigationBuilder(
                     navController = navController,
