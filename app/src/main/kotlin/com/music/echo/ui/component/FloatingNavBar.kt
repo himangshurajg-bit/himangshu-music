@@ -30,8 +30,7 @@ import echo.music.iad1tya.ui.screens.Screens
  * The iOS 26 style floating navigation bar, an alternative to [AppNavigationBar].
  *
  * Collapses to an inline pill while scrolling down (driven by [scrollConnection]) and expands back
- * on scroll up. The search destination is rendered as the standalone circular tab. When the liquid
- * glass effect is enabled for the navigation bar, the tab
+ * on scroll up. The search destination is rendered as the standalone circular tab.
  *
  * When [showPlayerAccessory] is true the now playing controls dock into the bar as an accessory (a
  * pill above the tabs when expanded, inline between the tab pill and the search tab when collapsed)
@@ -52,48 +51,17 @@ fun AppFloatingNavBar(
   onSearchLongClick: (() -> Unit)? = null,
 ) {
 
-  val glassConfig = LocalGlassEffectConfig.current
-  val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR)
-
   val backgroundColor =
-    when {
-      useGlass -> Color.Transparent
-      pureBlack -> Color.Black
-      else -> MaterialTheme.colorScheme.surfaceContainerHigh
-    }
-
-  val adaptiveTextColor =
-    if (glassConfig.textColor.isSpecified) {
-      glassConfig.textColor
-    } else if (MaterialTheme.colorScheme.surface.luminance() > 0.5f) {
-      Color.Black
-    } else {
-      Color.White
-    }
+    if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainerHigh
 
   val selectedContentColor =
-    when {
-      useGlass -> adaptiveTextColor
-      pureBlack -> Color.White
-      else -> MaterialTheme.colorScheme.primary
-    }
+    if (pureBlack) Color.White else MaterialTheme.colorScheme.primary
 
   val unselectedContentColor =
-    when {
-      useGlass -> adaptiveTextColor.copy(alpha = 0.65f)
-      pureBlack -> Color.White.copy(alpha = 0.65f)
-      else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    if (pureBlack) Color.White.copy(alpha = 0.65f)
+    else MaterialTheme.colorScheme.onSurfaceVariant
 
-  val tabBarContentModifier =
-    if (useGlass) {
-      Modifier.liquidGlass(
-        config = glassConfig,
-        shape = RoundedCornerShape(percent = 50),
-      )
-    } else {
-      Modifier
-    }
+  val tabBarContentModifier = Modifier
 
   val selectedTabKey =
     navigationItems
@@ -104,11 +72,7 @@ fun AppFloatingNavBar(
   val tabScreens = remember(navigationItems) { navigationItems.filter { it != Screens.Search } }
 
   val accessoryContentColor =
-    when {
-      useGlass -> adaptiveTextColor
-      pureBlack -> Color.White
-      else -> MaterialTheme.colorScheme.onSurface
-    }
+    if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurface
   val inlineAccessory:
     (@Composable
     SharedTransitionScope.(Modifier, AnimatedVisibilityScope) -> Unit)? =

@@ -1158,14 +1158,6 @@ fun AppearanceSettings(
 
           add(
             Material3SettingsItem(
-              icon = painterResource(R.drawable.water_drop),
-              title = { Text(stringResource(R.string.liquid_glass)) },
-              description = { Text(stringResource(R.string.liquid_glass_settings)) },
-              onClick = { navController.navigate("settings/appearance/liquidglass") },
-            )
-          )
-          add(
-            Material3SettingsItem(
               isHighlighted = (highlightKey == stringResource(R.string.enable_high_refresh_rate)),
               icon = painterResource(R.drawable.speed),
               title = { Text(stringResource(R.string.enable_high_refresh_rate)) },
@@ -1213,8 +1205,6 @@ fun AppearanceSettings(
                     PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
                     PlayerBackgroundStyle.GLOW_ANIMATED -> stringResource(R.string.glow_animated)
                     PlayerBackgroundStyle.LIVE_MESH -> stringResource(R.string.live_mesh)
-                    PlayerBackgroundStyle.LIQUID_GLASS ->
-                      stringResource(R.string.player_background_liquid_glass)
                     else -> stringResource(R.string.follow_theme)
                   }
                 )
@@ -1303,8 +1293,6 @@ fun AppearanceSettings(
                   PlayerBackgroundStyle.GLOW_ANIMATED -> stringResource(R.string.glow_animated)
                   PlayerBackgroundStyle.APPLE_MUSIC -> stringResource(R.string.apple_music)
                   PlayerBackgroundStyle.LIVE_MESH -> stringResource(R.string.live_mesh)
-                  PlayerBackgroundStyle.LIQUID_GLASS ->
-                    stringResource(R.string.player_background_liquid_glass)
                 }
               )
             },

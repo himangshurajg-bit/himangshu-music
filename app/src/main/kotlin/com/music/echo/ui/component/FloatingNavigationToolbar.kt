@@ -114,28 +114,14 @@ fun FloatingNavigationToolbar(
   )
   val toolbarColors =
     FloatingToolbarDefaults.standardFloatingToolbarColors(
-      toolbarContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+      toolbarContainerColor = toolbarContainerColor,
     )
 
   val outlineColor = androidx.compose.material3.MaterialTheme.colorScheme.outline
-  val glassConfig = LocalGlassEffectConfig.current
-  val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR)
-
   val toolbarModifier =
-    if (useGlass) {
-        androidx.compose.ui.Modifier.clip(
-            androidx.compose.foundation.shape.RoundedCornerShape(percent = 50)
-          )
-          .liquidGlass(
-            config = glassConfig,
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(percent = 50)
-          )
-      } else {
-        androidx.compose.ui.Modifier.clip(
-            androidx.compose.foundation.shape.RoundedCornerShape(percent = 50)
-          )
-          .background(toolbarContainerColor)
-      }
+    androidx.compose.ui.Modifier
+      .clip(androidx.compose.foundation.shape.RoundedCornerShape(percent = 50))
+      .background(toolbarContainerColor)
       .border(
         1.dp,
         outlineColor.copy(alpha = 0.3f),

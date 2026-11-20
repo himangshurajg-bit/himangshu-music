@@ -57,7 +57,6 @@ import echo.music.iad1tya.ui.screens.settings.BlockedArtistsScreen
 import echo.music.iad1tya.ui.screens.settings.ContentSettings
 import echo.music.iad1tya.ui.screens.settings.DarkMode
 import echo.music.iad1tya.ui.screens.settings.DislikedSongsScreen
-import echo.music.iad1tya.ui.screens.settings.GlassEffectSettings
 import echo.music.iad1tya.ui.screens.settings.MusicFlowSettings
 import echo.music.iad1tya.ui.screens.settings.PlayerSettings
 import echo.music.iad1tya.ui.screens.settings.EightDAudioSettingsScreen
@@ -431,10 +430,6 @@ fun NavGraphBuilder.navigationBuilder(
     arguments = listOf(navArgument("startTimestamp") { type = NavType.StringType }),
   ) {
     echo.music.iad1tya.ui.screens.DetailedListeningHistoryScreen(navController)
-  }
-
-  composable("settings/appearance/liquidglass") {
-    GlassEffectSettings(navController, scrollBehavior)
   }
 
   composable(
