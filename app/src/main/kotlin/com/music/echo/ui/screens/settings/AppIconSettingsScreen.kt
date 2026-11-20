@@ -318,7 +318,24 @@ fun AppIconSettingsScreen(
           "Millie Bobby Brown",
           "Millie Bobby Brown on community demand",
           R.mipmap.ic_launcher_millie
-        ),
+        )
+      ).sortedBy { it.title.lowercase() }
+
+    Column(
+      modifier =
+        Modifier.fillMaxSize()
+          .background(MaterialTheme.colorScheme.surface)
+          .verticalScroll(rememberScrollState())
+          .windowInsetsPadding(
+            LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal)
+          )
+          .padding(innerPadding)
+          .padding(horizontal = 16.dp)
+    ) {
+      Spacer(modifier = Modifier.height(8.dp))
+
+      Card(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
       ) {
