@@ -131,6 +131,8 @@
     <string name="remove_from_library">Remove from library</string>
     <string name="remove_all_from_library">Remove all from library</string>
     <string name="action_download">Download</string>
+    <string name="download_with_ytdlnis">Download with YTDLnis</string>
+    <string name="ytdlnis_not_installed">YTDLnis is not installed.</string>
     <string name="downloading">Downloading</string>
     <string name="loading">Loading</string>
     <string name="saving">Saving</string>
