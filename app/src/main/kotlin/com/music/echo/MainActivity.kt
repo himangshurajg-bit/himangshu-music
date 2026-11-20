@@ -185,7 +185,6 @@ import echo.music.iad1tya.ui.component.*
 import echo.music.iad1tya.ui.component.AppFloatingNavBar
 import echo.music.iad1tya.ui.component.RingtoneProgressDialog
 import echo.music.iad1tya.ui.component.RingtoneTrimmerDialog
-import echo.music.iad1tya.ui.component.backdrop.backdrops.layerBackdrop
 import echo.music.iad1tya.ui.component.floatingtabbar.rememberFloatingTabBarScrollConnection
 import echo.music.iad1tya.ui.component.shimmer.getShimmerTheme
 import echo.music.iad1tya.ui.menu.YouTubeSongMenu
@@ -1166,6 +1165,7 @@ class MainActivity : ComponentActivity() {
         val eventCount by database.eventCount().collectAsState(initial = 0)
         val showHistoryButton =
           remember(pauseListenHistory, eventCount) { !(pauseListenHistory && eventCount == 0) }
+        val baseBg = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
 
         val ringtoneViewModel: RingtoneViewModel = viewModel()
         val ringtoneUiState by ringtoneViewModel.uiState.collectAsState()
@@ -1699,9 +1699,7 @@ class MainActivity : ComponentActivity() {
                         it / 8
                       } + fadeOut(tween(400, easing = EmphasizedEasing))
                   },
-                  modifier =
-                    Modifier.layerBackdrop(appBackdrop)
-                      .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
+                  modifier = Modifier.nestedScroll(topAppBarScrollBehavior.nestedScrollConnection),
                 ) {
                   navigationBuilder(
                     navController = navController,
