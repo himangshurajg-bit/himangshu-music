@@ -15,6 +15,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.ZipInputStream
+import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -28,6 +29,7 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
       val fileSize = inputData.getString("file_size") ?: ""
 
       try {
+        DownloadNotificationManager.initialize(context)
         val startingNotification =
           DownloadNotificationManager.getDownloadStartingNotification(version, fileSize)
         val foregroundInfo =
@@ -43,8 +45,12 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
         setForeground(foregroundInfo)
       } catch (e: Exception) {}
 
+      var partialDownload: File? = null
       try {
         val url = URL(apkUrl)
+        if (url.protocol != "https" || url.host !in setOf("github.com", "nightly.link")) {
+          return@withContext Result.failure()
+        }
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = 15000
@@ -62,71 +68,66 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
           return@withContext Result.failure()
         }
 
-        val fileLength = connection.contentLength
+        val fileLength = connection.contentLengthLong
         val inputStream = connection.inputStream
 
-        val downloadDir =
-          File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "echo_updates")
-        if (!downloadDir.exists()) {
-          downloadDir.mkdirs()
+        val externalDownloadsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+          ?: throw IOException("App storage is unavailable")
+        val downloadDir = File(externalDownloadsDir, "echo_updates")
+        if (!downloadDir.exists() && !downloadDir.mkdirs()) {
+          connection.disconnect()
+          return@withContext Result.failure()
         }
 
-        val isZip = apkUrl.contains("nightly.link") || apkUrl.endsWith(".zip")
-        val downloadFile =
-          if (isZip) File(downloadDir, "himangshu_music_temp.zip") else File(downloadDir, "himangshu-music.apk")
-        val outputStream = FileOutputStream(downloadFile)
-
+        val safeVersion = version.replace(Regex("[^A-Za-z0-9._-]"), "_")
+        val isZip = apkUrl.contains("nightly.link", ignoreCase = true) || apkUrl.endsWith(".zip", ignoreCase = true)
+        val downloadFile = if (isZip) File(downloadDir, "update-$safeVersion.zip")
+          else File(downloadDir, "update-$safeVersion.apk")
+        partialDownload = downloadFile
         val buffer = ByteArray(8192)
-        var bytesRead: Int
-        var totalBytesRead: Long = 0
+        var totalBytesRead = 0L
         var lastProgress = -1
         var lastNotificationTime = 0L
+        connection.inputStream.use { inputStream ->
+          FileOutputStream(downloadFile, false).use { outputStream ->
+            while (true) {
+              val bytesRead = inputStream.read(buffer)
+              if (bytesRead == -1) break
+              if (isStopped) {
+                downloadFile.delete()
+                partialDownload = null
+                return@withContext Result.retry()
+              }
 
-        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-          if (isStopped) {
-            outputStream.close()
-            inputStream.close()
-            connection.disconnect()
-            if (downloadFile.exists()) {
-              downloadFile.delete()
+              outputStream.write(buffer, 0, bytesRead)
+              totalBytesRead += bytesRead
+              if (fileLength > 0) {
+                val progress = (totalBytesRead.toFloat() / fileLength.toFloat() * 100).toInt()
+                val currentTime = System.currentTimeMillis()
+                if (progress > lastProgress && currentTime - lastNotificationTime >= 1000) {
+                  lastProgress = progress
+                  lastNotificationTime = currentTime
+                  val progressNotification =
+                    DownloadNotificationManager.getDownloadProgressNotification(progress, version)
+                  val notificationManager =
+                    context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                  notificationManager.notify(DownloadNotificationManager.NOTIFICATION_ID, progressNotification)
+                  setProgress(workDataOf("progress" to progress.toFloat() / 100f))
+                }
+              }
             }
-            return@withContext Result.retry()
-          }
-
-          outputStream.write(buffer, 0, bytesRead)
-          totalBytesRead += bytesRead
-
-          if (fileLength > 0) {
-            val progress = (totalBytesRead.toFloat() / fileLength.toFloat() * 100).toInt()
-            val currentTime = System.currentTimeMillis()
-
-            if (progress > lastProgress && currentTime - lastNotificationTime >= 1000) {
-              lastProgress = progress
-              lastNotificationTime = currentTime
-
-              val progressNotification =
-                DownloadNotificationManager.getDownloadProgressNotification(progress, version)
-              val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE)
-                  as android.app.NotificationManager
-              notificationManager.notify(
-                DownloadNotificationManager.NOTIFICATION_ID,
-                progressNotification
-              )
-
-              setProgress(workDataOf("progress" to progress.toFloat() / 100f))
-            }
+            outputStream.flush()
           }
         }
-
-        outputStream.flush()
-        outputStream.close()
-        inputStream.close()
         connection.disconnect()
+        if (downloadFile.length() == 0L || (fileLength > 0 && downloadFile.length() != fileLength)) {
+          downloadFile.delete()
+          throw IOException("Downloaded update is incomplete")
+        }
 
         val finalFile =
           if (isZip) {
-            val targetApkFile = File(downloadDir, "himangshu-music.apk")
+            val targetApkFile = File(downloadDir, "update-$safeVersion.apk")
             var extracted = false
             try {
               ZipInputStream(downloadFile.inputStream()).use { zis ->
@@ -161,6 +162,15 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
             downloadFile
           }
 
+        val isValidApk = runCatching {
+          ZipFile(finalFile).use { zip -> zip.getEntry("AndroidManifest.xml") != null }
+        }.getOrDefault(false)
+        if (!isValidApk) {
+          finalFile.delete()
+          DownloadNotificationManager.showDownloadFailed(version, "The downloaded file is not a valid APK")
+          return@withContext Result.failure()
+        }
+
         if (version.startsWith("nightly-r")) {
           val runNumberString = version.removePrefix("nightly-r")
           val runNumber = runNumberString.toIntOrNull()
@@ -171,16 +181,19 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
           }
         }
 
+        partialDownload = null
         DownloadNotificationManager.showDownloadComplete(version, finalFile.absolutePath)
 
-        Result.success(workDataOf("file_path" to finalFile.absolutePath))
+        Result.success(workDataOf("file_path" to finalFile.absolutePath, "version" to version))
       } catch (e: IOException) {
+        partialDownload?.delete()
         DownloadNotificationManager.showDownloadFailed(
           version,
           e.message ?: context.getString(R.string.download_failed)
         )
         return@withContext Result.retry()
       } catch (e: Exception) {
+        partialDownload?.delete()
         DownloadNotificationManager.showDownloadFailed(
           version,
           e.message ?: context.getString(R.string.download_failed)

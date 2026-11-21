@@ -36,7 +36,6 @@ import echo.music.iad1tya.LocalPlayerAwareWindowInsets
 import echo.music.iad1tya.R
 import echo.music.iad1tya.echomusic.component.UpdateInfoDialog
 import echo.music.iad1tya.echomusic.updater.autoClearOldApks
-import echo.music.iad1tya.ui.utils.safeOpenUri
 import echo.music.iad1tya.echomusic.updater.getAutoUpdateCheckSetting
 import echo.music.iad1tya.echomusic.updater.getBetaUpdatesSetting
 import echo.music.iad1tya.echomusic.updater.getDownloadedApkCount
@@ -131,16 +130,13 @@ fun UpdateSettings(
                 Text(stringResource(R.string.version, BuildConfig.VERSION_NAME))
               }
             },
-            onClick = {
-              context.safeOpenUri("https://github.com/himangshurajg-bit/himangshu-music/releases")
-            }
+            onClick = { navController.navigate("update") }
           )
         )
     )
 
     Text(
-      text =
-        "To download updates, you will be redirected to our official site containing ads. This helps fund the app's development. Thank you for your support!",
+      text = "Check for updates, download the APK, and open Android’s installer here.",
       style = MaterialTheme.typography.bodySmall,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
