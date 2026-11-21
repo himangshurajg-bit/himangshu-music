@@ -1,5 +1,6 @@
 package echo.music.iad1tya.echomusic.updater
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -38,7 +39,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.Observer
 import androidx.navigation.NavHostController
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
@@ -96,7 +101,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -136,6 +140,7 @@ fun UpdateScreen(navController: NavHostController) {
   var downloadProgress by remember { mutableStateOf(0f) }
   var isDownloadComplete by remember { mutableStateOf(false) }
   var downloadedFile by remember { mutableStateOf<File?>(null) }
+  var downloadedVersion by remember { mutableStateOf<String?>(null) }
   val snackbarHostState = remember { SnackbarHostState() }
 
   val currentVersion = BuildConfig.VERSION_NAME
@@ -143,54 +148,84 @@ fun UpdateScreen(navController: NavHostController) {
 
   LaunchedEffect(Unit) { DownloadNotificationManager.initialize(context) }
 
-  LaunchedEffect(Unit) {
-    WorkManager.getInstance(context)
-      .getWorkInfosForUniqueWorkLiveData("update_download")
-      .observeForever { workInfos ->
-        val workInfo = workInfos?.firstOrNull() ?: return@observeForever
-
-        when (workInfo.state) {
-          WorkInfo.State.RUNNING -> {
-            isDownloading = true
-            downloadProgress = workInfo.progress.getFloat("progress", 0f)
-          }
-          WorkInfo.State.SUCCEEDED -> {
-            isDownloading = false
-            isDownloadComplete = true
-            val filePath = workInfo.outputData.getString("file_path")
-            if (filePath != null) {
-              downloadedFile = File(filePath)
-            }
-          }
-          WorkInfo.State.FAILED -> {
-            isDownloading = false
-            scope.launch {
-              snackbarHostState.showSnackbar(context.getString(R.string.download_failed))
-            }
-          }
-          WorkInfo.State.CANCELLED -> {
-            isDownloading = false
-            downloadProgress = 0f
-          }
-          else -> {}
+  DisposableEffect(context) {
+    val workLiveData = WorkManager.getInstance(context).getWorkInfosForUniqueWorkLiveData("update_download")
+    val observer = Observer<List<WorkInfo>> { workInfos ->
+      val workInfo = workInfos.firstOrNull() ?: return@Observer
+      when (workInfo.state) {
+        WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> {
+          isDownloading = true
         }
+        WorkInfo.State.RUNNING -> {
+          isDownloading = true
+          downloadProgress = workInfo.progress.getFloat("progress", 0f)
+        }
+        WorkInfo.State.SUCCEEDED -> {
+          isDownloading = false
+          isDownloadComplete = true
+          val filePath = workInfo.outputData.getString("file_path")
+          downloadedFile = filePath?.let(::File)
+          downloadedVersion = workInfo.outputData.getString("version")
+        }
+        WorkInfo.State.FAILED -> {
+          isDownloading = false
+          isDownloadComplete = false
+          scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.download_failed)) }
+        }
+        WorkInfo.State.CANCELLED -> {
+          isDownloading = false
+          downloadProgress = 0f
+        }
+        else -> {}
       }
+    }
+    workLiveData.observeForever(observer)
+    onDispose { workLiveData.removeObserver(observer) }
   }
 
-  LaunchedEffect(isDownloadComplete, downloadedFile) {
-    if (isDownloadComplete && downloadedFile != null) {
-      if (!downloadedFile!!.exists()) {
-        isDownloadComplete = false
-        downloadedFile = null
-        downloadProgress = 0f
+  LaunchedEffect(status, downloadedFile, downloadedVersion) {
+    val file = downloadedFile
+    if (file != null && !file.isFile) {
+      downloadedFile = null
+      downloadedVersion = null
+      downloadProgress = 0f
+    }
+    val offeredVersion = (status as? EchoUpdateStatus.Available)?.version
+    isDownloadComplete = file?.isFile == true && downloadedVersion != null && downloadedVersion == offeredVersion
+  }
+
+  fun launchApkInstaller(file: File) {
+    try {
+      val uri = FileProvider.getUriForFile(context, "${context.packageName}.FileProvider", file)
+      val installIntent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "application/vnd.android.package-archive")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
       }
+      ContextCompat.startActivity(context, installIntent, null)
+    } catch (_: ActivityNotFoundException) {
+      scope.launch { snackbarHostState.showSnackbar("No Android package installer is available.") }
+    } catch (e: Exception) {
+      Log.e("UpdateCheck", "Could not open the Android installer", e)
+      scope.launch { snackbarHostState.showSnackbar("Could not open the Android installer. Try again.") }
+    }
+  }
+
+  val installPermissionLauncher = rememberLauncherForActivityResult(
+    ActivityResultContracts.StartActivityForResult()
+  ) {
+    val file = downloadedFile
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()) {
+      if (file != null && file.isFile) launchApkInstaller(file)
+      else scope.launch { snackbarHostState.showSnackbar("The downloaded update is no longer available. Download it again.") }
+    } else {
+      scope.launch { snackbarHostState.showSnackbar("Allow RajTune to install unknown apps, then tap Install again.") }
     }
   }
 
   fun triggerUpdateCheck() {
     status = EchoUpdateStatus.Checking
     scope.launch {
-      delay(1000L)
       checkForUpdate(
         context = context,
         onSuccess = { tag, isAvailable, changelog, size, date, description, imageUrl, apkUrl ->
@@ -214,8 +249,8 @@ fun UpdateScreen(navController: NavHostController) {
               EchoUpdateStatus.NoUpdate(tag)
             }
         },
-        onError = {
-          status = EchoUpdateStatus.Error(context.getString(R.string.cant_check_updates))
+        onError = { message ->
+          status = EchoUpdateStatus.Error(message.ifBlank { context.getString(R.string.cant_check_updates) })
         }
       )
     }
@@ -315,34 +350,19 @@ fun UpdateScreen(navController: NavHostController) {
                         downloadProgress = 0f
                         return@AnimatedActionButton
                       }
-                      file.let { f ->
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                          if (!context.packageManager.canRequestPackageInstalls()) {
-                            val intent =
-                              Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
-                                .apply { data = Uri.parse("package:${context.packageName}") }
-                            context.startActivity(intent)
-                            return@let
-                          }
-                        }
-                        val uri =
-                          FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.FileProvider",
-                            file
-                          )
-                        val installIntent =
-                          Intent(Intent.ACTION_VIEW).apply {
-                            setDataAndType(uri, "application/vnd.android.package-archive")
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                          }
-                        ContextCompat.startActivity(context, installIntent, null)
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                        !context.packageManager.canRequestPackageInstalls()
+                      ) {
+                        val permissionIntent = Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                          .setData(Uri.parse("package:${context.packageName}"))
+                        installPermissionLauncher.launch(permissionIntent)
+                      } else {
+                        launchApkInstaller(file)
                       }
                     } else {
                       val urlToDownload =
                         currentStatus.apkUrl
-                          ?: "https://github.com/himangshurajg-bit/himangshu-music/releases/download/${currentStatus.version}/Himangshu-Music-universal-gms-release.apk"
+                          ?: "https://github.com/himangshurajg-bit/himangshu-music/releases/download/${currentStatus.version}/RajTune-universal-gms-release.apk"
 
                       val constraints =
                         Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
@@ -629,29 +649,25 @@ private fun formatGitHubDate(githubDate: String): String =
   }
 
 fun isNewerVersion(latestVersion: String, currentVersion: String): Boolean {
-  val latestVersionClean = latestVersion.removePrefix("b").removePrefix("v")
-  val currentVersionClean = currentVersion.removePrefix("b").removePrefix("v")
+  fun normalize(version: String): Pair<List<Int>, Boolean> {
+    val trimmed = version.trim().removePrefix("v")
+    val isBeta = trimmed.startsWith("b", ignoreCase = true)
+    val numericVersion = trimmed.removePrefix("b").removePrefix("B").substringBefore('-')
+    val parts = numericVersion.split('.').map { segment ->
+      segment.takeWhile(Char::isDigit).toIntOrNull() ?: 0
+    }
+    return parts to isBeta
+  }
 
-  val latestParts = latestVersionClean.split(".").map { it.toIntOrNull() ?: 0 }
-  val currentParts = currentVersionClean.split(".").map { it.toIntOrNull() ?: 0 }
-
+  val (latestParts, latestIsBeta) = normalize(latestVersion)
+  val (currentParts, currentIsBeta) = normalize(currentVersion)
   for (i in 0 until maxOf(latestParts.size, currentParts.size)) {
     val latest = latestParts.getOrElse(i) { 0 }
     val current = currentParts.getOrElse(i) { 0 }
-    when {
-      latest > current -> return true
-      latest < current -> return false
-    }
+    if (latest != current) return latest > current
   }
-
-  if (latestVersionClean == currentVersionClean) {
-    val latestIsBeta = latestVersion.startsWith("b")
-    val currentIsBeta = currentVersion.startsWith("b")
-
-    if (currentIsBeta && !latestIsBeta) return true
-  }
-
-  return false
+  // A stable release supersedes a beta with the same numeric version, not vice versa.
+  return currentIsBeta && !latestIsBeta
 }
 
 suspend fun checkForUpdate(
@@ -667,19 +683,18 @@ suspend fun checkForUpdate(
       imageUrl: String?,
       apkUrl: String?
     ) -> Unit,
-  onError: () -> Unit,
+  onError: (String) -> Unit,
 ) {
   withContext(Dispatchers.IO) {
     try {
-      val url = URL("https://api.github.com/repos/himangshurajg-bit/himangshu-music/releases/latest")
-      val json = url.openStream().bufferedReader().use { it.readText() }
+      val json = openTimedStream("https://api.github.com/repos/himangshurajg-bit/himangshu-music/releases/latest")
+        .bufferedReader()
+        .use { it.readText() }
       val targetRelease = JSONObject(json)
 
       val currentVersion = BuildConfig.VERSION_NAME
       val targetTagName = targetRelease.getString("tag_name")
-      val currentClean = currentVersion.removePrefix("b").removePrefix("v").trim()
-      val targetClean = targetTagName.removePrefix("b").removePrefix("v").trim()
-      val shouldShow = currentClean != targetClean
+      val shouldShow = isNewerVersion(targetTagName, currentVersion)
 
       if (shouldShow) {
         val tagWithPrefix = targetRelease.getString("tag_name")
@@ -690,10 +705,8 @@ suspend fun checkForUpdate(
         var imageUrl: String? = null
         try {
           val changelogUrl =
-            URL(
-              "https://github.com/himangshurajg-bit/himangshu-music/releases/download/$tagWithPrefix/changelog.json"
-            )
-          val changelogJson = changelogUrl.openStream().bufferedReader().use { it.readText() }
+            "https://github.com/himangshurajg-bit/himangshu-music/releases/download/$tagWithPrefix/changelog.json"
+          val changelogJson = openTimedStream(changelogUrl).bufferedReader().use { it.readText() }
           val changelogData = JSONObject(changelogJson)
 
           description = changelogData.optString("description").takeIf { it.isNotEmpty() }
@@ -729,21 +742,19 @@ suspend fun checkForUpdate(
         val formattedReleaseDate = formatGitHubDate(publishedAt)
         val assets = targetRelease.getJSONArray("assets")
 
-        var apkSizeInMB = ""
-        var apkDownloadUrl = ""
-        for (j in 0 until assets.length()) {
-          val asset = assets.getJSONObject(j)
-          val assetName = asset.getString("name")
-          if (
-            assetName.endsWith(".apk", ignoreCase = true) &&
-              !assetName.lowercase().contains("debug")
-          ) {
-            val apkSizeInBytes = asset.getLong("size")
-            apkSizeInMB = String.format("%.1f", apkSizeInBytes / (1024.0 * 1024.0))
-            apkDownloadUrl = asset.getString("browser_download_url")
-            break
+        val compatibleAsset = (0 until assets.length())
+          .map { assets.getJSONObject(it) }
+          .firstOrNull { asset ->
+            val name = asset.optString("name").lowercase()
+            name.endsWith(".apk") && !name.contains("debug") &&
+              name.contains("universal") && name.contains("gms") && name.contains("release")
           }
-        }
+        val apkSizeInMB = compatibleAsset?.optLong("size", 0L)?.let { bytes ->
+          if (bytes > 0) String.format("%.1f", bytes / (1024.0 * 1024.0)) else ""
+        } ?: ""
+        val apkDownloadUrl = compatibleAsset?.optString("browser_download_url")?.takeIf { url ->
+          runCatching { URL(url).let { it.protocol == "https" && it.host == "github.com" && it.path.contains("/releases/download/") } }.getOrDefault(false)
+        }.orEmpty()
 
         if (apkDownloadUrl.isNotEmpty()) {
           withContext(Dispatchers.Main) {
@@ -762,12 +773,17 @@ suspend fun checkForUpdate(
         }
       }
 
+      val tagVersion = runCatching { JSONObject(json).optString("tag_name", currentVersion) }.getOrDefault(currentVersion)
       withContext(Dispatchers.Main) {
-        onSuccess(currentVersion, false, emptyList(), "", "", null, null, null)
+        if (isNewerVersion(tagVersion, currentVersion)) {
+          onError("A newer release is available, but it does not include a compatible RajTune APK yet.")
+        } else {
+          onSuccess(currentVersion, false, emptyList(), "", "", null, null, null)
+        }
       }
     } catch (e: Exception) {
       Log.e("UpdateCheck", "Error checking for updates: ${e.message}", e)
-      withContext(Dispatchers.Main) { onError() }
+      withContext(Dispatchers.Main) { onError(context.getString(R.string.cant_check_updates)) }
     }
   }
 }

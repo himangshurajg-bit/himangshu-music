@@ -11,12 +11,13 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import echo.music.iad1tya.R
+import echo.music.iad1tya.MainActivity
 
 object UpdateNotificationHelper {
   private const val CHANNEL_ID = "updates"
   private const val NOTIFICATION_ID = 1001
+  const val EXTRA_OPEN_UPDATES = "echo.music.iad1tya.OPEN_UPDATES"
 
   fun showUpdateNotification(context: Context, versionName: String) {
     val nm = context.getSystemService(NotificationManager::class.java)
@@ -31,8 +32,9 @@ object UpdateNotificationHelper {
       nm.createNotificationChannel(channel)
     }
 
-    val apkUrl = "https://github.com/himangshurajg-bit/himangshu-music/releases"
-    val intent = Intent(Intent.ACTION_VIEW, apkUrl.toUri())
+    val intent = Intent(context, MainActivity::class.java)
+      .putExtra(EXTRA_OPEN_UPDATES, true)
+      .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
     val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     val pending = PendingIntent.getActivity(context, NOTIFICATION_ID, intent, flags)

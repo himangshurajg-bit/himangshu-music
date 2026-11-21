@@ -601,7 +601,7 @@ class MainActivity : ComponentActivity() {
               UpdateNotificationHelper.showUpdateNotification(context, latestVersion)
             }
           },
-          onError = { Log.e("UpdateCheck", "Startup check failed") },
+          onError = { message -> Log.e("UpdateCheck", "Startup check failed: $message") },
         )
       }
     }
@@ -770,6 +770,7 @@ class MainActivity : ComponentActivity() {
           changelog = availableUpdateChangelog,
           description = availableUpdateDescription,
           onDismiss = { showUpdateDialog = false },
+          onUpdate = { navController.navigate("update") { launchSingleTop = true } },
         )
       } else {
         whatsNewInfo?.let { info ->
@@ -1129,7 +1130,10 @@ class MainActivity : ComponentActivity() {
           if (activeIntent != null) {
             handleWidgetAction(activeIntent)
           }
-          if (pendingIntent != null) {
+          if (activeIntent?.getBooleanExtra(echo.music.iad1tya.echomusic.UpdateNotificationHelper.EXTRA_OPEN_UPDATES, false) == true) {
+            navController.navigate("update") { launchSingleTop = true }
+            activeIntent.removeExtra(echo.music.iad1tya.echomusic.UpdateNotificationHelper.EXTRA_OPEN_UPDATES)
+          } else if (pendingIntent != null) {
             handleDeepLinkIntent(pendingIntent!!, navController)
             handleRecognitionIntent(pendingIntent!!, navController)
             handleAssistantSearchIntent(pendingIntent!!, navController)
@@ -1153,7 +1157,10 @@ class MainActivity : ComponentActivity() {
           val listener =
             Consumer<Intent> { newIntent ->
               handleWidgetAction(newIntent)
-              if (
+              if (newIntent.getBooleanExtra(echo.music.iad1tya.echomusic.UpdateNotificationHelper.EXTRA_OPEN_UPDATES, false)) {
+                navController.navigate("update") { launchSingleTop = true }
+                newIntent.removeExtra(echo.music.iad1tya.echomusic.UpdateNotificationHelper.EXTRA_OPEN_UPDATES)
+              } else if (
                 newIntent.action == Intent.ACTION_VIEW || newIntent.action == Intent.ACTION_SEND
               ) {
                 handleDeepLinkIntent(newIntent, navController)

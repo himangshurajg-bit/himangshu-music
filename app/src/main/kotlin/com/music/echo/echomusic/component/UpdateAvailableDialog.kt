@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -17,7 +16,6 @@ import echo.music.iad1tya.R
 import echo.music.iad1tya.echomusic.updater.ChangelogSection
 import echo.music.iad1tya.ui.utils.parseMarkdownToSections
 import echo.music.iad1tya.ui.utils.parseSimpleMarkdown
-import echo.music.iad1tya.ui.utils.safeOpenUri
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 
 /**
@@ -34,9 +32,9 @@ fun UpdateAvailableDialog(
   version: String,
   changelog: List<ChangelogSection>,
   description: String?,
-  onDismiss: () -> Unit
+  onDismiss: () -> Unit,
+  onUpdate: () -> Unit
 ) {
-  val context = LocalContext.current
   val cardShape =
     AbsoluteSmoothCornerShape(
       cornerRadiusTL = 30.dp,
@@ -196,11 +194,11 @@ fun UpdateAvailableDialog(
           Button(
             onClick = {
               onDismiss()
-              context.safeOpenUri("https://github.com/himangshurajg-bit/himangshu-music/releases")
+              onUpdate()
             },
             shape = actionShape,
           ) {
-            Text(text = "Update")
+            Text(text = "Open updater")
           }
         }
       }
