@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -54,6 +55,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -117,6 +119,7 @@ import coil3.compose.AsyncImage
 import echo.music.iad1tya.LocalListenTogetherManager
 import echo.music.iad1tya.LocalPlayerConnection
 import echo.music.iad1tya.R
+import echo.music.iad1tya.constants.AutoLoadMoreKey
 import echo.music.iad1tya.constants.ListItemHeight
 import echo.music.iad1tya.constants.PlayerBackgroundStyle
 import echo.music.iad1tya.constants.QueueEditLockKey
@@ -282,6 +285,8 @@ fun Queue(
   }
 
   var locked by rememberPreference(QueueEditLockKey, defaultValue = false)
+  var autoLoadMore by rememberPreference(AutoLoadMoreKey, defaultValue = true)
+  var recommendationFilter by rememberSaveable { mutableStateOf("all") }
 
   val (useNewPlayerDesign, onUseNewPlayerDesignChange) =
     rememberPreference(UseNewPlayerDesignKey, defaultValue = true)
@@ -931,6 +936,34 @@ fun Queue(
           }
 
           ToggleButton(
+            checked = autoLoadMore,
+            onCheckedChange = { autoLoadMore = it },
+            enabled = !isListenTogetherGuest,
+            shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
+            colors =
+              ToggleButtonDefaults.toggleButtonColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+              ),
+            modifier = Modifier.weight(1f).height(56.dp),
+          ) {
+            Icon(
+              painter = painterResource(R.drawable.queue_autoplay),
+              contentDescription = stringResource(R.string.queue_autoplay),
+              modifier = Modifier.size(22.dp)
+            )
+            Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+            Text(
+              text = stringResource(R.string.queue_autoplay),
+              style = MaterialTheme.typography.labelMedium,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
+            )
+          }
+
+          ToggleButton(
             checked = false,
             onCheckedChange = {
               Toast.makeText(
@@ -1290,23 +1323,74 @@ fun Queue(
           }
 
           if (automix.isNotEmpty()) {
+            val queuedArtists = queueWindows
+              .flatMap { it.mediaItem.metadata?.artists.orEmpty() }
+              .map { it.name.trim().lowercase() }
+              .filter(String::isNotBlank)
+              .toSet()
+            val indexedAutomix = automix.withIndex().toList()
+            fun sharesQueuedArtist(item: androidx.media3.common.MediaItem): Boolean =
+              item.metadata?.artists.orEmpty().any { it.name.trim().lowercase() in queuedArtists }
+            val hasFamiliarArtists = indexedAutomix.any { sharesQueuedArtist(it.value) }
+            val hasDiscoverArtists = indexedAutomix.any {
+              it.value.metadata?.artists.orEmpty().isNotEmpty() && !sharesQueuedArtist(it.value)
+            }
+            val visibleAutomix = indexedAutomix.filter { indexed ->
+              when (recommendationFilter) {
+                "familiar" -> sharesQueuedArtist(indexed.value)
+                "discover" -> indexed.value.metadata?.artists.orEmpty().isNotEmpty() &&
+                  !sharesQueuedArtist(indexed.value)
+                else -> true
+              }
+            }
             item(key = "automix_divider") {
-              Text(
-                text = stringResource(R.string.similar_content),
-                modifier = Modifier.padding(start = 16.dp),
-              )
+              Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
+                Text(text = stringResource(R.string.continue_playing))
+                Text(
+                  text = stringResource(
+                    if (autoLoadMore) R.string.queue_autoplaying_similar else R.string.similar_content
+                  ),
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                  item {
+                    FilterChip(
+                      selected = recommendationFilter == "all",
+                      onClick = { recommendationFilter = "all" },
+                      label = { Text(stringResource(R.string.queue_filter_all)) },
+                    )
+                  }
+                  if (hasFamiliarArtists) item {
+                    FilterChip(
+                      selected = recommendationFilter == "familiar",
+                      onClick = { recommendationFilter = "familiar" },
+                      label = { Text(stringResource(R.string.queue_filter_familiar)) },
+                    )
+                  }
+                  if (hasDiscoverArtists) item {
+                    FilterChip(
+                      selected = recommendationFilter == "discover",
+                      onClick = { recommendationFilter = "discover" },
+                      label = { Text(stringResource(R.string.queue_filter_discover)) },
+                    )
+                  }
+                }
+              }
             }
 
             itemsIndexed(
-              items = automix,
-              key = { _, it -> it.mediaId },
-            ) { index, item ->
+              items = visibleAutomix,
+              key = { _, indexed -> indexed.value.mediaId },
+            ) { index, indexed ->
+              val item = indexed.value
+              val originalIndex = indexed.index
               Row(
                 horizontalArrangement = Arrangement.Center,
               ) {
                 MediaMetadataListItem(
                   mediaMetadata = item.metadata!!,
-                  shape = listItemShape(index, automix.size),
+                  shape = listItemShape(index, visibleAutomix.size),
                   color = MaterialTheme.colorScheme.surfaceVariant,
                   verticalPadding = 0.dp,
                   trailingContent = {
@@ -1315,7 +1399,7 @@ fun Queue(
                         onClick = {
                           playerConnection.service.playNextAutomix(
                             item,
-                            index,
+                            originalIndex,
                           )
                         },
                       ) {
@@ -1328,7 +1412,7 @@ fun Queue(
                         onClick = {
                           playerConnection.service.addToQueueAutomix(
                             item,
-                            index,
+                            originalIndex,
                           )
                         },
                       ) {

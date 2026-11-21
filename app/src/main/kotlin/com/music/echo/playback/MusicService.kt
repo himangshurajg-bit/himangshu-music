@@ -2422,6 +2422,19 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
       player.playWhenReady = playWhenReady
     }
     return scope.launch(SilentHandler) {
+      if (queue is YouTubeQueue && queue.isRadioQueue) {
+        val tasteSongs = withContext(Dispatchers.IO) {
+          runCatching {
+            (database.topSongs(40).firstOrNull().orEmpty() +
+              database.likedSongsByPlayTimeAsc().firstOrNull().orEmpty().take(40))
+              .distinctBy { it.song.id }
+          }.getOrDefault(emptyList())
+        }
+        queue.setTasteSignals(
+          artists = tasteSongs.flatMap { song -> song.artists.map { it.name } }.distinct(),
+          tracks = tasteSongs.map { song -> song.song.title to song.artists.map { it.name } },
+        )
+      }
       try {
         loadInitialStatus(queue, playWhenReady, restoredShuffledIndices)
       } finally {

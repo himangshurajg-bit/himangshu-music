@@ -9,7 +9,11 @@ import echo.music.iad1tya.extensions.toMediaItem
 import echo.music.iad1tya.models.MediaMetadata
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 class YouTubeQueue(
   private var endpoint: WatchEndpoint,
@@ -18,25 +22,54 @@ class YouTubeQueue(
   private var continuation: String? = null
   private var retryCount = 0
   private val maxRetries = 3
-  private val isRadioQueue = endpoint.playlistId?.startsWith("RD") != false
+  val isRadioQueue = endpoint.playlistId?.startsWith("RD") != false
   private val pageFilter = RadioQueuePageFilter()
   /** Started from an episode: YouTube's radio mixes in music, which must not follow it. */
   private var isEpisodeRadio = false
+  private val isAddonQueue = endpoint.videoId?.startsWith("addon_") == true
+  private var favoriteArtists: List<String> = emptyList()
+  private var favoriteTrackKeys: Set<String> = emptySet()
+  private var tasteSeedVideoId: String? = null
+  private var seedMoodTags: Set<String> = emptySet()
+  private val moodSignalCache = mutableMapOf<String, Set<String>>()
+
+  /** Supplies a local listening-history snapshot before the queue's first radio page loads. */
+  fun setTasteSignals(artists: List<String>, tracks: List<Pair<String, List<String>>>) {
+    favoriteArtists = artists
+    favoriteTrackKeys = tracks.mapTo(mutableSetOf()) { (title, trackArtists) ->
+      AddonQueueTrackMatcher.trackKey(title, trackArtists)
+    }
+  }
 
   override suspend fun getInitialStatus(): Queue.Status {
     return withContext(IO) {
       continuation = null
       pageFilter.reset()
       var lastException: Throwable? = null
-      val isAddon = endpoint.videoId?.startsWith("addon_") == true
+      val isAddon = isAddonQueue
       val originalAddonItem = if (isAddon) preloadItem else null
 
       if (isAddon) {
           try {
               val query = "${preloadItem?.title ?: ""} ${preloadItem?.artists?.firstOrNull()?.name ?: ""}".trim()
               val searchResult = YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).getOrNull()
-              val ytTrack = searchResult?.items?.filterIsInstance<SongItem>()?.firstOrNull()
+              val ytTrack = AddonQueueTrackMatcher.select(
+                  candidates = searchResult?.items?.filterIsInstance<SongItem>().orEmpty(),
+                  title = preloadItem?.title.orEmpty(),
+                  artist = preloadItem?.artists?.firstOrNull()?.name,
+                  durationSeconds = preloadItem?.duration,
+              )
+              if (ytTrack == null && originalAddonItem != null) {
+                  // Keep the actual selected addon track rather than seeding radio with a
+                  // same-title/wrong-artist search result when confidence is insufficient.
+                  return@withContext Queue.Status(
+                      title = originalAddonItem.title,
+                      items = listOf(originalAddonItem.toMediaItem()),
+                      mediaItemIndex = 0,
+                  )
+              }
               if (ytTrack != null) {
+                  tasteSeedVideoId = ytTrack.id
                   endpoint = WatchEndpoint(videoId = ytTrack.id, playlistId = "RDAMVM${ytTrack.id}")
               }
           } catch (e: Exception) {
@@ -66,7 +99,8 @@ class YouTubeQueue(
           }
           val filtered = if (isRadioQueue) pageFilter.filter(nextResult.items) else nextResult.items
           val songs = if (isEpisodeRadio) filtered.filter { it.isPodcastEpisode } else filtered
-          val itemsList = songs.map { it.toMediaItem() }.toMutableList()
+          val rankedSongs = if (isRadioQueue) rankRadioSongs(songs, currentSongId) else songs
+          val itemsList = rankedSongs.map { it.toMediaItem() }.toMutableList()
           if (isAddon && originalAddonItem != null) {
               if (itemsList.isNotEmpty()) {
                   itemsList[0] = originalAddonItem.toMediaItem()
@@ -79,7 +113,7 @@ class YouTubeQueue(
             title = nextResult.title,
             items = itemsList,
             mediaItemIndex = if (isAddon) 0 else
-              songs.indexOfFirst { it.id == currentSongId }.coerceAtLeast(0),
+              rankedSongs.indexOfFirst { it.id == currentSongId }.coerceAtLeast(0),
           )
         } catch (e: Exception) {
           if (e is CancellationException) throw e
@@ -104,6 +138,65 @@ class YouTubeQueue(
     }
   }
 
+  /**
+   * Uses YouTube's per-track mood/genre signals only when available. Requests are bounded to
+   * the seed plus a few visible queue candidates; missing signals leave YouTube's order intact.
+   */
+  private suspend fun rankRadioSongs(
+    songs: List<SongItem>,
+    pinnedSongId: String? = null,
+  ): List<SongItem> {
+    if (songs.size < 2) return songs
+    val seedId = tasteSeedVideoId ?: endpoint.videoId?.takeUnless { it.startsWith("addon_") }
+    val requestedIds: List<String> = buildList {
+      seedId?.let(::add)
+      songs.take(MAX_MOOD_CANDIDATES).mapNotNullTo(this) { it.id.takeIf(String::isNotBlank) }
+    }.distinct()
+    val missingIds = requestedIds.filterNot(moodSignalCache::containsKey)
+    if (missingIds.isNotEmpty()) {
+      val fetched =
+        withTimeoutOrNull<Map<String, Set<String>>>(MOOD_SIGNAL_TIMEOUT_MS) {
+          coroutineScope {
+            missingIds
+              .map { videoId ->
+                async<Pair<String, Set<String>>> {
+                  val tags =
+                    YouTube.fetchTasteSignals(videoId).getOrNull()?.let { signals ->
+                      (signals.moodTags + signals.genres).toSet()
+                    }.orEmpty()
+                  videoId to tags
+                }
+              }
+              .awaitAll()
+              .toMap()
+          }
+        }
+      if (fetched != null) moodSignalCache.putAll(fetched)
+    }
+    val signalMap = requestedIds.associateWith { moodSignalCache[it].orEmpty() }
+
+    if (seedMoodTags.isEmpty() && seedId != null) {
+      seedMoodTags = signalMap[seedId].orEmpty()
+    }
+    val candidateSignals = songs.take(MAX_MOOD_CANDIDATES)
+      .associate { it.id to signalMap[it.id].orEmpty() }
+
+    val pinnedIndex = songs.indexOfFirst { it.id == pinnedSongId }.takeIf { it >= 0 }
+    val candidates =
+      if (pinnedIndex == null) songs else songs.filterIndexed { index, _ -> index != pinnedIndex }
+    val rankedCandidates = AddonQueueTrackMatcher.rankByTaste(
+      candidates = candidates,
+      favoriteArtists = favoriteArtists,
+      favoriteTrackKeys = favoriteTrackKeys,
+      currentMoodTags = seedMoodTags,
+      candidateMoodTags = candidateSignals,
+    )
+    if (pinnedIndex == null) return rankedCandidates
+    return rankedCandidates.toMutableList().apply {
+      add(pinnedIndex.coerceAtMost(size), songs[pinnedIndex])
+    }
+  }
+
   override fun hasNextPage(): Boolean = continuation != null
 
   override suspend fun nextPage(): List<MediaItem> {
@@ -124,7 +217,8 @@ class YouTubeQueue(
             retryCount = 0
             val filtered = if (isRadioQueue) pageFilter.filter(nextResult.items) else nextResult.items
             val songs = if (isEpisodeRadio) filtered.filter { it.isPodcastEpisode } else filtered
-            if (songs.isNotEmpty()) return@withContext songs.map { it.toMediaItem() }
+            val rankedSongs = if (isRadioQueue) rankRadioSongs(songs) else songs
+            if (rankedSongs.isNotEmpty()) return@withContext rankedSongs.map { it.toMediaItem() }
             break
           } catch (e: Exception) {
             if (e is CancellationException) throw e
@@ -138,8 +232,9 @@ class YouTubeQueue(
       emptyList()
     }
   }
-
   companion object {
+    private const val MAX_MOOD_CANDIDATES = 4
+    private const val MOOD_SIGNAL_TIMEOUT_MS = 2_000L
 
     fun radio(song: MediaMetadata): YouTubeQueue {
       return YouTubeQueue(WatchEndpoint(videoId = song.id), song)

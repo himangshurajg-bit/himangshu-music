@@ -266,6 +266,7 @@ class MainActivity : ComponentActivity() {
     const val ACTION_OUTPUT_SWITCHER = "echo.music.iad1tya.action.OUTPUT_SWITCHER"
     const val ACTION_SONG_OPTIONS = "echo.music.iad1tya.action.SONG_OPTIONS"
     const val ACTION_LYRICS = "echo.music.iad1tya.action.LYRICS"
+    const val ACTION_AOD_MODE = "echo.music.iad1tya.action.AOD_MODE"
     const val ACTION_MEDIA_OUTPUT = "com.android.settings.panel.action.MEDIA_OUTPUT"
     const val EXTRA_MEDIA_OUTPUT_PACKAGE_NAME = "com.android.settings.panel.extra.PACKAGE_NAME"
     const val EXTRA_AUTO_START_RECOGNITION = "auto_start_recognition"
@@ -364,6 +365,7 @@ class MainActivity : ComponentActivity() {
     if (::navController.isInitialized) {
       handleDeepLinkIntent(intent, navController)
       handleRecognitionIntent(intent, navController)
+      handleAodModeIntent(intent, navController)
       handleAssistantSearchIntent(intent, navController)
     } else {
       pendingIntent = intent
@@ -1136,6 +1138,7 @@ class MainActivity : ComponentActivity() {
           } else if (pendingIntent != null) {
             handleDeepLinkIntent(pendingIntent!!, navController)
             handleRecognitionIntent(pendingIntent!!, navController)
+            handleAodModeIntent(pendingIntent!!, navController)
             handleAssistantSearchIntent(pendingIntent!!, navController)
             pendingIntent = null
           } else if (
@@ -1145,6 +1148,8 @@ class MainActivity : ComponentActivity() {
             handleDeepLinkIntent(intent, navController)
           } else if (intent != null && intent.action == ACTION_RECOGNITION) {
             handleRecognitionIntent(intent, navController)
+          } else if (intent != null && intent.action == ACTION_AOD_MODE) {
+            handleAodModeIntent(intent, navController)
           } else if (
             intent != null &&
               intent.action == android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH
@@ -1166,6 +1171,8 @@ class MainActivity : ComponentActivity() {
                 handleDeepLinkIntent(newIntent, navController)
               } else if (newIntent.action == ACTION_RECOGNITION) {
                 handleRecognitionIntent(newIntent, navController)
+              } else if (newIntent.action == ACTION_AOD_MODE) {
+                handleAodModeIntent(newIntent, navController)
               } else if (
                 newIntent.action == android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH
               ) {
@@ -2113,6 +2120,14 @@ class MainActivity : ComponentActivity() {
     navController.navigate(if (autoStart) "recognition?autoStart=true" else "recognition") {
       launchSingleTop = true
     }
+  }
+
+  private fun handleAodModeIntent(
+    intent: Intent,
+    navController: NavHostController,
+  ) {
+    if (intent.action != ACTION_AOD_MODE) return
+    navController.navigate("aod_screen") { launchSingleTop = true }
   }
 
   private fun handleAssistantSearchIntent(

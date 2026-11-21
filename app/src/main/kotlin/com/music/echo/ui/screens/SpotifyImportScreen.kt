@@ -38,6 +38,7 @@ import echo.music.iad1tya.spotifyimport.SpotifyImportSourceUi
 import echo.music.iad1tya.spotifyimport.SpotifyImportSummaryUi
 import echo.music.iad1tya.spotifyimport.SpotifyImportUiState
 import echo.music.iad1tya.spotifyimport.SpotifyImportViewModel
+import echo.music.iad1tya.utils.resetAuthWebViewSession
 import echo.music.iad1tya.ui.component.DefaultDialog
 import echo.music.iad1tya.ui.component.IconButton
 import echo.music.iad1tya.ui.component.Material3SettingsGroup
@@ -416,9 +417,9 @@ private fun SpotifyLoginSheet(
 
               webView = this
               mainWebView = this
-              cookieManager.removeAllCookies(null)
-              cookieManager.flush()
-              loadUrl(echo.music.iad1tya.spotify.SpotifyAuth.LOGIN_URL)
+              resetAuthWebViewSession(context, this) {
+                loadUrl(SpotifyAuth.LOGIN_URL)
+              }
             }
           container.addView(
             spotifyWebView,
@@ -438,7 +439,7 @@ private fun SpotifyLoginSheet(
 }
 
 private const val SpotifyLoginUserAgent =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"
 
 private fun WebView.destroySpotifyLoginWebView() {
   stopLoading()
