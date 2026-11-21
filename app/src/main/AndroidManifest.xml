@@ -807,6 +807,18 @@
 
 
 
+        <!-- Always-on player shortcut, modeled on ArchiveTune's Quick Settings entry point. -->
+        <service
+            android:name=".quicksettings.AodModeTileService"
+            android:label="@string/qs_tile_aod_player"
+            android:icon="@drawable/bedtime"
+            android:exported="true"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <!-- User-selectable treble-clef launcher icons -->
 <activity-alias
             android:name=".MainActivityClefSilverBlue"
