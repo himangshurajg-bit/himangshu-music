@@ -174,6 +174,12 @@ fun AboutScreen(
                 icon = painterResource(R.drawable.website),
                 title = { Text("Himangshu Raj Gogoi") },
                 description = { Text("Maintainer of this RajTune fork") },
+              ),
+              Material3SettingsItem(
+                icon = painterResource(R.drawable.chat_msg),
+                title = { Text("After payment: WhatsApp me") },
+                description = { Text("Tell me what you need and include the UPI transaction reference") },
+                onClick = { uriHandler.openUri("https://wa.me/qr/PNJOZ7CIUGU6N1") }
               )
             )
         )
@@ -191,6 +197,55 @@ fun AboutScreen(
                 onClick = {
                   uriHandler.openUri(
                     "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&tn=Support%20RajTune"
+                  )
+                }
+              )
+            )
+        )
+      }
+
+      item {
+        Material3SettingsGroup(
+          title = "Custom work",
+          items =
+            listOf(
+              Material3SettingsItem(
+                icon = painterResource(R.drawable.upi_new),
+                title = { Text("Icon change or addition · ₹50") },
+                description = { Text("Pay via UPI for a custom icon request") },
+                onClick = {
+                  uriHandler.openUri(
+                    "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&am=50.00&cu=INR&tn=RajTune%20icon%20request"
+                  )
+                }
+              ),
+              Material3SettingsItem(
+                icon = painterResource(R.drawable.upi_new),
+                title = { Text("UI theme or small change · ₹100") },
+                description = { Text("Pay via UPI for a theme or small change") },
+                onClick = {
+                  uriHandler.openUri(
+                    "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&am=100.00&cu=INR&tn=RajTune%20UI%20change"
+                  )
+                }
+              ),
+              Material3SettingsItem(
+                icon = painterResource(R.drawable.upi_new),
+                title = { Text("New feature · ₹150") },
+                description = { Text("Pay via UPI for a new feature request") },
+                onClick = {
+                  uriHandler.openUri(
+                    "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&am=150.00&cu=INR&tn=RajTune%20feature%20request"
+                  )
+                }
+              ),
+              Material3SettingsItem(
+                icon = painterResource(R.drawable.upi_new),
+                title = { Text("Advanced feature or customization · ₹300") },
+                description = { Text("Pay via UPI for advanced custom work") },
+                onClick = {
+                  uriHandler.openUri(
+                    "upi://pay?pa=himangshurajg%40okicici&pn=Himangshu%20Raj%20Gogoi&am=300.00&cu=INR&tn=RajTune%20advanced%20request"
                   )
                 }
               )
