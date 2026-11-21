@@ -1,5 +1,6 @@
 package echo.music.iad1tya.ui.menu
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.res.Configuration
 import android.widget.Toast
@@ -90,6 +91,8 @@ import echo.music.iad1tya.LocalListenTogetherManager
 import echo.music.iad1tya.LocalPlayerConnection
 import echo.music.iad1tya.R
 import echo.music.iad1tya.constants.EnableExportAsMp3Key
+import echo.music.iad1tya.constants.ExternalDownloaderAppKey
+import echo.music.iad1tya.constants.DefaultExternalDownloaderPackage
 import echo.music.iad1tya.constants.ExportDirectoryUriKey
 import echo.music.iad1tya.constants.ExportedSongIdsKey
 import echo.music.iad1tya.constants.ExportingSongIdsKey
@@ -109,6 +112,9 @@ import echo.music.iad1tya.ui.component.Material3MenuGroup
 import echo.music.iad1tya.ui.component.Material3MenuItemData
 import echo.music.iad1tya.ui.component.NewAction
 import echo.music.iad1tya.ui.component.NewActionGrid
+import echo.music.iad1tya.utils.createExternalDownloaderIntent
+import echo.music.iad1tya.utils.findExternalDownloaderPackage
+import echo.music.iad1tya.utils.isLocalMediaId
 import echo.music.iad1tya.utils.rememberPreference
 import kotlin.math.log2
 import kotlin.math.pow
@@ -206,6 +212,8 @@ fun PlayerMenu(
   var showChoosePlaylistDialog by rememberSaveable { mutableStateOf(false) }
 
   val (enableExportAsMp3) = rememberPreference(key = EnableExportAsMp3Key, defaultValue = false)
+  val (externalDownloaderApp) =
+    rememberPreference(ExternalDownloaderAppKey, defaultValue = DefaultExternalDownloaderPackage)
   val (exportDirectoryUri) = rememberPreference(key = ExportDirectoryUriKey, defaultValue = "")
   val (exportingSongIds) = rememberPreference(key = ExportingSongIdsKey, defaultValue = "")
   val (exportedSongIds) = rememberPreference(key = ExportedSongIdsKey, defaultValue = "")
@@ -701,48 +709,11 @@ fun PlayerMenu(
     item {
       Material3MenuGroup(
         items =
-          listOf(
-            when (download?.state) {
-              Download.STATE_COMPLETED -> {
+          buildList {
+            if (!isEpisode && librarySong?.song?.isLocal != true && !mediaMetadata.id.isLocalMediaId()) {
+              add(
                 Material3MenuItemData(
-                  title = { Text(text = stringResource(R.string.remove_download)) },
-                  icon = {
-                    Icon(
-                      painter = painterResource(R.drawable.offline),
-                      contentDescription = null,
-                      modifier = Modifier.size(24.dp)
-                    )
-                  },
-                  onClick = {
-                    DownloadService.sendRemoveDownload(
-                      context,
-                      ExoDownloadService::class.java,
-                      mediaMetadata.id,
-                      false,
-                    )
-                  }
-                )
-              }
-              Download.STATE_QUEUED,
-              Download.STATE_DOWNLOADING -> {
-                Material3MenuItemData(
-                  title = { Text(text = stringResource(R.string.downloading)) },
-                  icon = {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                  },
-                  onClick = {
-                    DownloadService.sendRemoveDownload(
-                      context,
-                      ExoDownloadService::class.java,
-                      mediaMetadata.id,
-                      false,
-                    )
-                  }
-                )
-              }
-              else -> {
-                Material3MenuItemData(
-                  title = { Text(text = stringResource(R.string.action_download)) },
+                  title = { Text(text = stringResource(R.string.download_with_external_app)) },
                   icon = {
                     Icon(
                       painter = painterResource(R.drawable.download),
@@ -751,23 +722,103 @@ fun PlayerMenu(
                     )
                   },
                   onClick = {
-                    database.transaction { insert(mediaMetadata) }
-                    val downloadRequest =
-                      DownloadRequest.Builder(mediaMetadata.id, mediaMetadata.id.toUri())
-                        .setCustomCacheKey(mediaMetadata.id)
-                        .setData(mediaMetadata.title.toByteArray())
-                        .build()
-                    DownloadService.sendAddDownload(
-                      context,
-                      ExoDownloadService::class.java,
-                      downloadRequest,
-                      false,
-                    )
+                    onDismiss()
+                    val downloaderPackage =
+                      findExternalDownloaderPackage(context.packageManager, externalDownloaderApp)
+                    if (downloaderPackage == null) {
+                      Toast.makeText(
+                          context,
+                          R.string.external_downloader_not_installed,
+                          Toast.LENGTH_LONG
+                        )
+                        .show()
+                    } else {
+                      val songUrl = "https://music.youtube.com/watch?v=${mediaMetadata.id}"
+                      try {
+                        context.startActivity(
+                          createExternalDownloaderIntent(downloaderPackage, songUrl)
+                        )
+                      } catch (_: ActivityNotFoundException) {
+                        Toast.makeText(
+                            context,
+                            R.string.external_downloader_not_installed,
+                            Toast.LENGTH_LONG
+                          )
+                          .show()
+                      }
+                    }
                   }
                 )
-              }
+              )
             }
-          )
+            add(
+              when (download?.state) {
+                Download.STATE_COMPLETED -> {
+                  Material3MenuItemData(
+                    title = { Text(text = stringResource(R.string.remove_download)) },
+                    icon = {
+                      Icon(
+                        painter = painterResource(R.drawable.offline),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                      )
+                    },
+                    onClick = {
+                      DownloadService.sendRemoveDownload(
+                        context,
+                        ExoDownloadService::class.java,
+                        mediaMetadata.id,
+                        false,
+                      )
+                    }
+                  )
+                }
+                Download.STATE_QUEUED,
+                Download.STATE_DOWNLOADING -> {
+                  Material3MenuItemData(
+                    title = { Text(text = stringResource(R.string.downloading)) },
+                    icon = {
+                      CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                    },
+                    onClick = {
+                      DownloadService.sendRemoveDownload(
+                        context,
+                        ExoDownloadService::class.java,
+                        mediaMetadata.id,
+                        false,
+                      )
+                    }
+                  )
+                }
+                else -> {
+                  Material3MenuItemData(
+                    title = { Text(text = stringResource(R.string.action_download)) },
+                    icon = {
+                      Icon(
+                        painter = painterResource(R.drawable.download),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                      )
+                    },
+                    onClick = {
+                      database.transaction { insert(mediaMetadata) }
+                      val downloadRequest =
+                        DownloadRequest.Builder(mediaMetadata.id, mediaMetadata.id.toUri())
+                          .setCustomCacheKey(mediaMetadata.id)
+                          .setData(mediaMetadata.title.toByteArray())
+                          .build()
+                      DownloadService.sendAddDownload(
+                        context,
+                        ExoDownloadService::class.java,
+                        downloadRequest,
+                        false,
+                      )
+                    }
+                  )
+                }
+              }
+            )
+          }
       )
     }
 

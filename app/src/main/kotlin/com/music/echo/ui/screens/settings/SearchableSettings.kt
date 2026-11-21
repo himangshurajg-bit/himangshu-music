@@ -2310,18 +2310,6 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
           "settings/appearance/app_icon",
         ),
         SearchableSetting(
-          "Sadie Sink Icon",
-          "Sadie Sink app icon on community demand",
-          "Appearance",
-          "settings/appearance/app_icon",
-        ),
-        SearchableSetting(
-          "Billie Eilish Icon",
-          "Billie Eilish launcher icon",
-          "Appearance",
-          "settings/appearance/app_icon",
-        ),
-        SearchableSetting(
           "Cat Icon",
           "A pinkish cat-themed launcher icon",
           "Appearance",
@@ -2358,12 +2346,6 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
           "settings/appearance/app_icon",
         ),
         SearchableSetting(
-          "Sabrina Carpenter Icon",
-          "Sabrina Carpenter launcher icon",
-          "Appearance",
-          "settings/appearance/app_icon",
-        ),
-        SearchableSetting(
           "Sky Icon",
           "Beautiful sky-themed launcher icon",
           "Appearance",
@@ -2372,12 +2354,6 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
         SearchableSetting(
           "Neon Glass Icon",
           "Futuristic glowing neon glass launcher icon",
-          "Appearance",
-          "settings/appearance/app_icon",
-        ),
-        SearchableSetting(
-          "Millie Bobby Brown Icon",
-          "Millie Bobby Brown launcher icon",
           "Appearance",
           "settings/appearance/app_icon",
         ),
