@@ -99,6 +99,7 @@ import echo.music.iad1tya.constants.ProxyEnabledKey
 import echo.music.iad1tya.constants.ProxyPasswordKey
 import echo.music.iad1tya.constants.ProxyTypeKey
 import echo.music.iad1tya.constants.ProxyUrlKey
+import echo.music.iad1tya.constants.DefaultRandomizeHomeOrder
 import echo.music.iad1tya.constants.ProxyUsernameKey
 import echo.music.iad1tya.constants.QuickPicks
 import echo.music.iad1tya.constants.QuickPicksKey
@@ -253,7 +254,7 @@ fun ContentSettings(
   val (showSpeedDial, onShowSpeedDialChange) =
     rememberPreference(key = ShowSpeedDialKey, defaultValue = true)
   val (randomizeHomeOrder, onRandomizeHomeOrderChange) =
-    rememberPreference(RandomizeHomeOrderKey, defaultValue = false)
+    rememberPreference(RandomizeHomeOrderKey, defaultValue = DefaultRandomizeHomeOrder)
   val (ipVersion, onIpVersionChange) =
     rememberEnumPreference(IpVersionKey, defaultValue = IpVersion.AUTO)
   val (albumCanvasEnabled, onAlbumCanvasEnabledChange) =
