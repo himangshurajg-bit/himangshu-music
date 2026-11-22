@@ -168,9 +168,9 @@ This custom name and image apply only to the pinned home-screen shortcut. They d
 
 ## 8D Stereo Audio
 
-Open **Settings → Player → 8D stereo audio** for the stereo motion modes and controls. The Media3 audio path applies equal-power left/right panning, stereo width, low-frequency enhancement, optional short ambience and echo, smoothed control changes and peak limiting. Turning the feature off returns an unprocessed PCM path.
+Open **Settings → Player → 8D stereo audio** for the stereo motion modes and controls. The Media3 audio path applies equal-power left/right panning, beat/onset-reactive motion, and low/mid/high frequency-band positioning, alongside stereo width, bass enhancement, optional short ambience and echo, smoothed controls and peak limiting. Turning the feature off returns an unprocessed PCM path.
 
-This is stereo motion, not HRTF, binaural or true 360-degree localization. Mono cannot be spatially panned, multichannel input uses Media3's fallback path, and the detected headset label does not test its stereo response. USB bit-perfect/offload routing and physical audio devices still need testing. See the [8D audio engine notes](docs/8d-audio-engine.md) for architecture, limitations and repeatable checks.
+Frequency bands are not isolated instruments or vocals: mixed tracks overlap, so the app cannot promise that a voice or instrument comes from its own side. This is stereo panning, not HRTF, binaural or true 360-degree localization. Mono cannot be spatially panned, multichannel input uses Media3's fallback path, and detected headset type does not test its stereo response. USB bit-perfect/offload routing and physical audio devices still need testing. See the [8D audio engine notes](docs/8d-audio-engine.md) for architecture, limitations and repeatable checks.
 
 ---
 

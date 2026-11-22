@@ -39,6 +39,9 @@ data class EightDAudioParameters(
   val delay: Float = 0f,
   val intensity: Float = 0.8f,
   val reverseDirection: Boolean = false,
+  val beatReactive: Boolean = true,
+  val frequencyPositioning: Boolean = true,
+  val frequencySpread: Float = 0.7f,
 ) {
   fun clamped() = copy(
     rotationSpeed = rotationSpeed.coerceIn(0.5f, 3f),
@@ -48,6 +51,7 @@ data class EightDAudioParameters(
     reverb = reverb.coerceIn(0f, 1f),
     delay = delay.coerceIn(0f, 1f),
     intensity = intensity.coerceIn(0f, 1f),
+    frequencySpread = frequencySpread.coerceIn(0f, 1f),
   )
 }
 
@@ -72,6 +76,8 @@ class EightDAudioProcessor : AudioProcessor {
   private var smoothingAlpha = 0f
   private var randomSmoothingAlpha = 0f
   private var bassAlpha = 0f
+  private var lowBandAlpha = 0f
+  private var midBandAlpha = 0f
   private var outputBuffer = EMPTY_BUFFER
   private var inputEnded = false
 
@@ -91,6 +97,16 @@ class EightDAudioProcessor : AudioProcessor {
   private var frameOutRight = 0f
   private var lowLeft = 0f
   private var lowRight = 0f
+  private var lowBandLeft = 0f
+  private var lowBandRight = 0f
+  private var midBandLowLeft = 0f
+  private var midBandLowRight = 0f
+  private var lowBandEnvelope = 0f
+  private var midBandEnvelope = 0f
+  private var highBandEnvelope = 0f
+  private var panBandLeft = 0f
+  private var panBandRight = 0f
+  private lateinit var beatTracker: BeatOnsetTracker
   private var delayLeft = FloatArray(1)
   private var delayRight = FloatArray(1)
   private var reverbLeftA = FloatArray(1)
@@ -112,6 +128,9 @@ class EightDAudioProcessor : AudioProcessor {
     smoothingAlpha = (1f - exp(-1f / (SMOOTHING_SECONDS * sampleRate))).coerceIn(0f, 1f)
     randomSmoothingAlpha = (1f - exp(-1f / (RANDOM_SMOOTHING_SECONDS * sampleRate))).coerceIn(0f, 1f)
     bassAlpha = (1f - exp(-2f * PI.toFloat() * BASS_CUTOFF_HZ / sampleRate)).coerceIn(0f, 1f)
+    lowBandAlpha = (1f - exp(-2f * PI.toFloat() * LOW_BAND_CUTOFF_HZ / sampleRate)).coerceIn(0f, 1f)
+    midBandAlpha = (1f - exp(-2f * PI.toFloat() * MID_BAND_CUTOFF_HZ / sampleRate)).coerceIn(0f, 1f)
+    beatTracker = BeatOnsetTracker(sampleRate)
     delayLeft = FloatArray(max(1, sampleRate * DELAY_MS / 1000))
     delayRight = FloatArray(delayLeft.size)
     reverbLeftA = FloatArray(max(1, sampleRate * REVERB_A_MS / 1000))
@@ -191,16 +210,58 @@ class EightDAudioProcessor : AudioProcessor {
     lowRight += bassAlpha * (rightIn - lowRight)
     var left = leftIn + lowLeft * bass * MAX_BASS_ADD
     var right = rightIn + lowRight * bass * MAX_BASS_ADD
+    if (channelCount == 2 && (target.beatReactive || target.frequencyPositioning)) {
+      lowBandLeft += lowBandAlpha * (left - lowBandLeft)
+      lowBandRight += lowBandAlpha * (right - lowBandRight)
+      midBandLowLeft += midBandAlpha * (left - midBandLowLeft)
+      midBandLowRight += midBandAlpha * (right - midBandLowRight)
+      lowBandEnvelope = followEnvelope((abs(lowBandLeft) + abs(lowBandRight)) * 0.5f, lowBandEnvelope)
+      midBandEnvelope = followEnvelope(
+        (abs(midBandLowLeft - lowBandLeft) + abs(midBandLowRight - lowBandRight)) * 0.5f,
+        midBandEnvelope,
+      )
+      highBandEnvelope = followEnvelope(
+        (abs(left - midBandLowLeft) + abs(right - midBandLowRight)) * 0.5f,
+        highBandEnvelope,
+      )
+    }
 
     if (channelCount == 2) {
-      val mid = (left + right) * 0.5f
-      val side = (left - right) * 0.5f * width
-      val panAngle = ((pan.coerceIn(-1f, 1f) + 1f) * 0.25f * PI).toFloat()
-      val equalPowerScale = 1.41421356f
-      val movedLeft = mid * cos(panAngle) * equalPowerScale + side
-      val movedRight = mid * sin(panAngle) * equalPowerScale - side
-      left += (movedLeft - left) * intensity
-      right += (movedRight - right) * intensity
+      val beatPulse = if (target.beatReactive) {
+        beatTracker.process(lowBandEnvelope, midBandEnvelope, highBandEnvelope)
+      } else 0f
+      val beatShift = if (target.beatReactive) beatTracker.direction * beatPulse * BEAT_PAN_AMOUNT else 0f
+      if (target.frequencyPositioning && target.frequencySpread > 0f) {
+        val lowL = lowBandLeft
+        val lowR = lowBandRight
+        val midL = midBandLowLeft - lowBandLeft
+        val midR = midBandLowRight - lowBandRight
+        val highL = left - midBandLowLeft
+        val highR = right - midBandLowRight
+        val spread = target.frequencySpread
+        val lowPan = (pan + beatShift - LOW_BAND_PAN * spread).coerceIn(-1f, 1f)
+        val midPan = (pan + MID_BAND_PAN * spread).coerceIn(-1f, 1f)
+        val highPan = (pan - beatShift - HIGH_BAND_PAN * spread).coerceIn(-1f, 1f)
+        panBand(lowL, lowR, lowPan, width)
+        val lowOutLeft = panBandLeft
+        val lowOutRight = panBandRight
+        panBand(midL, midR, midPan, width)
+        val midOutLeft = panBandLeft
+        val midOutRight = panBandRight
+        panBand(highL, highR, highPan, width)
+        val highOutLeft = panBandLeft
+        val highOutRight = panBandRight
+        val frequencyLeft = lowOutLeft + midOutLeft + highOutLeft
+        val frequencyRight = lowOutRight + midOutRight + highOutRight
+        val mix = spread * intensity
+        left += (frequencyLeft - left) * mix
+        right += (frequencyRight - right) * mix
+      } else {
+        val effectivePan = (pan + beatShift).coerceIn(-1f, 1f)
+        panBand(left, right, effectivePan, width)
+        left += (panBandLeft - left) * intensity
+        right += (panBandRight - right) * intensity
+      }
     }
 
     val dL = delayLeft[delayIndex]
@@ -226,6 +287,20 @@ class EightDAudioProcessor : AudioProcessor {
 
     frameOutLeft = left
     frameOutRight = right
+  }
+
+  private fun followEnvelope(input: Float, previous: Float): Float {
+    val magnitude = abs(input)
+    val alpha = if (magnitude > previous) ENVELOPE_ATTACK_ALPHA else ENVELOPE_RELEASE_ALPHA
+    return previous + alpha * (magnitude - previous)
+  }
+
+  private fun panBand(left: Float, right: Float, pan: Float, width: Float) {
+    val mid = (left + right) * 0.5f
+    val side = (left - right) * 0.5f * width
+    val angle = ((pan.coerceIn(-1f, 1f) + 1f) * 0.25f * PI).toFloat()
+    panBandLeft = mid * cos(angle) * EQUAL_POWER_SCALE + side
+    panBandRight = mid * sin(angle) * EQUAL_POWER_SCALE - side
   }
 
   private fun nextPan(target: EightDAudioParameters): Float {
@@ -276,6 +351,14 @@ class EightDAudioProcessor : AudioProcessor {
     reverbRightA.fill(0f)
     reverbLeftB.fill(0f)
     reverbRightB.fill(0f)
+    lowBandLeft = 0f
+    lowBandRight = 0f
+    midBandLowLeft = 0f
+    midBandLowRight = 0f
+    lowBandEnvelope = 0f
+    midBandEnvelope = 0f
+    highBandEnvelope = 0f
+    if (::beatTracker.isInitialized) beatTracker.reset()
   }
 
   private fun resetDspState() {
@@ -291,6 +374,14 @@ class EightDAudioProcessor : AudioProcessor {
     randomSamplesLeft = 0
     lowLeft = 0f
     lowRight = 0f
+    lowBandLeft = 0f
+    lowBandRight = 0f
+    midBandLowLeft = 0f
+    midBandLowRight = 0f
+    lowBandEnvelope = 0f
+    midBandEnvelope = 0f
+    highBandEnvelope = 0f
+    if (::beatTracker.isInitialized) beatTracker.reset()
     delayIndex = 0
     reverbIndexA = 0
     reverbIndexB = 0
@@ -343,6 +434,89 @@ class EightDAudioProcessor : AudioProcessor {
     private const val REVERB_CROSS_FEEDBACK = 0.08f
     private const val REVERB_WET = 0.28f
     private const val LIMITER_KNEE = 0.94f
+    private const val LOW_BAND_CUTOFF_HZ = 260f
+    private const val MID_BAND_CUTOFF_HZ = 2_400f
+    private const val LOW_BAND_PAN = 0.62f
+    private const val MID_BAND_PAN = 0.46f
+    private const val HIGH_BAND_PAN = 0.72f
+    private const val BEAT_PAN_AMOUNT = 0.38f
+    private const val ENVELOPE_ATTACK_ALPHA = 0.00025f
+    private const val ENVELOPE_RELEASE_ALPHA = 0.00010f
+    private const val EQUAL_POWER_SCALE = 1.41421356f
     private val EMPTY_BUFFER: ByteBuffer = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
+  }
+}
+
+
+/** Lightweight transient/beat tracker using band-envelope flux; intentionally not a source separator. */
+internal class BeatOnsetTracker(private val sampleRate: Int) {
+  private var previousLow = 0f
+  private var previousMid = 0f
+  private var previousHigh = 0f
+  private var fluxBaseline = 0f
+  private var refractorySamples = 0
+  private var sampleCount = 0L
+  private var lastOnsetSample = -1L
+  private var pulse = 0f
+  private var intervalSeconds = 0.5f
+  private var hasInterval = false
+  private var onsetCount = 0
+  private val baselineAlpha = 1f / (sampleRate * 1.25f)
+  private val pulseDecay = exp(-1f / (sampleRate * BEAT_PULSE_SECONDS))
+
+  val direction: Float get() = if (onsetCount % 2 == 0) -1f else 1f
+  val estimatedBpm: Float get() = 60f / intervalSeconds
+  val detectedOnsets: Int get() = onsetCount
+
+  fun process(low: Float, mid: Float, high: Float): Float {
+    val flux = max(0f, low - previousLow) + 0.75f * max(0f, mid - previousMid) +
+      0.45f * max(0f, high - previousHigh)
+    previousLow = low
+    previousMid = mid
+    previousHigh = high
+    fluxBaseline += baselineAlpha * (flux - fluxBaseline)
+    sampleCount++
+    if (refractorySamples > 0) refractorySamples--
+    val threshold = max(MIN_ONSET_FLUX, fluxBaseline * ONSET_THRESHOLD_MULTIPLIER)
+    if (refractorySamples == 0 && flux > threshold) {
+      val prior = lastOnsetSample
+      if (prior >= 0L) {
+        val elapsed = (sampleCount - prior).toFloat() / sampleRate
+        if (elapsed in MIN_BEAT_SECONDS..MAX_BEAT_SECONDS) {
+          intervalSeconds = if (hasInterval) intervalSeconds * 0.72f + elapsed * 0.28f else elapsed
+          hasInterval = true
+        }
+      }
+      lastOnsetSample = sampleCount
+      onsetCount++
+      pulse = 1f
+      refractorySamples = (sampleRate * REFRACTORY_SECONDS).toInt().coerceAtLeast(1)
+    } else {
+      pulse *= pulseDecay
+    }
+    return pulse
+  }
+
+  fun reset() {
+    previousLow = 0f
+    previousMid = 0f
+    previousHigh = 0f
+    fluxBaseline = 0f
+    refractorySamples = 0
+    sampleCount = 0L
+    lastOnsetSample = -1L
+    pulse = 0f
+    intervalSeconds = 0.5f
+    hasInterval = false
+    onsetCount = 0
+  }
+
+  companion object {
+    private const val MIN_ONSET_FLUX = 0.000008f
+    private const val ONSET_THRESHOLD_MULTIPLIER = 1.8f
+    private const val REFRACTORY_SECONDS = 0.22f
+    private const val MIN_BEAT_SECONDS = 0.30f
+    private const val MAX_BEAT_SECONDS = 1.20f
+    private const val BEAT_PULSE_SECONDS = 0.18f
   }
 }

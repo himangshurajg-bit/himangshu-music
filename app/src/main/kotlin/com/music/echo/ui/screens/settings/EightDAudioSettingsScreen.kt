@@ -60,6 +60,9 @@ import echo.music.iad1tya.constants.EightDAudioIntensityKey
 import echo.music.iad1tya.constants.EightDAudioModeKey
 import echo.music.iad1tya.constants.EightDAudioReverbKey
 import echo.music.iad1tya.constants.EightDAudioReverseKey
+import echo.music.iad1tya.constants.EightDAudioBeatReactiveKey
+import echo.music.iad1tya.constants.EightDAudioFrequencyPositioningKey
+import echo.music.iad1tya.constants.EightDAudioFrequencySpreadKey
 import echo.music.iad1tya.constants.EightDAudioSpeedKey
 import echo.music.iad1tya.constants.EightDAudioWidthKey
 import echo.music.iad1tya.ui.component.Material3SettingsGroup
@@ -83,6 +86,9 @@ fun EightDAudioSettingsScreen(navController: NavController) {
   val (delay, setDelay) = rememberPreference(EightDAudioDelayKey, 0f)
   val (intensity, setIntensity) = rememberPreference(EightDAudioIntensityKey, 0.8f)
   val (reverse, setReverse) = rememberPreference(EightDAudioReverseKey, false)
+  val (beatReactive, setBeatReactive) = rememberPreference(EightDAudioBeatReactiveKey, true)
+  val (frequencyPositioning, setFrequencyPositioning) = rememberPreference(EightDAudioFrequencyPositioningKey, true)
+  val (frequencySpread, setFrequencySpread) = rememberPreference(EightDAudioFrequencySpreadKey, 0.7f)
   var showModeDialog by remember { mutableStateOf(false) }
   val scrollState = rememberScrollState()
   val outputDevices = rememberOutputDevices()
@@ -129,7 +135,7 @@ fun EightDAudioSettingsScreen(navController: NavController) {
     Spacer(Modifier.height(16.dp))
     Text("8D stereo audio", style = MaterialTheme.typography.headlineSmall)
     Text(
-      "Real-time stereo DSP for headphones. This is equal-power stereo panning, not HRTF or binaural positioning.",
+      "Beat-reactive stereo motion with optional low/mid/high frequency placement. Frequency bands are not isolated instruments or vocals; this is not HRTF/binaural positioning.",
       style = MaterialTheme.typography.bodyMedium,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.padding(top = 6.dp, bottom = 14.dp),
@@ -157,6 +163,20 @@ fun EightDAudioSettingsScreen(navController: NavController) {
         ),
         Material3SettingsItem(
           icon = painterResource(R.drawable.graphic_eq),
+          title = { Text("Beat-reactive motion") },
+          description = { Text("Detect rhythmic onsets and pulse the stereo movement") },
+          trailingContent = { Switch(checked = beatReactive, onCheckedChange = setBeatReactive) },
+          onClick = { setBeatReactive(!beatReactive) },
+        ),
+        Material3SettingsItem(
+          icon = painterResource(R.drawable.graphic_eq),
+          title = { Text("Frequency-band positioning") },
+          description = { Text("Place bass, midrange and treble at different stereo positions; this does not separate vocals") },
+          trailingContent = { Switch(checked = frequencyPositioning, onCheckedChange = setFrequencyPositioning) },
+          onClick = { setFrequencyPositioning(!frequencyPositioning) },
+        ),
+        Material3SettingsItem(
+          icon = painterResource(R.drawable.graphic_eq),
           title = { Text("Reverse direction") },
           description = { Text("Reverse the sweep for orbit modes") },
           trailingContent = { Switch(checked = reverse, onCheckedChange = setReverse) },
@@ -173,6 +193,8 @@ fun EightDAudioSettingsScreen(navController: NavController) {
     AudioSlider("Spatial depth", depth, 0f..1f, "${(depth * 100).roundToInt()}%", enabled, setDepth)
     AudioSlider("Stereo width", width, 0f..1f, "${(width * 100).roundToInt()}%", enabled, setWidth)
     AudioSlider("Effect intensity", intensity, 0f..1f, "${(intensity * 100).roundToInt()}%", enabled, setIntensity)
+    AudioSlider("Frequency spread", frequencySpread, 0f..1f, "${(frequencySpread * 100).roundToInt()}%",
+      enabled && frequencyPositioning, setFrequencySpread)
     AudioSlider("Bass enhancement", bass, 0f..1f, "${(bass * 100).roundToInt()}%", enabled, setBass)
     AudioSlider("Short ambience", reverb, 0f..1f, "${(reverb * 100).roundToInt()}%", enabled, setReverb)
     AudioSlider("Echo delay", delay, 0f..1f, "${(delay * 100).roundToInt()}%", enabled, setDelay)

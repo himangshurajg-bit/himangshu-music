@@ -176,6 +176,9 @@ val EightDAudioReverbKey = floatPreferencesKey("eight_d_audio_reverb")
 val EightDAudioDelayKey = floatPreferencesKey("eight_d_audio_delay")
 val EightDAudioIntensityKey = floatPreferencesKey("eight_d_audio_intensity")
 val EightDAudioReverseKey = booleanPreferencesKey("eight_d_audio_reverse")
+val EightDAudioBeatReactiveKey = booleanPreferencesKey("eight_d_audio_beat_reactive")
+val EightDAudioFrequencyPositioningKey = booleanPreferencesKey("eight_d_audio_frequency_positioning")
+val EightDAudioFrequencySpreadKey = floatPreferencesKey("eight_d_audio_frequency_spread")
 
 val AudioLoudnessPresetKey = stringPreferencesKey("audioLoudnessPreset")
 
