@@ -933,6 +933,7 @@ fun HomeScreen(
     BoxWithConstraints(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
       val homeGlowPrimary = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f)
       val homeGlowTertiary = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.16f)
+      val feedMaxWidth = maxWidth.coerceAtMost(1200.dp)
       // Soft two-tone ambient glow inspired by ArchiveTune, kept behind the existing content.
       Box(
         modifier =
@@ -956,8 +957,8 @@ fun HomeScreen(
             )
           }
       )
-      val horizontalLazyGridItemWidthFactor = if (maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
-      val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+      val horizontalLazyGridItemWidthFactor = if (feedMaxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
+      val horizontalLazyGridItemWidth = feedMaxWidth * horizontalLazyGridItemWidthFactor
       val quickPicksSnapLayoutInfoProvider =
         remember(quickPicksLazyGridState) {
           SnapLayoutInfoProvider(
@@ -1084,7 +1085,7 @@ fun HomeScreen(
 
                   item(key = "speed_dial_list") {
                     val targetItemSize = 160.dp
-                    val availableWidth = maxWidth - 32.dp
+                    val availableWidth = feedMaxWidth - 32.dp
                     val columns = (availableWidth / targetItemSize).toInt().coerceAtLeast(3)
                     val rows = if (columns >= 6) 1 else if (columns >= 4) 2 else 3
                     val itemsPerPage = columns * rows
