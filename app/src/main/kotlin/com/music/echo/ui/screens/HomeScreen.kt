@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -72,6 +73,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -106,6 +109,7 @@ import echo.music.iad1tya.LocalDatabase
 import echo.music.iad1tya.LocalPlayerAwareWindowInsets
 import echo.music.iad1tya.LocalPlayerConnection
 import echo.music.iad1tya.R
+import echo.music.iad1tya.constants.DefaultRandomizeHomeOrder
 import echo.music.iad1tya.constants.EchoWrappedBannerDismissedKey
 import echo.music.iad1tya.constants.GridItemSize
 import echo.music.iad1tya.constants.GridItemsSizeKey
@@ -603,7 +607,7 @@ fun HomeScreen(
   val accountName by viewModel.accountName.collectAsState()
   val accountImageUrl by viewModel.accountImageUrl.collectAsState()
   val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
-  val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, true)
+  val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, DefaultRandomizeHomeOrder)
   val (showSpeedDial) = rememberPreference(ShowSpeedDialKey, true)
   val (isWrappedDismissed, onDismissWrapped) = rememberPreference(EchoWrappedBannerDismissedKey, defaultValue = false)
 
@@ -926,9 +930,35 @@ fun HomeScreen(
       )
     }
   ) {
-    BoxWithConstraints(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopStart) {
-      val horizontalLazyGridItemWidthFactor = if (maxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
-      val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+    BoxWithConstraints(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+      val homeGlowPrimary = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.20f)
+      val homeGlowTertiary = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.16f)
+      val feedMaxWidth = maxWidth.coerceAtMost(1200.dp)
+      // Soft two-tone ambient glow inspired by ArchiveTune, kept behind the existing content.
+      Box(
+        modifier =
+          Modifier.fillMaxSize().drawBehind {
+            val glowRadius = size.minDimension * 0.82f
+            drawRect(
+              brush =
+                Brush.radialGradient(
+                  colors = listOf(homeGlowPrimary, Color.Transparent),
+                  center = Offset(size.width * 0.18f, size.height * 0.04f),
+                  radius = glowRadius,
+                )
+            )
+            drawRect(
+              brush =
+                Brush.radialGradient(
+                  colors = listOf(homeGlowTertiary, Color.Transparent),
+                  center = Offset(size.width * 0.92f, size.height * 0.10f),
+                  radius = glowRadius * 0.86f,
+                )
+            )
+          }
+      )
+      val horizontalLazyGridItemWidthFactor = if (feedMaxWidth * 0.475f >= 320.dp) 0.475f else 0.9f
+      val horizontalLazyGridItemWidth = feedMaxWidth * horizontalLazyGridItemWidthFactor
       val quickPicksSnapLayoutInfoProvider =
         remember(quickPicksLazyGridState) {
           SnapLayoutInfoProvider(
@@ -958,7 +988,10 @@ fun HomeScreen(
 
       LazyColumn(
         state = lazylistState,
-        modifier = Modifier.hapticScrollEdge(lazylistState),
+        modifier =
+          Modifier.widthIn(max = 1200.dp)
+            .fillMaxWidth()
+            .hapticScrollEdge(lazylistState),
         contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
       ) {
         item {
@@ -1037,6 +1070,7 @@ fun HomeScreen(
         }
 
         homeSections.forEach { section ->
+          item(key = "home_section_spacing_${section.id}") { Spacer(Modifier.height(28.dp)) }
           when (section) {
             HomeSection.SpeedDial -> {
               speedDialItems
@@ -1051,7 +1085,7 @@ fun HomeScreen(
 
                   item(key = "speed_dial_list") {
                     val targetItemSize = 160.dp
-                    val availableWidth = maxWidth - 32.dp
+                    val availableWidth = feedMaxWidth - 32.dp
                     val columns = (availableWidth / targetItemSize).toInt().coerceAtLeast(3)
                     val rows = if (columns >= 6) 1 else if (columns >= 4) 2 else 3
                     val itemsPerPage = columns * rows

@@ -91,6 +91,7 @@ import echo.music.iad1tya.constants.LyricsRomanizeJapaneseKey
 import echo.music.iad1tya.constants.LyricsRomanizeKoreanKey
 import echo.music.iad1tya.constants.LyricsRomanizeKyrgyzKey
 import echo.music.iad1tya.constants.LyricsRomanizeMacedonianKey
+import echo.music.iad1tya.constants.DefaultRandomizeHomeOrder
 import echo.music.iad1tya.constants.LyricsRomanizePunjabiKey
 import echo.music.iad1tya.constants.LyricsRomanizeRussianKey
 import echo.music.iad1tya.constants.LyricsRomanizeSerbianKey
@@ -253,7 +254,7 @@ fun ContentSettings(
   val (showSpeedDial, onShowSpeedDialChange) =
     rememberPreference(key = ShowSpeedDialKey, defaultValue = true)
   val (randomizeHomeOrder, onRandomizeHomeOrderChange) =
-    rememberPreference(RandomizeHomeOrderKey, defaultValue = false)
+    rememberPreference(RandomizeHomeOrderKey, defaultValue = DefaultRandomizeHomeOrder)
   val (ipVersion, onIpVersionChange) =
     rememberEnumPreference(IpVersionKey, defaultValue = IpVersion.AUTO)
   val (albumCanvasEnabled, onAlbumCanvasEnabledChange) =
