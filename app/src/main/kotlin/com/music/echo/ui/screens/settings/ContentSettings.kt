@@ -91,6 +91,7 @@ import echo.music.iad1tya.constants.LyricsRomanizeJapaneseKey
 import echo.music.iad1tya.constants.LyricsRomanizeKoreanKey
 import echo.music.iad1tya.constants.LyricsRomanizeKyrgyzKey
 import echo.music.iad1tya.constants.LyricsRomanizeMacedonianKey
+import echo.music.iad1tya.constants.DefaultRandomizeHomeOrder
 import echo.music.iad1tya.constants.LyricsRomanizePunjabiKey
 import echo.music.iad1tya.constants.LyricsRomanizeRussianKey
 import echo.music.iad1tya.constants.LyricsRomanizeSerbianKey
@@ -99,7 +100,6 @@ import echo.music.iad1tya.constants.ProxyEnabledKey
 import echo.music.iad1tya.constants.ProxyPasswordKey
 import echo.music.iad1tya.constants.ProxyTypeKey
 import echo.music.iad1tya.constants.ProxyUrlKey
-import echo.music.iad1tya.constants.DefaultRandomizeHomeOrder
 import echo.music.iad1tya.constants.ProxyUsernameKey
 import echo.music.iad1tya.constants.QuickPicks
 import echo.music.iad1tya.constants.QuickPicksKey
