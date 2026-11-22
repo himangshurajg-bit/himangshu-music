@@ -136,6 +136,9 @@ import echo.music.iad1tya.constants.EightDAudioReverbKey
 import echo.music.iad1tya.constants.EightDAudioDelayKey
 import echo.music.iad1tya.constants.EightDAudioIntensityKey
 import echo.music.iad1tya.constants.EightDAudioReverseKey
+import echo.music.iad1tya.constants.EightDAudioBeatReactiveKey
+import echo.music.iad1tya.constants.EightDAudioFrequencyPositioningKey
+import echo.music.iad1tya.constants.EightDAudioFrequencySpreadKey
 import echo.music.iad1tya.db.MusicDatabase
 import echo.music.iad1tya.db.entities.BeatInfoEntity
 import echo.music.iad1tya.db.entities.Event
@@ -1234,6 +1237,9 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
           delay = preferences[EightDAudioDelayKey] ?: 0f,
           intensity = preferences[EightDAudioIntensityKey] ?: 0.8f,
           reverseDirection = preferences[EightDAudioReverseKey] ?: false,
+          beatReactive = preferences[EightDAudioBeatReactiveKey] ?: true,
+          frequencyPositioning = preferences[EightDAudioFrequencyPositioningKey] ?: true,
+          frequencySpread = preferences[EightDAudioFrequencySpreadKey] ?: 0.7f,
         )
       }
       .distinctUntilChanged()
@@ -1896,6 +1902,9 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
         delay = dataStore.get(EightDAudioDelayKey, 0f),
         intensity = dataStore.get(EightDAudioIntensityKey, 0.8f),
         reverseDirection = dataStore.get(EightDAudioReverseKey, false),
+        beatReactive = dataStore.get(EightDAudioBeatReactiveKey, true),
+        frequencyPositioning = dataStore.get(EightDAudioFrequencyPositioningKey, true),
+        frequencySpread = dataStore.get(EightDAudioFrequencySpreadKey, 0.7f),
       )
     }
 

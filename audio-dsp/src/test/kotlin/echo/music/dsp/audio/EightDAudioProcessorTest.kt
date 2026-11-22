@@ -96,6 +96,63 @@ class EightDAudioProcessorTest {
     EightDAudioProcessor().configure(AudioProcessor.AudioFormat(48_000, 6, C.ENCODING_PCM_16BIT))
   }
 
+
+  @Test
+  fun frequencyPositioningPlacesBassAndMidrangeOnDifferentSides() {
+    fun channelRms(frequencyHz: Double): Pair<Double, Double> {
+      val sampleRate = 48_000
+      val frames = sampleRate
+      val processor = EightDAudioProcessor()
+      processor.configure(AudioProcessor.AudioFormat(sampleRate, 2, C.ENCODING_PCM_16BIT))
+      processor.parameters = EightDAudioParameters(
+        enabled = true,
+        mode = EightDMotionMode.STATIC_SPATIAL,
+        spatialDepth = 0f,
+        stereoWidth = 0.5f,
+        intensity = 1f,
+        frequencyPositioning = true,
+        frequencySpread = 1f,
+      )
+      val input = ByteBuffer.allocateDirect(frames * 4).order(ByteOrder.nativeOrder())
+      repeat(frames) { index ->
+        val sample = (kotlin.math.sin(2.0 * Math.PI * frequencyHz * index / sampleRate) * 12_000).toInt().toShort()
+        input.putShort(sample).putShort(sample)
+      }
+      input.flip()
+      processor.queueInput(input)
+      val output = processor.getOutput()
+      var leftPower = 0.0
+      var rightPower = 0.0
+      repeat(frames) {
+        val left = output.getShort().toDouble()
+        val right = output.getShort().toDouble()
+        leftPower += left * left
+        rightPower += right * right
+      }
+      return kotlin.math.sqrt(leftPower / frames) to kotlin.math.sqrt(rightPower / frames)
+    }
+
+    val bass = channelRms(90.0)
+    val midrange = channelRms(1_000.0)
+    assertTrue("Bass band should favor the left channel: $bass", bass.first > bass.second * 1.15)
+    assertTrue("Midrange band should favor the right channel: $midrange", midrange.second > midrange.first * 1.15)
+  }
+
+  @Test
+  fun onsetTrackerFollowsRegularBeatsAndEstimatesTempo() {
+    val sampleRate = 48_000
+    val tracker = BeatOnsetTracker(sampleRate)
+    repeat(sampleRate / 4) { tracker.process(0.01f, 0.01f, 0.01f) }
+    repeat(3) {
+      tracker.process(0.10f, 0.04f, 0.01f)
+      repeat(sampleRate / 2 - 1) { tracker.process(0.01f, 0.01f, 0.01f) }
+    }
+    // The initial move from silence to the baseline is itself a transient; the three
+    // subsequent pulses are the regular 120 BPM sequence.
+    assertEquals(4, tracker.detectedOnsets)
+    assertTrue("Expected about 120 BPM, got ${tracker.estimatedBpm}", tracker.estimatedBpm in 110f..130f)
+  }
+
   private fun processOneFrame(samples: ShortArray, parameters: EightDAudioParameters): ShortArray {
     val processor = EightDAudioProcessor()
     processor.configure(AudioProcessor.AudioFormat(48_000, 2, C.ENCODING_PCM_16BIT))
