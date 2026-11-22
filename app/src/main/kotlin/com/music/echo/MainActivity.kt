@@ -281,7 +281,7 @@ class MainActivity : ComponentActivity() {
 
   @Inject
   lateinit var listenTogetherManager: echo.music.iad1tya.listentogether.ListenTogetherManager
-  private lateinit var navController: NavHostController
+  private val activityNavController = ActivityNavControllerState()
   private var pendingIntent: Intent? = null
 
   private var playerConnection by mutableStateOf<PlayerConnection?>(null)
@@ -362,11 +362,12 @@ class MainActivity : ComponentActivity() {
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
     setIntent(intent)
-    if (::navController.isInitialized) {
-      handleDeepLinkIntent(intent, navController)
-      handleRecognitionIntent(intent, navController)
-      handleAodModeIntent(intent, navController)
-      handleAssistantSearchIntent(intent, navController)
+    val controller = activityNavController.currentOrNull()
+    if (controller != null) {
+      handleDeepLinkIntent(intent, controller)
+      handleRecognitionIntent(intent, controller)
+      handleAodModeIntent(intent, controller)
+      handleAssistantSearchIntent(intent, controller)
     } else {
       pendingIntent = intent
     }
@@ -772,7 +773,7 @@ class MainActivity : ComponentActivity() {
           changelog = availableUpdateChangelog,
           description = availableUpdateDescription,
           onDismiss = { showUpdateDialog = false },
-          onUpdate = { navController.navigate("update") { launchSingleTop = true } },
+          onUpdate = { activityNavController.navigateToUpdate() },
         )
       } else {
         whatsNewInfo?.let { info ->
@@ -816,6 +817,10 @@ class MainActivity : ComponentActivity() {
         val bottomInsetDp = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
         val navController = rememberNavController()
+        DisposableEffect(navController) {
+          activityNavController.attach(navController)
+          onDispose { activityNavController.detach(navController) }
+        }
         val blockedArtists by
           dataStore.data
             .map { it[BlockedArtistsKey] ?: emptySet() }
