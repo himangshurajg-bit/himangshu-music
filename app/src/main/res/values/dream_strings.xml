@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dream_music_player">RajTune music player</string>
+    <string name="dream_music_player_description">Show album artwork, playback controls and synced lyrics as an Android screen saver.</string>
+    <string name="dream_nothing_playing">Nothing playing</string>
+    <string name="dream_album_artwork">Album artwork</string>
+    <string name="dream_previous">Previous</string>
+    <string name="dream_play">Play</string>
+    <string name="dream_pause">Pause</string>
+    <string name="dream_next">Next</string>
+    <string name="dream_lyrics_unavailable">Lyrics unavailable</string>
+</resources>

@@ -6,7 +6,9 @@
     "Music Flow: optional full-screen vertical swipe discovery (Home shortcut) that plays personalized songs through the existing player, with like/playlist/share/lyrics actions, Not interested / Less like this feedback, Restore previous queue, offline downloaded-song fallback and settings under Settings → Music Flow",
     "Android Auto: optional autoplay of the restored queue on automotive connect (Settings → Player, default off) and Home browse node with YouTube Home sections, suggested and recent content alongside local library",
     "Library UI: separate the Library overview into swipeable In App Library and Spotify underlined source tabs with separate sort controls, circular horizontal playlist preview, adaptive grid and inline track search for Spotify playlists, and animated refresh sync status messages (#808)",
-    "YouTube song menu: hand a selected track to YTDLnis (com.deniscerri.ytdl) for audio downloading, with a clear fallback when the downloader is not installed"
+    "YouTube song menu: hand a selected track to YTDLnis (com.deniscerri.ytdl) for audio downloading, with a clear fallback when the downloader is not installed",
+    "In-app always-on player: dimmed playback screen with album artwork, elapsed/total progress, shared playback controls, clock and inline lyrics",
+    "Android system music screen saver: separate DreamService with session artwork, progress, playback controls and synced lyrics; enable it in Android Settings → Screen saver"
   ],
   "bug_fixes": [
     "Stats: fix NullPointerException crash when opening Stats by making SongWithStats thumbnailUrl and play counts safely nullable, removing unsafe forced unwraps, and guarding date sequence boundaries (#646)",
@@ -22,7 +24,8 @@
     "Android Auto: deliver artwork as signed content URIs, cache cluster covers, stabilize Home shelves across reconnects, and fall back to hqdefault when maxresdefault 404s (#677)",
     "Playback: fix downloaded track playback mismatch when filtering explicit/video songs, and recognize completed offline downloads when contentLength is unset (#666, #674)",
     "Playlists: allow removing duplicate songs from a playlist directly from the 'Add to playlist' dialog and fix premature dialog dismissal (#655, #675)",
-    "Settings: remove stale search results for lyrics options that no longer exist (provider toggles, per-language romanization, glow effect), so searching settings no longer points to missing options (#700)"
+    "Settings: remove stale search results for lyrics options that no longer exist (provider toggles, per-language romanization, glow effect), so searching settings no longer points to missing options (#700)",
+    "Spotify authentication: retry transient network, HTTP 429 and server errors with bounded backoff and Retry-After handling; propagate coroutine cancellation"
   ],
   "contributors": []
 }

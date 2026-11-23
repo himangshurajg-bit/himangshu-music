@@ -451,6 +451,13 @@
     <string name="search_history">Search history</string>
     <string name="pause_search_history">Pause search history</string>
     <string name="clear_search_history">Clear search history</string>
+    <string name="storage_used_total">Total cached and downloaded: %s</string>
+    <string name="canvas_cache">Canvas playback cache</string>
+    <string name="clear_canvas_cache">Clear canvas cache</string>
+    <string name="clear_canvas_cache_confirm">Clear temporary canvas artwork from memory? It will be fetched again when needed.</string>
+    <string name="cache_limit_title">%1$s limit</string>
+    <string name="cache_limit_disabled">Disabled</string>
+    <string name="cache_limit_unlimited">Unlimited</string>
     <string name="clear_search_history_confirm">Are you sure you want to clear all search history?</string>
     <string name="use_login_for_browse">Use login for browsing content</string>
     <string name="use_login_for_browse_desc">This can influence what content you see and for example shows premium-only albums if you are logged in with a Premium account</string>

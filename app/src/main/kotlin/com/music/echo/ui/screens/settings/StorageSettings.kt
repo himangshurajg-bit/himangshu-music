@@ -37,7 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-import coil3.SingletonImageLoader
 import coil3.annotation.DelicateCoilApi
 import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
@@ -51,6 +50,7 @@ import echo.music.iad1tya.constants.MaxImageCacheSizeKey
 import echo.music.iad1tya.constants.MaxSongCacheSizeKey
 import echo.music.iad1tya.extensions.tryOrNull
 import echo.music.iad1tya.playback.AudioExportService
+import echo.music.iad1tya.ui.player.CanvasArtworkPlaybackCache
 import echo.music.iad1tya.ui.component.ActionPromptDialog
 import echo.music.iad1tya.ui.component.IconButton
 import echo.music.iad1tya.ui.component.Material3SettingsGroup
@@ -79,9 +79,12 @@ fun StorageSettings(
 
   val context = LocalContext.current
   val database = LocalDatabase.current
-  val imageDiskCache = context.imageLoader.diskCache ?: return
-  val playerCache = LocalPlayerConnection.current?.service?.playerCache ?: return
-  val downloadCache = LocalPlayerConnection.current?.service?.downloadCache ?: return
+  val imageDiskCache = context.imageLoader.diskCache
+  val playerService = LocalPlayerConnection.current?.service ?: return
+  val playerCache = playerService.playerCache
+  val downloadCache = playerService.downloadCache
+  val songCacheName = stringResource(R.string.song_cache)
+  val imageCacheName = stringResource(R.string.image_cache)
 
   val coroutineScope = rememberCoroutineScope()
   val songCacheString = stringResource(R.string.song_cache).lowercase()
@@ -140,6 +143,9 @@ fun StorageSettings(
   var clearDownloads by remember { mutableStateOf(false) }
   var clearCacheDialog by remember { mutableStateOf(false) }
   var clearImageCacheDialog by remember { mutableStateOf(false) }
+  var clearCanvasCacheDialog by remember { mutableStateOf(false) }
+  var cacheLimitDialog by remember { mutableStateOf(false) }
+  var cacheLimitType by remember { mutableStateOf("") }
 
   var showCacheWarningDialog by remember { mutableStateOf(false) }
   var cacheType by remember { mutableStateOf("") }
@@ -147,7 +153,7 @@ fun StorageSettings(
   var onConfirmAction by remember { mutableStateOf<() -> Unit>({}) }
 
   var imageCacheSize by remember {
-    androidx.compose.runtime.mutableLongStateOf(imageDiskCache.size)
+    androidx.compose.runtime.mutableLongStateOf(imageDiskCache?.size ?: 0L)
   }
   var playerCacheSize by remember {
     androidx.compose.runtime.mutableLongStateOf(tryOrNull { playerCache.cacheSpace } ?: 0)
@@ -169,23 +175,22 @@ fun StorageSettings(
     )
 
   LaunchedEffect(maxImageCacheSize) {
-    SingletonImageLoader.reset()
+    (context.applicationContext as? echo.music.iad1tya.App)
+      ?.updateImageCacheLimit(maxImageCacheSize)
     if (maxImageCacheSize == 0) {
-      coroutineScope.launch(Dispatchers.IO) { imageDiskCache.clear() }
+      coroutineScope.launch(Dispatchers.IO) { imageDiskCache?.clear() }
     }
   }
   LaunchedEffect(maxSongCacheSize) {
-    if (maxSongCacheSize == 0) {
-      coroutineScope.launch(Dispatchers.IO) {
-        playerCache.keys.forEach { key -> playerCache.removeResource(key) }
-      }
+    coroutineScope.launch(Dispatchers.IO) {
+      playerService.updatePlayerCacheLimit(maxSongCacheSize)
     }
   }
 
   LaunchedEffect(imageDiskCache) {
     while (isActive) {
       delay(500)
-      imageCacheSize = imageDiskCache.size
+      imageCacheSize = imageDiskCache?.size ?: 0L
     }
   }
   LaunchedEffect(playerCache) {
@@ -223,7 +228,7 @@ fun StorageSettings(
       onDismiss = { clearCacheDialog = false },
       onConfirm = {
         coroutineScope.launch(Dispatchers.IO) {
-          playerCache.keys.forEach { key -> playerCache.removeResource(key) }
+          playerCache.keys.toList().forEach { key -> playerCache.removeResource(key) }
         }
         clearCacheDialog = false
       },
@@ -248,13 +253,14 @@ fun StorageSettings(
             song.thumbnailUrl?.let { urlsToPreserve.add(it.encodeUtf8().sha256().hex()) }
             song.album?.thumbnailUrl?.let { urlsToPreserve.add(it.encodeUtf8().sha256().hex()) }
           }
-          val directory = imageDiskCache.directory.toFile()
-          if (directory.exists() && directory.isDirectory) {
-            directory.listFiles()?.forEach { file ->
-              if (file.isFile && !file.name.startsWith("journal")) {
-                val isPreserved = urlsToPreserve.any { hash -> file.name.startsWith(hash) }
-                if (!isPreserved) {
-                  file.delete()
+          imageDiskCache?.directory?.toFile()?.let { directory ->
+            if (directory.exists() && directory.isDirectory) {
+              directory.listFiles()?.forEach { file ->
+                if (file.isFile && !file.name.startsWith("journal")) {
+                  val isPreserved = urlsToPreserve.any { hash -> file.name.startsWith(hash) }
+                  if (!isPreserved) {
+                    file.delete()
+                  }
                 }
               }
             }
@@ -294,6 +300,52 @@ fun StorageSettings(
           Text(stringResource(id = android.R.string.cancel))
         }
       }
+    )
+  }
+
+  if (clearCanvasCacheDialog) {
+    ActionPromptDialog(
+      title = stringResource(R.string.clear_canvas_cache),
+      onDismiss = { clearCanvasCacheDialog = false },
+      onConfirm = {
+        CanvasArtworkPlaybackCache.clear()
+        clearCanvasCacheDialog = false
+      },
+      onCancel = { clearCanvasCacheDialog = false },
+      content = { Text(stringResource(R.string.clear_canvas_cache_confirm)) },
+    )
+  }
+
+  if (cacheLimitDialog) {
+    val isImage = cacheLimitType == imageCacheName
+    val currentLimit = if (isImage) maxImageCacheSize else maxSongCacheSize
+    AlertDialog(
+      onDismissRequest = { cacheLimitDialog = false },
+      title = { Text(stringResource(R.string.cache_limit_title, cacheLimitType)) },
+      text = {
+        Column {
+          listOf(0, 128, 256, 512, 1024, 2048, -1).forEach { limit ->
+            val label = when (limit) {
+              0 -> stringResource(R.string.cache_limit_disabled)
+              -1 -> stringResource(R.string.cache_limit_unlimited)
+              else -> formatFileSize(limit * 1024L * 1024L)
+            }
+            TextButton(
+              onClick = {
+                if (isImage) onMaxImageCacheSizeChange(limit)
+                else onMaxSongCacheSizeChange(limit)
+                cacheLimitDialog = false
+              },
+              enabled = limit != currentLimit,
+            ) { Text(label) }
+          }
+        }
+      },
+      confirmButton = {
+        TextButton(onClick = { cacheLimitDialog = false }) {
+          Text(stringResource(android.R.string.cancel))
+        }
+      },
     )
   }
 
@@ -343,7 +395,19 @@ fun StorageSettings(
               )
             },
             onClick = { launchExportPicker() }
-          )
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.storage),
+            title = { Text(stringResource(R.string.storage)) },
+            description = {
+              Text(
+                stringResource(
+                  R.string.storage_used_total,
+                  formatFileSize(downloadCacheSize + playerCacheSize + imageCacheSize),
+                )
+              )
+            },
+          ),
         )
     )
 
@@ -371,8 +435,25 @@ fun StorageSettings(
             isHighlighted = (highlightKey == stringResource(R.string.clear_song_cache)),
             icon = painterResource(R.drawable.cached),
             title = { Text(stringResource(R.string.clear_song_cache)) },
-            description = { Text("${formatFileSize(playerCacheSize)} used") },
+            description = { Text(stringResource(R.string.size_used, formatFileSize(playerCacheSize))) },
             onClick = { clearCacheDialog = true }
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.sliders),
+            title = { Text(stringResource(R.string.max_song_cache_size)) },
+            description = {
+              Text(
+                when (maxSongCacheSize) {
+                  0 -> stringResource(R.string.cache_limit_disabled)
+                  -1 -> stringResource(R.string.cache_limit_unlimited)
+                  else -> formatFileSize(maxSongCacheSize * 1024L * 1024L)
+                }
+              )
+            },
+            onClick = {
+              cacheLimitType = songCacheName
+              cacheLimitDialog = true
+            },
           )
         )
     )
@@ -388,8 +469,31 @@ fun StorageSettings(
             isHighlighted = (highlightKey == stringResource(R.string.clear_image_cache)),
             icon = painterResource(R.drawable.image),
             title = { Text(stringResource(R.string.clear_image_cache)) },
-            description = { Text("${formatFileSize(imageCacheSize)} used") },
+            description = { Text(stringResource(R.string.size_used, formatFileSize(imageCacheSize))) },
             onClick = { clearImageCacheDialog = true }
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.sliders),
+            title = { Text(stringResource(R.string.max_image_cache_size)) },
+            description = {
+              Text(
+                when (maxImageCacheSize) {
+                  0 -> stringResource(R.string.cache_limit_disabled)
+                  -1 -> stringResource(R.string.cache_limit_unlimited)
+                  else -> formatFileSize(maxImageCacheSize * 1024L * 1024L)
+                }
+              )
+            },
+            onClick = {
+              cacheLimitType = imageCacheName
+              cacheLimitDialog = true
+            },
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.image),
+            title = { Text(stringResource(R.string.clear_canvas_cache)) },
+            description = { Text(stringResource(R.string.canvas_cache)) },
+            onClick = { clearCanvasCacheDialog = true },
           )
         )
     )

@@ -378,3 +378,13 @@ Ambient Mode keeps the existing album-art square and layers muted Canvas artwork
 
 - The YouTube song context menu can hand a track URL to YTDLnis (`com.deniscerri.ytdl`) using `ACTION_SEND`, MIME `text/*`, `EXTRA_TEXT`, and the app's `TYPE=audio` / `BACKGROUND=false` extras. Keep this separate from the existing in-app offline-download action.
 - Declare YTDLnis under manifest `<queries>` for Android package visibility. Catch `ActivityNotFoundException` and tell the user when the companion app is unavailable. Physical-device handoff testing is needed before claiming end-to-end verification.
+
+
+## In-App Always-On Player
+
+`ui/screens/AodScreen.kt` is an in-app dimmed playback display, not Android's system AOD/DreamService. It reuses the shared player, shows artwork, metadata, position/progress, playback controls and inline lyrics, and restores the window brightness, keep-screen-on flag and system-bar visibility when leaving. Keep any future AOD work within the app's existing player/navigation architecture; avoid claiming system-level display support without a separate implementation and device validation.
+
+
+## Android System Music Screensaver
+
+`playback/MusicDreamService.kt` is the separate Android DreamService, while `ui/screens/AodScreen.kt` remains the in-app dimmed player. The system service reads the app's Media3 session, including artwork URI fallback and lyric metadata; users enable it in Android's Screen saver settings. Do not claim device-tested behavior without a physical-device check.

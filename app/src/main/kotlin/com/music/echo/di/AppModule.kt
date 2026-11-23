@@ -153,21 +153,23 @@ object AppModule {
 
   @Singleton
   @Provides
+  fun providePlayerCacheEvictor(
+    @ApplicationContext context: Context,
+  ): com.music.echo.playback.DynamicLruCacheEvictor {
+    val cacheSize = context.dataStore[MaxSongCacheSizeKey] ?: 1024
+    val maxBytes = com.music.echo.playback.cacheLimitBytes(cacheSize)
+    return com.music.echo.playback.DynamicLruCacheEvictor(maxBytes)
+  }
+
+  @Singleton
+  @Provides
   @PlayerCache
   fun providePlayerCache(
     @ApplicationContext context: Context,
     databaseProvider: DatabaseProvider,
-  ): SimpleCache {
-    val cacheSize = context.dataStore[MaxSongCacheSizeKey] ?: 1024
-    return SimpleCache(
-      context.filesDir.resolve("exoplayer"),
-      when (cacheSize) {
-        -1 -> NoOpCacheEvictor()
-        else -> com.music.echo.playback.DynamicLruCacheEvictor(cacheSize * 1024 * 1024L)
-      },
-      databaseProvider,
-    )
-  }
+    evictor: com.music.echo.playback.DynamicLruCacheEvictor,
+  ): SimpleCache =
+    SimpleCache(context.filesDir.resolve("exoplayer"), evictor, databaseProvider)
 
   @Singleton
   @Provides
