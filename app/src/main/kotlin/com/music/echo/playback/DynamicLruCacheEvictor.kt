@@ -7,6 +7,10 @@ import androidx.media3.datasource.cache.CacheEvictor
 import androidx.media3.datasource.cache.CacheSpan
 import java.util.TreeSet
 
+/** Converts the storage setting to a byte ceiling; negative values mean unlimited. */
+internal fun cacheLimitBytes(megabytes: Int): Long =
+  if (megabytes < 0) Long.MAX_VALUE else megabytes.toLong() * 1024L * 1024L
+
 /**
  * [androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor], except the ceiling is a `var`
  * rather than baked into the constructor.

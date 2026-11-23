@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
+import coil3.annotation.DelicateCoilApi
 import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.disk.directory
@@ -19,6 +20,7 @@ import coil3.request.CachePolicy
 import coil3.request.allowHardware
 import coil3.request.crossfade
 import com.music.innertube.YouTube
+import com.music.echo.playback.cacheLimitBytes
 import com.music.innertube.models.IpVersion
 import com.music.innertube.models.YouTubeLocale
 import com.music.kugou.KuGou
@@ -361,6 +363,12 @@ class App : Application(), SingletonImageLoader.Factory, Configuration.Provider 
 
   @Volatile private var cachedCoilCacheSize: Int? = null
 
+  @OptIn(DelicateCoilApi::class)
+  fun updateImageCacheLimit(megabytes: Int) {
+    cachedCoilCacheSize = megabytes
+    SingletonImageLoader.reset()
+  }
+
   override fun newImageLoader(context: PlatformContext): ImageLoader {
     val cacheSize =
       cachedCoilCacheSize
@@ -391,7 +399,7 @@ class App : Application(), SingletonImageLoader.Factory, Configuration.Provider 
           diskCache(
             DiskCache.Builder()
               .directory(cacheDir.resolve("coil"))
-              .maxSizeBytes(cacheSize * 1024 * 1024L)
+              .maxSizeBytes(cacheLimitBytes(cacheSize))
               .build()
           )
         }
