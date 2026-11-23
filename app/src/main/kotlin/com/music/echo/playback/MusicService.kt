@@ -67,6 +67,8 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.MoreExecutors
 import com.music.innertube.YouTube
+import com.music.echo.playback.DynamicLruCacheEvictor
+import com.music.echo.playback.cacheLimitBytes
 import com.music.innertube.models.IpVersion
 import com.music.innertube.models.SongItem
 import com.music.innertube.models.WatchEndpoint
@@ -494,7 +496,14 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
 
   @Inject @PlayerCache lateinit var playerCache: SimpleCache
 
+  @Inject lateinit var playerCacheEvictor: DynamicLruCacheEvictor
+
   @Inject @DownloadCache lateinit var downloadCache: SimpleCache
+
+  fun updatePlayerCacheLimit(megabytes: Int) {
+    playerCacheEvictor.maxBytes = cacheLimitBytes(megabytes)
+    playerCacheEvictor.applyNow(playerCache)
+  }
 
   lateinit var player: ExoPlayer
     private set
