@@ -4185,8 +4185,23 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
           ?: -1L
       val isFullyDownloaded =
         (cachedLength > 0 && downloadCache.isCached(mediaId, 0, cachedLength)) ||
-          (dbSong?.song?.isDownloaded == true && downloadCache.getCachedSpans(mediaId).isNotEmpty()) ||
-          (downloadCache.getCachedSpans(mediaId).isNotEmpty() && (!isNetworkConnected.value || cachedLength <= 0))
+          (dbSong?.song?.isDownloaded == true && downloadCache.getCachedSpans(mediaId).isNotEmpty())
+      val playerCacheLength =
+        androidx.media3.datasource.cache.ContentMetadata.getContentLength(
+            playerCache.getContentMetadata(mediaId)
+          )
+          .takeIf { it > 0L }
+          ?: -1L
+      val isFullyCachedInPlayerCache =
+        playerCacheLength > 0 && playerCache.isCached(mediaId, 0, playerCacheLength)
+
+      // Match ArchiveTune's offline-first routing: don't resolve a network stream when either
+      // cache already contains the whole item. The cache data source below can serve these bytes
+      // directly, even if the device is offline or quality-change bypass is pending.
+      if (isFullyDownloaded || isFullyCachedInPlayerCache) {
+        scope.launch(Dispatchers.IO) { recoverSong(mediaId, isOfflinePlayback = true) }
+        return@Factory dataSpec
+      }
 
       val activeQualityInCache =
         songUrlCache.keys
