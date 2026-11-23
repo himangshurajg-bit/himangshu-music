@@ -432,7 +432,7 @@ fun SearchScreen(
         }
       } else if (!searchActive) {
         // Live YouTube Music mood/genre discovery; each card opens its own browse endpoint.
-        val categories = moodAndGenresList.orEmpty().flatMap { it.items }
+        val categories = uniqueSearchGenreCategories(moodAndGenresList.orEmpty().flatMap { it.items })
         LazyVerticalGrid(
           columns = GridCells.Fixed(2),
           contentPadding =
@@ -448,7 +448,7 @@ fun SearchScreen(
         ) {
           items(
             items = categories,
-            key = { "${it.endpoint.browseId}:${it.title}" },
+            key = { it.searchGenreCategoryKey() },
           ) { category ->
             SearchGenreCard(
               category = category,
