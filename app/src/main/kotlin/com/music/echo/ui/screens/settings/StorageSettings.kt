@@ -143,13 +143,13 @@ fun StorageSettings(
   var clearDownloads by remember { mutableStateOf(false) }
   var clearCacheDialog by remember { mutableStateOf(false) }
   var clearImageCacheDialog by remember { mutableStateOf(false) }
+  var clearCanvasCacheDialog by remember { mutableStateOf(false) }
+  var cacheLimitDialog by remember { mutableStateOf(false) }
+  var cacheLimitType by remember { mutableStateOf("") }
 
   var showCacheWarningDialog by remember { mutableStateOf(false) }
   var cacheType by remember { mutableStateOf("") }
   var cacheUsage by remember { androidx.compose.runtime.mutableLongStateOf(0L) }
-  var clearCanvasCacheDialog by remember { mutableStateOf(false) }
-  var cacheLimitDialog by remember { mutableStateOf(false) }
-  var cacheLimitType by remember { mutableStateOf("") }
   var onConfirmAction by remember { mutableStateOf<() -> Unit>({}) }
 
   var imageCacheSize by remember {
@@ -298,6 +298,11 @@ fun StorageSettings(
       dismissButton = {
         TextButton(onClick = { showCacheWarningDialog = false }) {
           Text(stringResource(id = android.R.string.cancel))
+        }
+      }
+    )
+  }
+
   if (clearCanvasCacheDialog) {
     ActionPromptDialog(
       title = stringResource(R.string.clear_canvas_cache),
@@ -344,11 +349,6 @@ fun StorageSettings(
     )
   }
 
-        }
-      }
-    )
-  }
-
   Column(
     Modifier.windowInsetsPadding(
         LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal)
@@ -392,6 +392,10 @@ fun StorageSettings(
                   } else {
                     exportDirectoryUri
                   }
+              )
+            },
+            onClick = { launchExportPicker() }
+          ),
           Material3SettingsItem(
             icon = painterResource(R.drawable.storage),
             title = { Text(stringResource(R.string.storage)) },
@@ -404,10 +408,6 @@ fun StorageSettings(
               )
             },
           ),
-              )
-            },
-            onClick = { launchExportPicker() }
-          )
         )
     )
 
@@ -437,6 +437,23 @@ fun StorageSettings(
             title = { Text(stringResource(R.string.clear_song_cache)) },
             description = { Text(stringResource(R.string.size_used, formatFileSize(playerCacheSize))) },
             onClick = { clearCacheDialog = true }
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.sliders),
+            title = { Text(stringResource(R.string.max_song_cache_size)) },
+            description = {
+              Text(
+                when (maxSongCacheSize) {
+                  0 -> stringResource(R.string.cache_limit_disabled)
+                  -1 -> stringResource(R.string.cache_limit_unlimited)
+                  else -> formatFileSize(maxSongCacheSize * 1024L * 1024L)
+                }
+              )
+            },
+            onClick = {
+              cacheLimitType = songCacheName
+              cacheLimitDialog = true
+            },
           )
         )
     )
@@ -454,6 +471,29 @@ fun StorageSettings(
             title = { Text(stringResource(R.string.clear_image_cache)) },
             description = { Text(stringResource(R.string.size_used, formatFileSize(imageCacheSize))) },
             onClick = { clearImageCacheDialog = true }
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.sliders),
+            title = { Text(stringResource(R.string.max_image_cache_size)) },
+            description = {
+              Text(
+                when (maxImageCacheSize) {
+                  0 -> stringResource(R.string.cache_limit_disabled)
+                  -1 -> stringResource(R.string.cache_limit_unlimited)
+                  else -> formatFileSize(maxImageCacheSize * 1024L * 1024L)
+                }
+              )
+            },
+            onClick = {
+              cacheLimitType = imageCacheName
+              cacheLimitDialog = true
+            },
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.image),
+            title = { Text(stringResource(R.string.clear_canvas_cache)) },
+            description = { Text(stringResource(R.string.canvas_cache)) },
+            onClick = { clearCanvasCacheDialog = true },
           )
         )
     )
@@ -481,43 +521,3 @@ fun StorageSettings(
     }
   )
 }
-          ),
-          Material3SettingsItem(
-            icon = painterResource(R.drawable.sliders),
-            title = { Text(stringResource(R.string.max_song_cache_size)) },
-            description = {
-              Text(
-                when (maxSongCacheSize) {
-                  0 -> stringResource(R.string.cache_limit_disabled)
-                  -1 -> stringResource(R.string.cache_limit_unlimited)
-                  else -> formatFileSize(maxSongCacheSize * 1024L * 1024L)
-                }
-              )
-            },
-            onClick = {
-              cacheLimitType = songCacheName
-              cacheLimitDialog = true
-            },
-          ),
-          Material3SettingsItem(
-            icon = painterResource(R.drawable.sliders),
-            title = { Text(stringResource(R.string.max_image_cache_size)) },
-            description = {
-              Text(
-                when (maxImageCacheSize) {
-                  0 -> stringResource(R.string.cache_limit_disabled)
-                  -1 -> stringResource(R.string.cache_limit_unlimited)
-                  else -> formatFileSize(maxImageCacheSize * 1024L * 1024L)
-                }
-              )
-            },
-            onClick = {
-              cacheLimitType = imageCacheName
-              cacheLimitDialog = true
-            },
-          ),
-          Material3SettingsItem(
-            icon = painterResource(R.drawable.image),
-            title = { Text(stringResource(R.string.clear_canvas_cache)) },
-            description = { Text(stringResource(R.string.canvas_cache)) },
-            onClick = { clearCanvasCacheDialog = true },
