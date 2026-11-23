@@ -79,3 +79,13 @@ Vertical swipe discovery, laid out like a Resso-style "For You" page (interactio
 ## Ambient Mode Canvas
 
 Ambient Mode may layer muted Canvas video artwork inside the existing album-art square. Keep the original square size, rounded clipping, and interaction surface unchanged; Canvas is a non-interactive visual layer above the normal album art and follows playback state. Do not add an album-art ambient-glow background layer.
+
+
+## In-App Always-On Player
+
+The in-app AOD screen uses a near-black canvas and deliberately subdued grey artwork, text and controls. Keep album artwork square and rounded, expose playback progress and elapsed/total time, and reuse shared-player controls and inline lyrics. The screen may dim the window and keep it awake only while open; restore the prior brightness, screen-on flag and system-bar state on exit. This is an in-app playback display, not an operating-system AOD surface.
+
+
+## Android System Music Screensaver
+
+Keep the system DreamService independent from the in-app dimmed player. It should use the existing Media3 session, prefer embedded artwork but fall back to the session's artwork URI, keep album text/progress/controls readable on dark screens, and surface synced lyrics when metadata provides them. Explain that activation is managed in Android's Screen saver settings.

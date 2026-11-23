@@ -8,12 +8,15 @@
 package echo.music.iad1tya.spotify
 
 import echo.music.iad1tya.spotify.models.SpotifyInternalToken
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.floor
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -29,6 +32,18 @@ import kotlinx.serialization.json.Json
  *
  * Reference: https://github.com/sonic-liberation/spotube-plugin-spotify
  */
+internal fun spotifyAuthRetryDelayMillis(
+  statusCode: Int?,
+  retryAfterSec: Long?,
+  attempt: Int,
+): Long? {
+  if (attempt >= 3 || (statusCode != null && statusCode != 429 && statusCode !in 500..599)) {
+    return null
+  }
+  val serverDelay = retryAfterSec?.takeIf { it > 0L }?.coerceAtMost(5L)?.times(1_000L)
+  return serverDelay ?: (250L shl attempt.coerceIn(0, 2))
+}
+
 object SpotifyAuth {
   private const val TOKEN_URL = "https://open.spotify.com/api/token"
   private const val SERVER_TIME_URL = "https://open.spotify.com/api/server-time"
@@ -59,52 +74,52 @@ object SpotifyAuth {
   suspend fun fetchAccessToken(
     spDc: String,
     spKey: String = "",
-  ): Result<SpotifyInternalToken> = runCatching {
-    val nuance = fetchNuance()
-    val serverTimeSec = fetchServerTime()
-    val totp = generateTotp(nuance.s, serverTimeSec)
+  ): Result<SpotifyInternalToken> {
+    return try {
+      val nuance = retryTransientRequest { fetchNuance() }
+      val serverTimeSec = retryTransientRequest { fetchServerTime() }
+      val totp = generateTotp(nuance.s, serverTimeSec)
 
-    val tokenUrl = buildString {
-      append(TOKEN_URL)
-      append("?reason=transport")
-      append("&productType=web-player")
-      append("&totp=$totp")
-      append("&totpServer=$totp")
-      append("&totpVer=${nuance.v}")
-    }
-
-    val cookieHeader = buildString {
-      append("sp_dc=$spDc")
-      if (spKey.isNotEmpty()) {
-        append("; sp_key=$spKey")
+      val tokenUrl = buildString {
+        append(TOKEN_URL)
+        append("?reason=transport")
+        append("&productType=web-player")
+        append("&totp=$totp")
+        append("&totpServer=$totp")
+        append("&totpVer=${nuance.v}")
       }
+
+      val cookieHeader = buildString {
+        append("sp_dc=$spDc")
+        if (spKey.isNotEmpty()) {
+          append("; sp_key=$spKey")
+        }
+      }
+
+      val body = retryTransientRequest {
+        withContext(Dispatchers.IO) { httpGet(tokenUrl, mapOf("Cookie" to cookieHeader)) }
+      }
+
+      val token = json.decodeFromString<SpotifyInternalToken>(body)
+
+      if (token.isAnonymous || token.accessToken.isBlank()) {
+        throw Spotify.SpotifyException(
+          401,
+          "Received anonymous token — sp_dc cookie is invalid or expired",
+        )
+      }
+
+      Result.success(token)
+    } catch (cancellation: CancellationException) {
+      throw cancellation
+    } catch (error: Exception) {
+      Result.failure(error)
     }
-
-    val body = withContext(Dispatchers.IO) { httpGet(tokenUrl, mapOf("Cookie" to cookieHeader)) }
-
-    val token = json.decodeFromString<SpotifyInternalToken>(body)
-
-    if (token.isAnonymous || token.accessToken.isBlank()) {
-      throw Spotify.SpotifyException(
-        401,
-        "Received anonymous token — sp_dc cookie is invalid or expired",
-      )
-    }
-
-    token
   }
 
   private suspend fun fetchNuance(): Nuance =
     withContext(Dispatchers.IO) {
-      val body =
-        try {
-          httpGet(NUANCE_GIST_URL, emptyMap())
-        } catch (e: Exception) {
-          throw Spotify.SpotifyException(
-            503,
-            "Failed to fetch TOTP secret from gist: ${e.message}",
-          )
-        }
+      val body = httpGet(NUANCE_GIST_URL, emptyMap())
       val nuances = json.decodeFromString<List<Nuance>>(body)
       nuances.maxByOrNull { it.v }
         ?: throw Spotify.SpotifyException(500, "No nuance data found in gist")
@@ -112,18 +127,34 @@ object SpotifyAuth {
 
   private suspend fun fetchServerTime(): Long =
     withContext(Dispatchers.IO) {
-      val body =
-        try {
-          httpGet(SERVER_TIME_URL, emptyMap())
-        } catch (e: Exception) {
-          throw Spotify.SpotifyException(
-            503,
-            "Failed to fetch Spotify server time: ${e.message}",
-          )
-        }
-      val response = json.decodeFromString<ServerTimeResponse>(body)
-      response.serverTime
+      val body = httpGet(SERVER_TIME_URL, emptyMap())
+      json.decodeFromString<ServerTimeResponse>(body).serverTime
     }
+
+  private suspend fun <T> retryTransientRequest(block: suspend () -> T): T {
+    var attempt = 0
+    while (true) {
+      try {
+        return block()
+      } catch (error: Exception) {
+        if (error is CancellationException) throw error
+        val spotifyError = error as? Spotify.SpotifyException
+        val delayMillis =
+          when {
+            error is IOException -> spotifyAuthRetryDelayMillis(null, null, attempt)
+            spotifyError != null ->
+              spotifyAuthRetryDelayMillis(
+                spotifyError.statusCode,
+                spotifyError.retryAfterSec.takeIf { it > 0L },
+                attempt,
+              )
+            else -> null
+          } ?: throw error
+        delay(delayMillis)
+        attempt++
+      }
+    }
+  }
 
   /**
    * Generates a 6-digit TOTP using HMAC-SHA1 (RFC 6238).
@@ -197,9 +228,11 @@ object SpotifyAuth {
       val responseCode = connection.responseCode
       if (responseCode !in 200..299) {
         val errorBody = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+        val retryAfterSec = connection.getHeaderField("Retry-After")?.trim()?.toLongOrNull()
         throw Spotify.SpotifyException(
           responseCode,
           "HTTP $responseCode: $errorBody",
+          retryAfterSec = retryAfterSec ?: 0L,
         )
       }
 

@@ -1,5 +1,8 @@
 package echo.music.iad1tya.ui.screens.settings
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -1437,6 +1440,18 @@ fun PlayerSettings(
             title = { Text("Always-on player (AOD)") },
             description = { Text("Open a dim, minimal player screen while you listen") },
             onClick = { navController.navigate("aod_screen") }
+          ),
+          Material3SettingsItem(
+            icon = painterResource(R.drawable.screenshot),
+            title = { Text("Android system screen saver") },
+            description = { Text("Open Android settings to enable RajTune as a screen saver") },
+            onClick = {
+              try {
+                context.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS))
+              } catch (_: ActivityNotFoundException) {
+                context.startActivity(Intent(Settings.ACTION_DISPLAY_SETTINGS))
+              }
+            }
           ),
           Material3SettingsItem(
             isHighlighted =
