@@ -33,6 +33,8 @@ jobs:
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.2.13676358" || true
 
     - name: Run Unit Tests
+      env:
+        JAVA_TOOL_OPTIONS: "-Drobolectric.dependency.repo.url=https://maven-central.storage-download.googleapis.com/maven2 -Drobolectric.dependency.repo.id=google-central"
       run: |
         chmod +x gradlew
         ./gradlew :core:testDebugUnitTest :lyrics:testDebugUnitTest :audio-dsp:testDebugUnitTest :app:testUniversalGmsDebugUnitTest
