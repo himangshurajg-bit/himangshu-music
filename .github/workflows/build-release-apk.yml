@@ -63,8 +63,8 @@ jobs:
               client.get("client_info", {}).get("android_client_info", {}).get("package_name")
               for client in config.get("client", [])
           }
-          if "echo.music.iad1tya" not in packages:
-              raise SystemExit("Firebase config must include Android package echo.music.iad1tya")
+          if "com.himangshu.rajgogoi.music" not in packages:
+              raise SystemExit("Firebase config must include Android package com.himangshu.rajgogoi.music")
           PYCONFIG
       - name: Decode existing release keystore
         if: steps.signing.outputs.configured == 'true'

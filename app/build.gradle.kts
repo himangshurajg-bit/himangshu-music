@@ -31,11 +31,11 @@ android {
   ndkVersion = "28.2.13676358"
 
   defaultConfig {
-    applicationId = "echo.music.iad1tya"
+    applicationId = "com.himangshu.rajgogoi.music"
     minSdk = 26
     targetSdk = 36
-    versionCode = 183
-    versionName = "1.4.22"
+    versionCode = 184
+    versionName = "1.4.23"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables.useSupportLibrary = true

@@ -5,7 +5,7 @@ The GMS app already includes Firebase Analytics. When Firebase is configured, it
 ## Set up Firebase
 
 1. Create or choose a Firebase project and enable Google Analytics for it.
-2. Register an Android app with package name `echo.music.iad1tya` and download its `google-services.json`.
+2. Register an Android app with package name `com.himangshu.rajgogoi.music` and download its `google-services.json`.
 3. For a local build, put the file at `app/google-services.json`. It is gitignored; do not commit it.
 4. For signed APKs built by `.github/workflows/build-release-apk.yml`, base64-encode that JSON and save the output as the GitHub Actions repository secret `FIREBASE_GOOGLE_SERVICES_JSON_BASE64`. The workflow decodes it only on the signed-release path and checks the Android package before building. Do not send the value in chat.
 
