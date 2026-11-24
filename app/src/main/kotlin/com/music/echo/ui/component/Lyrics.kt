@@ -553,6 +553,7 @@ fun Lyrics(
 
   var showProgressDialog by remember { mutableStateOf(false) }
   var showShareDialog by remember { mutableStateOf(false) }
+  var showSongCompanionDialog by remember { mutableStateOf(false) }
   var shareDialogData by remember { mutableStateOf<Triple<String, String, String>?>(null) }
 
   var showColorPickerDialog by remember { mutableStateOf(false) }
@@ -826,6 +827,16 @@ fun Lyrics(
       }
     }
 
+    if (!compact && !mediaMetadata?.title.isNullOrBlank()) {
+      Box(
+        modifier = Modifier.align(Alignment.TopEnd).padding(top = 104.dp, end = 16.dp).zIndex(2f)
+      ) {
+        FilledTonalButton(onClick = { showSongCompanionDialog = true }) {
+          Text(stringResource(R.string.song_companion_title))
+        }
+      }
+    }
+
     if (lyrics == LYRICS_NOT_FOUND && !compact) {
       Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
@@ -1068,6 +1079,12 @@ fun Lyrics(
               contentDescription = stringResource(R.string.cancel),
               modifier = Modifier.size(20.dp)
             )
+          }
+          FilledTonalButton(
+            onClick = { showSongCompanionDialog = true },
+            enabled = selectedIndices.any { lines.getOrNull(it)?.text?.isNotBlank() == true },
+          ) {
+            Text(text = stringResource(R.string.song_companion_explain_selected))
           }
           FilledTonalButton(
             onClick = {
@@ -1565,6 +1582,17 @@ fun Lyrics(
         }
       } // closes Dialog
     }
+  }
+
+  if (showSongCompanionDialog && !compact && !mediaMetadata?.title.isNullOrBlank()) {
+    SongCompanionDialog(
+      title = mediaMetadata?.title.orEmpty(),
+      artists = mediaMetadata?.artists?.joinToString { it.name }.orEmpty(),
+      album = mediaMetadata?.album?.title,
+      lyrics = lines.joinToString("\n") { it.text },
+      selectedLines = selectedIndices.sorted().mapNotNull { lines.getOrNull(it)?.text?.takeIf(String::isNotBlank) },
+      onDismiss = { showSongCompanionDialog = false },
+    )
   }
 }
 

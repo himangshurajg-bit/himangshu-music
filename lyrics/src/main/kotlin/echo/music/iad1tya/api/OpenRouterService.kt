@@ -1,6 +1,8 @@
 package echo.music.iad1tya.api
 
+import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -100,6 +102,60 @@ object OpenRouterService {
     }
     return true
   }
+
+  /** Runs a grounded, non-streaming assistant turn through the configured chat provider. */
+  suspend fun chat(
+    systemPrompt: String,
+    userPrompt: String,
+    apiKey: String,
+    baseUrl: String,
+    model: String,
+    maxTokens: Int = 700,
+  ): Result<String> =
+    withContext(Dispatchers.IO) {
+      val effectiveUrl = baseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+      if (!isUrlSafe(effectiveUrl)) {
+        return@withContext Result.failure(
+          SecurityException("Invalid or restricted endpoint destination")
+        )
+      }
+      if (apiKey.isBlank()) {
+        return@withContext Result.failure(IllegalStateException("AI API key is missing"))
+      }
+      if (userPrompt.isBlank()) {
+        return@withContext Result.failure(IllegalArgumentException("Question is empty"))
+      }
+      try {
+        val request =
+          buildChatRequest(
+            url = effectiveUrl,
+            apiKey = apiKey,
+            model = model,
+            system = systemPrompt,
+            user = userPrompt,
+            maxTokens = maxTokens.coerceIn(128, 2048),
+            temperature = 0.4,
+          )
+        val answer =
+          client.newCall(request).execute().use { response ->
+            val body = response.body?.string().orEmpty()
+            if (!response.isSuccessful) {
+              val detail =
+                runCatching { JSONObject(body).optJSONObject("error")?.optString("message") }
+                  .getOrNull()
+                  ?.takeIf { it.isNotBlank() }
+              throw IOException(detail ?: "AI request failed (HTTP ${response.code})")
+            }
+            extractContent(body)?.takeIf { it.isNotBlank() }
+              ?: throw IOException("The AI provider returned no answer")
+          }
+        Result.success(answer)
+      } catch (cancelled: CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        Result.failure(error)
+      }
+    }
 
   suspend fun translate(
     text: String,

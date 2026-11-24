@@ -310,6 +310,10 @@ NDK `27.0.12077973`. JDK 21 (kotlin/java toolchain).
 - Never commit: `local.properties`, `*.keystore`, real `google-services.json`,
   any `gradle.properties` containing signing credentials.
 
+## AI song companion
+
+`AiSongCompanion` in the lyrics view uses the existing configured chat provider for lyric-theme summaries, selected-line explanations, and listener questions. `AiSongCompanionPrompt` bounds and labels user-supplied lyrics/metadata as untrusted content; only use available lyrics and do not claim artist intent or unsupported sound/genre facts. Its separate “Make a mix from this song” action sends only title/artist metadata to the existing `AiPlaylistGenerator`, resolves candidates through InnerTube, and saves only after the listener taps it. Keep the privacy note accurate if inputs or destinations change. Prompt logic is covered by `AiSongCompanionTest`.
+
 ## Recommendation query safety
 
 `DatabaseDao.quickPicks` and `forgottenFavorites` use a bound, per-invocation random seed to order song row IDs deterministically (including Quick Picks' fallback seeds). Do not use SQLite `RANDOM()` in queries returning Room relations: Room resets and re-executes the parent statement while building relations, so a randomized `LIMIT` can return different IDs and crash with `NoSuchElementException` from the generated relation map even inside `@Transaction`. A new invocation gets a new seed, preserving refresh variety without a schema migration.
