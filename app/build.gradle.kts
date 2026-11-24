@@ -360,6 +360,7 @@ dependencies {
   implementation("com.microsoft.onnxruntime:onnxruntime-android:1.28.0")
 
   testImplementation(libs.junit)
+  testImplementation(libs.json)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)
 }

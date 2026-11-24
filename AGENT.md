@@ -314,6 +314,14 @@ NDK `27.0.12077973`. JDK 21 (kotlin/java toolchain).
 
 `AiSongCompanion` in the lyrics view uses the existing configured chat provider for lyric-theme summaries, selected-line explanations, and listener questions. `AiSongCompanionPrompt` bounds and labels user-supplied lyrics/metadata as untrusted content; only use available lyrics and do not claim artist intent or unsupported sound/genre facts. Its separate “Make a mix from this song” action sends only title/artist metadata to the existing `AiPlaylistGenerator`, resolves candidates through InnerTube, and saves only after the listener taps it. Keep the privacy note accurate if inputs or destinations change. Prompt logic is covered by `AiSongCompanionTest`.
 
+## AI timed listening sessions
+
+`AiListeningSession` takes only a local playlist name and its track indices, titles, artists, and durations. It proposes a 15/30/45-minute selection and order from those tracks; validate every returned index and total duration before exposing Play. It must never edit/save the source playlist, and the user must tap Play to change playback. Keep the privacy note and metadata-only limitation accurate; no lyrics or audio are sent. Pure prompt/selection validation belongs in `AiListeningSessionTest`.
+
+## AI playlist flow
+
+`AiPlaylistFlow` proposes a complete order for an editable local playlist from its track indices/titles/artists and the listener's requested arc. It must preserve every track exactly once; validate the returned permutation and preview it before the listener explicitly applies it. Do not claim to hear tracks or infer sound, lyrics, genre, or artist intent from metadata. The source playlist stays unchanged until Apply; `AiPlaylistFlowTest` covers prompt bounds and permutation validation.
+
 ## Recommendation query safety
 
 `DatabaseDao.quickPicks` and `forgottenFavorites` use a bound, per-invocation random seed to order song row IDs deterministically (including Quick Picks' fallback seeds). Do not use SQLite `RANDOM()` in queries returning Room relations: Room resets and re-executes the parent statement while building relations, so a randomized `LIMIT` can return different IDs and crash with `NoSuchElementException` from the generated relation map even inside `@Transaction`. A new invocation gets a new seed, preserving refresh variety without a schema migration.

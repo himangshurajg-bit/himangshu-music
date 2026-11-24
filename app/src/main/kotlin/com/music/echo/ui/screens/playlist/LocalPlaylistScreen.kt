@@ -889,6 +889,8 @@ fun LocalPlaylistHeader(
   val syncUtils = LocalSyncUtils.current
   val scope = rememberCoroutineScope()
   var showAiModifyDialog by rememberSaveable { mutableStateOf(false) }
+  var showAiListeningSession by rememberSaveable { mutableStateOf(false) }
+  var showAiPlaylistFlow by rememberSaveable { mutableStateOf(false) }
 
   val playlistLength = remember(songs) { songs.fastSumBy { it.song.song.duration } }
 
@@ -1383,6 +1385,19 @@ fun LocalPlaylistHeader(
       }
     }
 
+    androidx.compose.material3.FilledTonalButton(
+      onClick = { showAiListeningSession = true },
+      enabled = songs.isNotEmpty(),
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+    ) { Text(stringResource(R.string.ai_listening_session_button)) }
+
+    if (editable && songs.size > 1) {
+      androidx.compose.material3.FilledTonalButton(
+        onClick = { showAiPlaylistFlow = true },
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+      ) { Text(stringResource(R.string.ai_playlist_flow_button)) }
+    }
+
     Spacer(Modifier.height(24.dp))
 
     val staticDescription =
@@ -1413,6 +1428,28 @@ fun LocalPlaylistHeader(
       playlistId = playlist.id,
       currentSongs = songs,
       onDismiss = { showAiModifyDialog = false }
+    )
+  }
+  if (showAiListeningSession) {
+    AiListeningSessionDialog(
+      playlistName = playlist.playlist.name,
+      songs = songs,
+      onDismiss = { showAiListeningSession = false },
+    )
+  }
+  if (showAiPlaylistFlow) {
+    AiPlaylistFlowDialog(
+      playlistName = playlist.playlist.name,
+      songs = songs,
+      onDismiss = { showAiPlaylistFlow = false },
+      onApply = { indices ->
+        database.transaction {
+          indices.forEachIndexed { position, index ->
+            songs[index].map.let { update(it.copy(position = position)) }
+          }
+        }
+        showAiPlaylistFlow = false
+      },
     )
   }
 }
