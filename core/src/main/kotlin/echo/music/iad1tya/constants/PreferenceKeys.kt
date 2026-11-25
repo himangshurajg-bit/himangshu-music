@@ -42,7 +42,7 @@ enum class HapticIntensity(val label: String, val scaleFactor: Float) {
   }
 }
 
-val DynamicThemeKey = booleanPreferencesKey("dynamicTheme")
+val AlbumArtThemeRecoloringKey = booleanPreferencesKey("albumArtThemeRecoloring")
 val SelectedThemeColorKey = intPreferencesKey("selectedThemeColor")
 val SelectedThemePaletteKey = stringPreferencesKey("selectedThemePalette")
 val DarkModeKey = stringPreferencesKey("darkMode")
@@ -155,7 +155,7 @@ enum class AudioQuality(
 val DownloadQualityKey = stringPreferencesKey("downloadQuality")
 
 enum class DownloadQuality {
-  YOUTUBE
+  YOUTUBE,
 }
 
 val DownloadOnWifiOnlyKey = booleanPreferencesKey("downloadOnWifiOnly")
@@ -353,6 +353,9 @@ val ShowCachedPlaylistKey = booleanPreferencesKey("show_cached_playlist")
 val ShowUploadedPlaylistKey = booleanPreferencesKey("show_uploaded_playlist")
 val EnablePlayerSwipeKey = booleanPreferencesKey("enable_player_swipe")
 val ShowSpeedDialKey = booleanPreferencesKey("showSpeedDial")
+val ShowHomeHeroCarouselKey = booleanPreferencesKey("showHomeHeroCarousel")
+val ShowHomeCommunityKey = booleanPreferencesKey("showHomeCommunity")
+val ShowHomeMoodAndGenresKey = booleanPreferencesKey("showHomeMoodAndGenres")
 val ShowCommentButtonKey = booleanPreferencesKey("show_comment_button")
 
 val MusicFlowEnabledKey = booleanPreferencesKey("music_flow_enabled")

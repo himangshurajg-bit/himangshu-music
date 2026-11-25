@@ -74,6 +74,24 @@ class ApiRouteTranslationTest {
   }
 
   @Test
+  fun streamingRejectsMetadataEndpointBeforeSendingCredentials() = runBlocking {
+    val chunks =
+      OpenRouterStreamingService.streamTranslation(
+          "hello",
+          "fr",
+          "test-api-route-key",
+          "http://169.254.169.254/latest/meta-data/",
+          "test-model",
+          "Literal",
+        )
+        .toList()
+
+    assertEquals(1, chunks.size)
+    assertTrue(chunks.single() is OpenRouterStreamingService.StreamChunk.Error)
+    assertEquals(null, requestBody.get())
+  }
+
+  @Test
   fun compatibleEndpointParsesStreamingTranslation() = runBlocking {
     val chunks =
       OpenRouterStreamingService.streamTranslation(

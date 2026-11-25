@@ -82,6 +82,10 @@ fun NavGraphBuilder.navigationBuilder(
     HomeScreen(navController = navController, snackbarHostState = snackbarHostState)
   }
 
+  composable(Screens.Podcast.route) {
+    echo.music.iad1tya.ui.screens.podcast.PodcastsScreen(navController = navController)
+  }
+
   composable(Screens.Search.route) {
     val pureBlackEnabled by rememberPreference(PureBlackKey, defaultValue = false)
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
@@ -323,7 +327,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     UpdateSettings(
@@ -340,7 +344,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     AccountSettingsScreen(
@@ -357,7 +361,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     AccountSettingsScreen(
@@ -381,7 +385,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     AppearanceSettings(
@@ -402,7 +406,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     echo.music.iad1tya.ui.screens.settings.HapticsSettings(
@@ -444,7 +448,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     ContentSettings(
@@ -463,7 +467,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     AiSettings(
@@ -484,7 +488,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     PlayerSettings(
@@ -527,7 +531,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     PrivacySettings(
@@ -544,7 +548,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     BackupAndRestore(
@@ -574,6 +578,25 @@ fun NavGraphBuilder.navigationBuilder(
 
   composable("settings/spotify_import") { SpotifyImportScreen(navController) }
 
+  composable("settings/spotify_login") { backStackEntry ->
+    val parentEntry =
+      remember(backStackEntry) {
+        runCatching { navController.getBackStackEntry("settings/spotify_import") }.getOrNull()
+      }
+    val viewModel: echo.music.iad1tya.spotifyimport.SpotifyImportViewModel =
+      if (parentEntry != null) {
+        androidx.hilt.navigation.compose.hiltViewModel(parentEntry)
+      } else {
+        androidx.hilt.navigation.compose.hiltViewModel()
+      }
+    SpotifyLoginScreen(
+      navController = navController,
+      onCookiesCaptured = { spDc, spKey ->
+        viewModel.connectWithCookies(spDc = spDc, spKey = spKey)
+      },
+    )
+  }
+
   composable(route = "settings/integrations/listen_together") {
     ListenTogetherSettings(navController, scrollBehavior)
   }
@@ -585,7 +608,7 @@ fun NavGraphBuilder.navigationBuilder(
         navArgument("highlightKey") {
           type = NavType.StringType
           nullable = true
-        }
+        },
       ),
   ) { backStackEntry ->
     AboutScreen(

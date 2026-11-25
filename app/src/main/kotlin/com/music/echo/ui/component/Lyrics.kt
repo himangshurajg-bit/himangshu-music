@@ -8,11 +8,7 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -23,7 +19,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -31,11 +26,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
@@ -81,19 +74,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import kotlin.math.PI
-import kotlin.math.sin
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -103,16 +87,12 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
@@ -164,7 +144,6 @@ import echo.music.iad1tya.constants.TranslateLanguageKey
 import echo.music.iad1tya.constants.TranslateModeKey
 import echo.music.iad1tya.db.entities.LyricsEntity.Companion.LYRICS_NOT_FOUND
 import echo.music.iad1tya.lyrics.LyricsEntry
-import echo.music.iad1tya.lyrics.WordTimestamp
 import echo.music.iad1tya.lyrics.LyricsTranslationHelper
 import echo.music.iad1tya.lyrics.LyricsUtils.findCurrentLineIndex
 import echo.music.iad1tya.lyrics.LyricsUtils.isBelarusian
@@ -208,7 +187,7 @@ fun Lyrics(
   sliderPositionProvider: () -> Long?,
   modifier: Modifier = Modifier,
   showLyrics: Boolean,
-  compact: Boolean = false
+  compact: Boolean = false,
 ) {
   val playerConnection = LocalPlayerConnection.current ?: return
   val database = LocalDatabase.current
@@ -265,7 +244,7 @@ fun Lyrics(
   val playerBackground by
     rememberEnumPreference(
       key = PlayerBackgroundStyleKey,
-      defaultValue = PlayerBackgroundStyle.GRADIENT
+      defaultValue = PlayerBackgroundStyle.GRADIENT,
     )
 
   val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
@@ -312,7 +291,7 @@ fun Lyrics(
                 entry.text,
                 entry.words,
                 agent = entry.agent,
-                isBackground = entry.isBackground
+                isBackground = entry.isBackground,
               )
 
             if (effJapanese && isJapanese(entry.text) && !isChinese(entry.text)) {
@@ -481,7 +460,7 @@ fun Lyrics(
         lyrics = lines,
         lyricsEntity = lyricsEntity,
         targetLanguage = translateLanguage,
-        mode = translateMode
+        mode = translateMode,
       )
 
       kotlinx.coroutines.delay(100)
@@ -518,7 +497,7 @@ fun Lyrics(
           deeplFormality = deeplFormality,
           useStreaming = true,
           songId = currentSong?.id ?: "",
-          database = database
+          database = database,
         )
       } else if (effectiveApiKey.isBlank()) {
         Toast.makeText(context, context.getString(R.string.ai_api_key_required), Toast.LENGTH_SHORT)
@@ -576,11 +555,20 @@ fun Lyrics(
   var lastManualScrollTime by remember { mutableStateOf(0L) }
 
   LaunchedEffect(
-    isAutoScrollEnabled, isSynced, isSelectionModeActive, showLyrics,
-    lazyListState.isScrollInProgress, lastManualScrollTime,
+    isAutoScrollEnabled,
+    isSynced,
+    isSelectionModeActive,
+    showLyrics,
+    lazyListState.isScrollInProgress,
+    lastManualScrollTime,
   ) {
-    if (!isAutoScrollEnabled && isSynced && !isSelectionModeActive && showLyrics &&
-      !lazyListState.isScrollInProgress) {
+    if (
+      !isAutoScrollEnabled &&
+        isSynced &&
+        !isSelectionModeActive &&
+        showLyrics &&
+        !lazyListState.isScrollInProgress
+    ) {
       delay(4000)
       lastPreviewTime = 0L
       isAutoScrollEnabled = true
@@ -599,7 +587,7 @@ fun Lyrics(
       Toast.makeText(
           context,
           context.getString(R.string.max_selection_limit, maxSelectionLimit),
-          Toast.LENGTH_SHORT
+          Toast.LENGTH_SHORT,
         )
         .show()
       showMaxSelectionToast = false
@@ -681,7 +669,7 @@ fun Lyrics(
         lazyListState.animateScrollBy(
           value = offset.toFloat(),
           animationSpec =
-            spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
+            spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
         )
       }
     } else {
@@ -726,7 +714,7 @@ fun Lyrics(
 
   BoxWithConstraints(
     contentAlignment = Alignment.TopCenter,
-    modifier = modifier.fillMaxSize().padding(bottom = 12.dp)
+    modifier = modifier.fillMaxSize().padding(bottom = 12.dp),
   ) {
     AnimatedVisibility(
       visible =
@@ -735,7 +723,7 @@ fun Lyrics(
           translationStatus !is LyricsTranslationHelper.TranslationStatus.Idle,
       enter = fadeIn() + slideInVertically { -it },
       exit = fadeOut() + slideOutVertically { -it },
-      modifier = Modifier.fillMaxWidth().zIndex(1f).padding(top = 56.dp)
+      modifier = Modifier.fillMaxWidth().zIndex(1f).padding(top = 56.dp),
     ) {
       Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         when (val status = translationStatus) {
@@ -743,27 +731,27 @@ fun Lyrics(
             Card(
               colors =
                 CardDefaults.cardColors(
-                  containerColor = MaterialTheme.colorScheme.primaryContainer
+                  containerColor = MaterialTheme.colorScheme.primaryContainer,
                 ),
               shape = RoundedCornerShape(16.dp),
-              elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+              elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
               Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
               ) {
                 androidx.compose.material3.CircularProgressIndicator(
                   modifier = Modifier.size(16.dp),
                   strokeWidth = 2.dp,
-                  color = MaterialTheme.colorScheme.onPrimaryContainer
+                  color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
                   text =
                     if (status.logs.isNotEmpty()) status.logs.last()
                     else stringResource(R.string.ai_translating_lyrics),
                   style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.onPrimaryContainer
+                  color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
               }
             }
@@ -773,23 +761,23 @@ fun Lyrics(
               colors =
                 CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
               shape = RoundedCornerShape(16.dp),
-              elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+              elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
               Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
               ) {
                 Icon(
                   painter = painterResource(R.drawable.error),
                   contentDescription = null,
                   tint = MaterialTheme.colorScheme.onErrorContainer,
-                  modifier = Modifier.size(16.dp)
+                  modifier = Modifier.size(16.dp),
                 )
                 Text(
                   text = status.message,
                   style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.onErrorContainer
+                  color = MaterialTheme.colorScheme.onErrorContainer,
                 )
               }
             }
@@ -798,26 +786,26 @@ fun Lyrics(
             Card(
               colors =
                 CardDefaults.cardColors(
-                  containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                  containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                 ),
               shape = RoundedCornerShape(16.dp),
-              elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+              elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
               Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
               ) {
                 Icon(
                   painter = painterResource(R.drawable.check),
                   contentDescription = null,
                   tint = MaterialTheme.colorScheme.onTertiaryContainer,
-                  modifier = Modifier.size(16.dp)
+                  modifier = Modifier.size(16.dp),
                 )
                 Text(
                   text = stringResource(R.string.ai_lyrics_translated),
                   style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.onTertiaryContainer
+                  color = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
               }
             }
@@ -845,7 +833,7 @@ fun Lyrics(
           color = MaterialTheme.colorScheme.secondary,
           textAlign = TextAlign.Center,
           fontWeight = FontWeight.Bold,
-          modifier = Modifier.alpha(0.5f)
+          modifier = Modifier.alpha(0.5f),
         )
       }
     } else if (!compact || isSynced) {
@@ -864,7 +852,7 @@ fun Lyrics(
         modifier =
           Modifier.then(
               if (compact) Modifier.fadingEdge(bottom = 64.dp)
-              else Modifier.fadingEdge(vertical = 64.dp)
+              else Modifier.fadingEdge(vertical = 64.dp),
             )
             .nestedScroll(
               remember {
@@ -872,7 +860,7 @@ fun Lyrics(
                   override fun onPostScroll(
                     consumed: Offset,
                     available: Offset,
-                    source: NestedScrollSource
+                    source: NestedScrollSource,
                   ): Offset {
                     if (source == NestedScrollSource.UserInput) {
                       isAutoScrollEnabled = false
@@ -886,7 +874,7 @@ fun Lyrics(
 
                   override suspend fun onPostFling(
                     consumed: Velocity,
-                    available: Velocity
+                    available: Velocity,
                   ): Velocity {
                     isAutoScrollEnabled = false
                     lastManualScrollTime = System.currentTimeMillis()
@@ -896,8 +884,8 @@ fun Lyrics(
                     return super.onPostFling(consumed, available)
                   }
                 }
-              }
-            )
+              },
+            ),
       ) {
         val displayedCurrentLineIndex =
           if (!isAutoScrollEnabled) {
@@ -913,7 +901,7 @@ fun Lyrics(
               fontSize = 12.sp,
               color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
               fontWeight = FontWeight.Medium,
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
             )
           }
         }
@@ -929,7 +917,7 @@ fun Lyrics(
                       LyricsPosition.CENTER -> Alignment.Center
                       LyricsPosition.RIGHT -> Alignment.CenterEnd
                     },
-                  modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp)
+                  modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
                 ) {
                   TextPlaceholder()
                 }
@@ -939,7 +927,8 @@ fun Lyrics(
         } else {
           val lyricsOffset = currentSong?.song?.lyricsOffset?.toLong() ?: 0L
 
-          itemsIndexed(items = lines, key = { index, item -> "$index-${item.time}" }) { index, item ->
+          itemsIndexed(items = lines, key = { index, item -> "$index-${item.time}" }) { index, item
+            ->
             val currentLineTime =
               if (displayedCurrentLineIndex >= 0 && displayedCurrentLineIndex < lines.size) {
                 lines[displayedCurrentLineIndex].time
@@ -950,8 +939,7 @@ fun Lyrics(
             val isActiveLine = isActiveByIndex || isActiveByTime
             val linePosition =
               if (isActiveLine) 0L
-              else if (index < displayedCurrentLineIndex) Long.MAX_VALUE
-              else 0L
+              else if (index < displayedCurrentLineIndex) Long.MAX_VALUE else 0L
             val isSelected = selectedIndices.contains(index)
 
             MetroLyricsLine(
@@ -1013,7 +1001,7 @@ fun Lyrics(
                       if (kotlin.math.abs(scrollOffset) > 10) {
                         lazyListState.animateScrollBy(
                           value = scrollOffset.toFloat(),
-                          animationSpec = tween(durationMillis = 1500)
+                          animationSpec = tween(durationMillis = 1500),
                         )
                       }
                     }
@@ -1030,7 +1018,7 @@ fun Lyrics(
                 } else if (!isSelected) {
                   showMaxSelectionToast = true
                 }
-              }
+              },
             )
           }
         }
@@ -1041,18 +1029,18 @@ fun Lyrics(
       AnimatedVisibility(
         visible = !isAutoScrollEnabled && isSynced && !isSelectionModeActive,
         enter = slideInVertically { it } + fadeIn(),
-        exit = slideOutVertically { it } + fadeOut()
+        exit = slideOutVertically { it } + fadeOut(),
       ) {
         FilledTonalButton(
           onClick = {
             scope.launch { performSmoothPageScroll(currentLineIndex, 1500) }
             isAutoScrollEnabled = true
-          }
+          },
         ) {
           Icon(
             painter = painterResource(id = R.drawable.sync),
             contentDescription = stringResource(R.string.auto_scroll),
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(20.dp),
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(text = stringResource(R.string.auto_scroll))
@@ -1062,22 +1050,22 @@ fun Lyrics(
       AnimatedVisibility(
         visible = isSelectionModeActive,
         enter = slideInVertically { it } + fadeIn(),
-        exit = slideOutVertically { it } + fadeOut()
+        exit = slideOutVertically { it } + fadeOut(),
       ) {
         Row(
           horizontalArrangement = Arrangement.spacedBy(8.dp),
-          verticalAlignment = Alignment.CenterVertically
+          verticalAlignment = Alignment.CenterVertically,
         ) {
           FilledTonalButton(
             onClick = {
               isSelectionModeActive = false
               selectedIndices.clear()
-            }
+            },
           ) {
             Icon(
               painter = painterResource(id = R.drawable.close),
               contentDescription = stringResource(R.string.cancel),
-              modifier = Modifier.size(20.dp)
+              modifier = Modifier.size(20.dp),
             )
           }
           FilledTonalButton(
@@ -1098,7 +1086,7 @@ fun Lyrics(
                     Triple(
                       selectedLyricsText,
                       mediaMetadata?.title ?: "",
-                      mediaMetadata?.artists?.joinToString { it.name } ?: ""
+                      mediaMetadata?.artists?.joinToString { it.name } ?: "",
                     )
                   showShareDialog = true
                 }
@@ -1106,12 +1094,12 @@ fun Lyrics(
                 selectedIndices.clear()
               }
             },
-            enabled = selectedIndices.isNotEmpty()
+            enabled = selectedIndices.isNotEmpty(),
           ) {
             Icon(
               painter = painterResource(id = R.drawable.share),
               contentDescription = stringResource(R.string.share_selected),
-              modifier = Modifier.size(20.dp)
+              modifier = Modifier.size(20.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = stringResource(R.string.share))
@@ -1125,7 +1113,7 @@ fun Lyrics(
         Card(
           shape = MaterialTheme.shapes.medium,
           colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-          elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+          elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         ) {
           Box(modifier = Modifier.padding(32.dp)) {
             Text(
@@ -1133,7 +1121,7 @@ fun Lyrics(
                 stringResource(R.string.generating_image) +
                   "\n" +
                   stringResource(R.string.please_wait),
-              color = MaterialTheme.colorScheme.onSurface
+              color = MaterialTheme.colorScheme.onSurface,
             )
           }
         }
@@ -1150,14 +1138,14 @@ fun Lyrics(
             CardDefaults.cardColors(
               containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             ),
-          modifier = Modifier.fillMaxWidth(0.9f)
+          modifier = Modifier.fillMaxWidth(0.9f),
         ) {
           Column(modifier = Modifier.padding(20.dp)) {
             Text(
               text = stringResource(R.string.share_lyrics),
               fontWeight = FontWeight.Bold,
               fontSize = 20.sp,
-              color = MaterialTheme.colorScheme.onSurface
+              color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -1167,18 +1155,18 @@ fun Lyrics(
                   Intent().apply {
                     action = Intent.ACTION_SEND
                     type = "text/plain"
-                    val songLink = "https://music.youtube.com/watch?v=${mediaMetadata?.id}"
+                    val songLink = "https://share.echomusic.fun/watch?v=${mediaMetadata?.id}"
                     putExtra(
                       Intent.EXTRA_TEXT,
-                      "\"$lyricsText\"\n\n$songTitle - $artists\n$songLink"
+                      "\"$lyricsText\"\n\n$songTitle - $artists\n$songLink",
                     )
                   }
                 context.startActivity(
-                  Intent.createChooser(shareIntent, context.getString(R.string.share_lyrics))
+                  Intent.createChooser(shareIntent, context.getString(R.string.share_lyrics)),
                 )
                 showShareDialog = false
               },
-              modifier = Modifier.fillMaxWidth()
+              modifier = Modifier.fillMaxWidth(),
             ) {
               Text(text = stringResource(R.string.share_as_text), fontSize = 16.sp)
             }
@@ -1191,7 +1179,7 @@ fun Lyrics(
                 showColorPickerDialog = true
                 showShareDialog = false
               },
-              modifier = Modifier.fillMaxWidth()
+              modifier = Modifier.fillMaxWidth(),
             ) {
               Text(text = stringResource(R.string.share_as_image), fontSize = 16.sp)
             }
@@ -1202,13 +1190,13 @@ fun Lyrics(
             ) {
               androidx.compose.material3.TextButton(
                 onClick = { showShareDialog = false },
-                modifier = Modifier.padding(end = 4.dp)
+                modifier = Modifier.padding(end = 4.dp),
               ) {
                 Text(
                   text = stringResource(R.string.cancel),
                   fontSize = 14.sp,
                   fontWeight = FontWeight.Medium,
-                  color = MaterialTheme.colorScheme.error
+                  color = MaterialTheme.colorScheme.error,
                 )
               }
             }
@@ -1243,7 +1231,7 @@ fun Lyrics(
         TextStyle(
           color = previewTextColor,
           fontWeight = FontWeight.Bold,
-          textAlign = lyricsTextAlign
+          textAlign = lyricsTextAlign,
         )
       val textMeasurer = rememberTextMeasurer()
 
@@ -1255,7 +1243,7 @@ fun Lyrics(
         initialFontSize = 50.sp,
         minFontSize = 22.sp,
         style = textStyleForMeasurement,
-        textMeasurer = textMeasurer
+        textMeasurer = textMeasurer,
       )
 
       LaunchedEffect(coverUrl) {
@@ -1290,51 +1278,51 @@ fun Lyrics(
         properties =
           androidx.compose.ui.window.DialogProperties(
             usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-          )
+            decorFitsSystemWindows = false,
+          ),
       ) {
         Box(
           modifier =
             Modifier.fillMaxSize()
               .padding(WindowInsets.systemBars.asPaddingValues())
               .padding(16.dp),
-          contentAlignment = Alignment.Center
+          contentAlignment = Alignment.Center,
         ) {
           Card(
             shape = RoundedCornerShape(28.dp),
             colors =
               CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
               ),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             modifier =
               Modifier.fillMaxWidth()
                 // Ensure the card is constrained so the inner column can scroll
-                .heightIn(max = 650.dp)
+                .heightIn(max = 650.dp),
           ) {
             Column(
               horizontalAlignment = Alignment.CenterHorizontally,
               modifier =
                 Modifier.fillMaxWidth()
                   .verticalScroll(rememberScrollState())
-                  .padding(horizontal = 24.dp, vertical = 28.dp)
+                  .padding(horizontal = 24.dp, vertical = 28.dp),
             ) {
               Text(
                 text = stringResource(id = R.string.customize_colors),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
               )
 
               Spacer(modifier = Modifier.height(12.dp))
 
               Text(
                 text = stringResource(id = R.string.player_background_style),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
               )
               Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp),
               ) {
                 LyricsBackgroundStyle.entries.forEach { style ->
                   val label =
@@ -1349,7 +1337,7 @@ fun Lyrics(
                   androidx.compose.material3.FilterChip(
                     selected = selected,
                     onClick = { previewBackgroundStyle = style },
-                    label = { Text(label) }
+                    label = { Text(label) },
                   )
                 }
               }
@@ -1359,7 +1347,7 @@ fun Lyrics(
                   Modifier.fillMaxWidth()
                     .aspectRatio(1f)
                     .padding(8.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp)),
               ) {
                 LyricsImageCard(
                   lyricText = lyricsText,
@@ -1368,7 +1356,7 @@ fun Lyrics(
                   backgroundStyle = previewBackgroundStyle,
                   textColor = previewTextColor,
                   secondaryTextColor = previewSecondaryTextColor,
-                  textAlign = lyricsTextAlign
+                  textAlign = lyricsTextAlign,
                 )
               }
 
@@ -1379,14 +1367,14 @@ fun Lyrics(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
               )
               Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier =
                   Modifier.fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(bottom = 12.dp)
+                    .padding(bottom = 12.dp),
               ) {
                 (paletteColors +
                     listOf(
@@ -1398,7 +1386,7 @@ fun Lyrics(
                       Color(0xFFEC5464),
                       Color(0xFF039BE5),
                       Color(0xFF43A047),
-                      Color(0xFF8E24AA)
+                      Color(0xFF8E24AA),
                     ))
                   .distinct()
                   .take(12)
@@ -1414,8 +1402,8 @@ fun Lyrics(
                             color =
                               if (previewBackgroundColor == color) MaterialTheme.colorScheme.primary
                               else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                            shape = androidx.compose.foundation.shape.CircleShape
-                          )
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                          ),
                     )
                   }
               }
@@ -1426,14 +1414,14 @@ fun Lyrics(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
               )
               Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier =
                   Modifier.fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(bottom = 12.dp)
+                    .padding(bottom = 12.dp),
               ) {
                 (paletteColors +
                     listOf(
@@ -1442,7 +1430,7 @@ fun Lyrics(
                       Color(0xFF1DB954),
                       Color(0xFFEC5464),
                       Color(0xFF039BE5),
-                      Color(0xFFFFB300)
+                      Color(0xFFFFB300),
                     ))
                   .distinct()
                   .take(12)
@@ -1458,8 +1446,8 @@ fun Lyrics(
                             color =
                               if (previewTextColor == color) MaterialTheme.colorScheme.primary
                               else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                            shape = androidx.compose.foundation.shape.CircleShape
-                          )
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                          ),
                     )
                   }
               }
@@ -1470,14 +1458,14 @@ fun Lyrics(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
               )
               Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier =
                   Modifier.fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(bottom = 12.dp)
+                    .padding(bottom = 12.dp),
               ) {
                 (paletteColors.map { it.copy(alpha = 0.7f) } +
                     listOf(
@@ -1485,7 +1473,7 @@ fun Lyrics(
                       Color.Black.copy(alpha = 0.7f),
                       Color(0xFF1DB954).copy(alpha = 0.7f),
                       Color(0xFFEC5464).copy(alpha = 0.7f),
-                      Color(0xFF039BE5).copy(alpha = 0.7f)
+                      Color(0xFF039BE5).copy(alpha = 0.7f),
                     ))
                   .distinct()
                   .take(12)
@@ -1502,8 +1490,8 @@ fun Lyrics(
                               if (previewSecondaryTextColor == color)
                                 MaterialTheme.colorScheme.primary
                               else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                            shape = androidx.compose.foundation.shape.CircleShape
-                          )
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                          ),
                     )
                   }
               }
@@ -1537,7 +1525,7 @@ fun Lyrics(
                               LyricsPosition.LEFT -> Layout.Alignment.ALIGN_NORMAL
                               LyricsPosition.CENTER -> Layout.Alignment.ALIGN_CENTER
                               LyricsPosition.RIGHT -> Layout.Alignment.ALIGN_OPPOSITE
-                            }
+                            },
                         )
                       val timestamp = System.currentTimeMillis()
                       val filename = "lyrics_$timestamp"
@@ -1549,13 +1537,13 @@ fun Lyrics(
                           addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
                       context.startActivity(
-                        Intent.createChooser(shareIntent, context.getString(R.string.share_lyrics))
+                        Intent.createChooser(shareIntent, context.getString(R.string.share_lyrics)),
                       )
                     } catch (e: Exception) {
                       Toast.makeText(
                           context,
                           context.getString(R.string.failed_to_create_image, e.message),
-                          Toast.LENGTH_SHORT
+                          Toast.LENGTH_SHORT,
                         )
                         .show()
                     } finally {
@@ -1563,7 +1551,7 @@ fun Lyrics(
                     }
                   }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
               ) {
                 Text(stringResource(id = R.string.share))
               }
@@ -1574,8 +1562,8 @@ fun Lyrics(
                     bottom =
                       androidx.compose.foundation.layout.WindowInsets.systemBars
                         .asPaddingValues()
-                        .calculateBottomPadding()
-                  )
+                        .calculateBottomPadding(),
+                  ),
               )
             }
           }

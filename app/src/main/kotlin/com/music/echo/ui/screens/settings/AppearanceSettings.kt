@@ -63,6 +63,7 @@ import androidx.core.content.edit
 import androidx.navigation.NavController
 import echo.music.iad1tya.LocalPlayerAwareWindowInsets
 import echo.music.iad1tya.R
+import echo.music.iad1tya.constants.AlbumArtThemeRecoloringKey
 import echo.music.iad1tya.constants.AppFont
 import echo.music.iad1tya.constants.AppIconTypeKey
 import echo.music.iad1tya.constants.AppleMusicLyricsBlurKey
@@ -72,7 +73,6 @@ import echo.music.iad1tya.constants.CropAlbumArtKey
 import echo.music.iad1tya.constants.DefaultOpenTabKey
 import echo.music.iad1tya.constants.DensityScale
 import echo.music.iad1tya.constants.DensityScaleKey
-import echo.music.iad1tya.constants.DynamicThemeKey
 import echo.music.iad1tya.constants.EnableHighRefreshRateKey
 import echo.music.iad1tya.constants.EnableLyricsThumbnailPlayPauseKey
 import echo.music.iad1tya.constants.GridItemSize
@@ -179,8 +179,8 @@ fun AppearanceSettings(
         }
       }
     }
-  val (dynamicTheme, onDynamicThemeChange) =
-    rememberPreference(DynamicThemeKey, defaultValue = true)
+  val (albumArtThemeRecoloring, onAlbumArtThemeRecoloringChange) =
+    rememberPreference(AlbumArtThemeRecoloringKey, defaultValue = false)
   val (enableLegacyIcon, onEnableLegacyIconChange) =
     rememberPreference(echo.music.iad1tya.constants.EnableLegacyIconKey, defaultValue = false)
 
@@ -422,7 +422,7 @@ fun AppearanceSettings(
           onClick = {
             tempTextSize = lyricsTextSize
             showLyricsTextSizeDialog = false
-          }
+          },
         ) {
           Text(stringResource(android.R.string.cancel))
         }
@@ -430,7 +430,7 @@ fun AppearanceSettings(
           onClick = {
             onLyricsTextSizeChange(tempTextSize)
             showLyricsTextSizeDialog = false
-          }
+          },
         ) {
           Text(stringResource(android.R.string.ok))
         }
@@ -480,7 +480,7 @@ fun AppearanceSettings(
           onClick = {
             tempLineSpacing = lyricsLineSpacing
             showLyricsLineSpacingDialog = false
-          }
+          },
         ) {
           Text(stringResource(android.R.string.cancel))
         }
@@ -488,7 +488,7 @@ fun AppearanceSettings(
           onClick = {
             onLyricsLineSpacingChange(tempLineSpacing)
             showLyricsLineSpacingDialog = false
-          }
+          },
         ) {
           Text(stringResource(android.R.string.ok))
         }
@@ -648,7 +648,7 @@ fun AppearanceSettings(
               }
             context.startActivity(intent)
             Runtime.getRuntime().exit(0)
-          }
+          },
         ) {
           Text(text = stringResource(R.string.restart))
         }
@@ -756,7 +756,7 @@ fun AppearanceSettings(
             CardDefaults.cardColors(
               containerColor =
                 if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
+                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f),
             ),
           modifier =
             modifier.height(96.dp).clickable {
@@ -835,7 +835,7 @@ fun AppearanceSettings(
             CardDefaults.cardColors(
               containerColor =
                 if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
+                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f),
             ),
           modifier =
             modifier.height(96.dp).clickable {
@@ -915,7 +915,7 @@ fun AppearanceSettings(
             CardDefaults.cardColors(
               containerColor =
                 if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
+                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f),
             ),
           modifier =
             modifier.height(96.dp).clickable {
@@ -998,7 +998,7 @@ fun AppearanceSettings(
             CardDefaults.cardColors(
               containerColor =
                 if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f)
+                else MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f),
             ),
           modifier =
             modifier.height(96.dp).clickable {
@@ -1099,13 +1099,15 @@ fun AppearanceSettings(
 
   Column(
     Modifier.windowInsetsPadding(
-        LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal)
+        LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal),
       )
       .verticalScroll(scrollState)
-      .padding(horizontal = 16.dp)
+      .padding(horizontal = 16.dp),
   ) {
     Spacer(
-      Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top))
+      Modifier.windowInsetsPadding(
+        LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top),
+      ),
     )
 
     Spacer(modifier = Modifier.height(16.dp))
@@ -1122,7 +1124,7 @@ fun AppearanceSettings(
               title = { Text("App name & icon") },
               description = { Text("Choose launcher icons or create a custom shortcut") },
               onClick = { navController.navigate("settings/appearance/app_icon") },
-            )
+            ),
           )
           add(
             Material3SettingsItem(
@@ -1143,7 +1145,7 @@ fun AppearanceSettings(
                 Text(fontLabel)
               },
               onClick = { navController.navigate("settings/appearance/font") },
-            )
+            ),
           )
 
           add(
@@ -1153,7 +1155,35 @@ fun AppearanceSettings(
               title = { Text(stringResource(R.string.theme)) },
               description = { Text(stringResource(R.string.theme_desc)) },
               onClick = { navController.navigate("settings/appearance/theme") },
-            )
+            ),
+          )
+
+          add(
+            Material3SettingsItem(
+              isHighlighted = (highlightKey == stringResource(R.string.album_art_theme_recoloring)),
+              icon = painterResource(R.drawable.palette),
+              title = { Text(stringResource(R.string.album_art_theme_recoloring)) },
+              description = { Text(stringResource(R.string.album_art_theme_recoloring_desc)) },
+              trailingContent = {
+                Switch(
+                  checked = albumArtThemeRecoloring,
+                  onCheckedChange = onAlbumArtThemeRecoloringChange,
+                  thumbContent = {
+                    Icon(
+                      painter =
+                        painterResource(
+                          id = if (albumArtThemeRecoloring) R.drawable.check else R.drawable.close,
+                        ),
+                      contentDescription = null,
+                      modifier = Modifier.size(SwitchDefaults.IconSize),
+                    )
+                  },
+                )
+              },
+              onClick = {
+                onAlbumArtThemeRecoloringChange(!albumArtThemeRecoloring)
+              },
+            ),
           )
 
           add(
@@ -1162,7 +1192,7 @@ fun AppearanceSettings(
               title = { Text(stringResource(R.string.liquid_glass)) },
               description = { Text(stringResource(R.string.liquid_glass_settings)) },
               onClick = { navController.navigate("settings/appearance/liquidglass") },
-            )
+            ),
           )
           add(
             Material3SettingsItem(
@@ -1178,7 +1208,7 @@ fun AppearanceSettings(
                     Icon(
                       painter =
                         painterResource(
-                          id = if (enableHighRefreshRate) R.drawable.check else R.drawable.close
+                          id = if (enableHighRefreshRate) R.drawable.check else R.drawable.close,
                         ),
                       contentDescription = null,
                       modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1187,7 +1217,7 @@ fun AppearanceSettings(
                 )
               },
               onClick = { onEnableHighRefreshRateChange(!enableHighRefreshRate) },
-            )
+            ),
           )
         },
     )
@@ -1216,11 +1246,11 @@ fun AppearanceSettings(
                     PlayerBackgroundStyle.LIQUID_GLASS ->
                       stringResource(R.string.player_background_liquid_glass)
                     else -> stringResource(R.string.follow_theme)
-                  }
+                  },
                 )
               },
               onClick = { showMiniPlayerBackgroundDialog = true },
-            )
+            ),
           )
         },
     )
@@ -1249,7 +1279,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (!useNewPlayerDesign) R.drawable.check else R.drawable.close
+                        id = if (!useNewPlayerDesign) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1279,7 +1309,7 @@ fun AppearanceSettings(
                     Icon(
                       painter =
                         painterResource(
-                          id = if (hidePlayerSlider) R.drawable.check else R.drawable.close
+                          id = if (hidePlayerSlider) R.drawable.check else R.drawable.close,
                         ),
                       contentDescription = null,
                       modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1305,7 +1335,7 @@ fun AppearanceSettings(
                   PlayerBackgroundStyle.LIVE_MESH -> stringResource(R.string.live_mesh)
                   PlayerBackgroundStyle.LIQUID_GLASS ->
                     stringResource(R.string.player_background_liquid_glass)
-                }
+                },
               )
             },
             onClick = { showPlayerBackgroundDialog = true },
@@ -1324,7 +1354,7 @@ fun AppearanceSettings(
                     Icon(
                       painter =
                         painterResource(
-                          id = if (hidePlayerThumbnail) R.drawable.check else R.drawable.close
+                          id = if (hidePlayerThumbnail) R.drawable.check else R.drawable.close,
                         ),
                       contentDescription = null,
                       modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1365,7 +1395,7 @@ fun AppearanceSettings(
                     Icon(
                       painter =
                         painterResource(
-                          id = if (cropAlbumArt) R.drawable.check else R.drawable.close
+                          id = if (cropAlbumArt) R.drawable.check else R.drawable.close,
                         ),
                       contentDescription = null,
                       modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1386,7 +1416,7 @@ fun AppearanceSettings(
                   PlayerButtonsStyle.DEFAULT -> stringResource(R.string.default_style)
                   PlayerButtonsStyle.PRIMARY -> stringResource(R.string.primary_color_style)
                   PlayerButtonsStyle.TERTIARY -> stringResource(R.string.tertiary_color_style)
-                }
+                },
               )
             },
             onClick = { showPlayerButtonsStyleDialog = true },
@@ -1403,7 +1433,7 @@ fun AppearanceSettings(
                     if (squigglySlider) stringResource(R.string.squiggly)
                     else stringResource(R.string.wavy)
                   SliderStyle.SLIM -> stringResource(R.string.slim)
-                }
+                },
               )
             },
             onClick = { showSliderOptionDialog = true },
@@ -1442,7 +1472,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (swipeThumbnail) R.drawable.check else R.drawable.close
+                        id = if (swipeThumbnail) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1465,7 +1495,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (canvasThumbnailAnimation) R.drawable.check else R.drawable.close
+                        id = if (canvasThumbnailAnimation) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1488,7 +1518,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (rotatingThumbnail) R.drawable.check else R.drawable.close
+                        id = if (rotatingThumbnail) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1512,7 +1542,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showCommentButton) R.drawable.check else R.drawable.close
+                        id = if (showCommentButton) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1535,7 +1565,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showCodecOnPlayer) R.drawable.check else R.drawable.close
+                        id = if (showCodecOnPlayer) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1554,7 +1584,7 @@ fun AppearanceSettings(
                   stringResource(
                     R.string.sensitivity_percentage,
                     (swipeSensitivity * 100).roundToInt(),
-                  )
+                  ),
                 )
               },
               onClick = { showSensitivityDialog = true },
@@ -1580,7 +1610,7 @@ fun AppearanceSettings(
             onClick = {
               tempSensitivity = swipeSensitivity
               showSensitivityDialog = false
-            }
+            },
           ) {
             Text(stringResource(android.R.string.cancel))
           }
@@ -1588,7 +1618,7 @@ fun AppearanceSettings(
             onClick = {
               onSwipeSensitivityChange(tempSensitivity)
               showSensitivityDialog = false
-            }
+            },
           ) {
             Text(stringResource(android.R.string.ok))
           }
@@ -1649,7 +1679,7 @@ fun AppearanceSettings(
                   LyricsPosition.LEFT -> stringResource(R.string.left)
                   LyricsPosition.CENTER -> stringResource(R.string.center)
                   LyricsPosition.RIGHT -> stringResource(R.string.right)
-                }
+                },
               )
             },
             onClick = { showLyricsPositionDialog = true },
@@ -1672,7 +1702,7 @@ fun AppearanceSettings(
                   LyricsAnimationStyle.LYRICS_V2 -> stringResource(R.string.lyrics_v2_fluid)
                   LyricsAnimationStyle.METRO_LYRICS ->
                     stringResource(R.string.lyrics_animation_metro)
-                }
+                },
               )
             },
             onClick = { showLyricsAnimationStyleDialog = true },
@@ -1691,7 +1721,7 @@ fun AppearanceSettings(
                     Icon(
                       painter =
                         painterResource(
-                          id = if (appleMusicLyricsBlur) R.drawable.check else R.drawable.close
+                          id = if (appleMusicLyricsBlur) R.drawable.check else R.drawable.close,
                         ),
                       contentDescription = null,
                       modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1715,7 +1745,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (lyricsStandardBlur) R.drawable.check else R.drawable.close
+                        id = if (lyricsStandardBlur) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1773,7 +1803,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (lyricsScroll) R.drawable.check else R.drawable.close
+                        id = if (lyricsScroll) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1818,7 +1848,8 @@ fun AppearanceSettings(
                     painter =
                       painterResource(
                         id =
-                          if (enableLyricsThumbnailPlayPause) R.drawable.check else R.drawable.close
+                          if (enableLyricsThumbnailPlayPause) R.drawable.check
+                          else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1842,7 +1873,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (hideStatusBarOnFullscreen) R.drawable.check else R.drawable.close
+                        id = if (hideStatusBarOnFullscreen) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1872,7 +1903,7 @@ fun AppearanceSettings(
                   NavigationTab.HOME -> stringResource(R.string.home)
                   NavigationTab.SEARCH -> stringResource(R.string.search)
                   NavigationTab.LIBRARY -> stringResource(R.string.filter_library)
-                }
+                },
               )
             },
             onClick = { showDefaultOpenTabDialog = true },
@@ -1892,7 +1923,7 @@ fun AppearanceSettings(
                   LibraryFilter.LOCAL -> stringResource(R.string.filter_local)
                   LibraryFilter.SPOTIFY -> "Spotify"
                   LibraryFilter.PODCASTS -> stringResource(R.string.filter_podcasts)
-                }
+                },
               )
             },
             onClick = { showDefaultChipDialog = true },
@@ -1938,7 +1969,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (swipeToRemoveSong) R.drawable.check else R.drawable.close
+                        id = if (swipeToRemoveSong) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1961,7 +1992,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (listenTogetherInTopBar) R.drawable.check else R.drawable.close
+                        id = if (listenTogetherInTopBar) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -1980,7 +2011,7 @@ fun AppearanceSettings(
                 when (gridItemSize) {
                   GridItemSize.BIG -> stringResource(R.string.big)
                   GridItemSize.SMALL -> stringResource(R.string.small)
-                }
+                },
               )
             },
             onClick = { showGridSizeDialog = true },
@@ -2015,7 +2046,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showLikedPlaylist) R.drawable.check else R.drawable.close
+                        id = if (showLikedPlaylist) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -2038,7 +2069,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showDownloadedPlaylist) R.drawable.check else R.drawable.close
+                        id = if (showDownloadedPlaylist) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -2061,7 +2092,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showExportedPlaylist) R.drawable.check else R.drawable.close
+                        id = if (showExportedPlaylist) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -2084,7 +2115,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showTopPlaylist) R.drawable.check else R.drawable.close
+                        id = if (showTopPlaylist) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -2107,7 +2138,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showBottomPlaylist) R.drawable.check else R.drawable.close
+                        id = if (showBottomPlaylist) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -2130,7 +2161,7 @@ fun AppearanceSettings(
                   Icon(
                     painter =
                       painterResource(
-                        id = if (showCachedPlaylist) R.drawable.check else R.drawable.close
+                        id = if (showCachedPlaylist) R.drawable.check else R.drawable.close,
                       ),
                     contentDescription = null,
                     modifier = Modifier.size(SwitchDefaults.IconSize),
@@ -2146,8 +2177,8 @@ fun AppearanceSettings(
 
     Spacer(
       Modifier.windowInsetsPadding(
-        LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)
-      )
+        LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom),
+      ),
     )
   }
 
