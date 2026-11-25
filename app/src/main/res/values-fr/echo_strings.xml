@@ -1102,4 +1102,11 @@
     <string name="music_quality_summary">Visitez 320kbps.RajTune.fun pour le guide de configuration</string>
     <string name="add_custom_server">Ajouter un serveur personnalisé</string>
     <string name="add_custom_server_summary">Configurer un hôte de module personnalisé</string>
+
+    <!-- Additional upstream translations; local values retained. -->
+    <string name="decryption_library">Bibliothèque de déchiffrement</string>
+    <string name="decryption_library_newpipe">NewPipe Extractor (Officiel)</string>
+    <string name="decryption_library_newpipe_desc">Bibliothèque officielle TeamNewPipe. La plus à jour face aux changements de YouTube. Recommandée par défaut. Basculement automatique vers l\'API PipePipe en cas d\'échec.</string>
+    <string name="decryption_library_pipepipe_api">API PipePipe</string>
+    <string name="decryption_library_pipepipe_api_desc">Déchiffrement basé sur une API utilisant MetroExtractor. Plus rapide, mais dépend d\'une API externe. Basculement automatique vers NewPipe en cas d\'échec.</string>
 </resources>

@@ -407,7 +407,7 @@ fun PlaylistMenu(
                     type = "text/plain"
                     putExtra(
                       Intent.EXTRA_TEXT,
-                      "https://music.youtube.com/playlist?list=${dbPlaylist?.playlist?.browseId}"
+                      "https://share.echomusic.fun/playlist?list=${dbPlaylist?.playlist?.browseId}"
                     )
                   }
                 context.startActivity(Intent.createChooser(intent, null))

@@ -6,6 +6,7 @@ import android.speech.RecognizerIntent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,6 +55,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
@@ -503,10 +506,22 @@ private fun SearchGenreCard(
         .background(MaterialTheme.colorScheme.surfaceContainerLow)
         .clickable(onClick = onClick),
   ) {
+    Image(
+      painter = painterResource(searchGenreBannerForTitle(category.title)),
+      contentDescription = null,
+      contentScale = ContentScale.Crop,
+      modifier = Modifier.fillMaxSize(),
+    )
     Box(
       modifier =
         Modifier.fillMaxSize()
-          .background(accent.copy(alpha = 0.16f)),
+          .background(
+            Brush.verticalGradient(
+              0f to Color.Black.copy(alpha = 0.02f),
+              0.42f to Color.Black.copy(alpha = 0.08f),
+              1f to Color.Black.copy(alpha = 0.64f),
+            )
+          ),
     )
     Box(
       modifier =
@@ -516,7 +531,7 @@ private fun SearchGenreCard(
     )
     Text(
       text = category.title,
-      color = MaterialTheme.colorScheme.onSurface,
+      color = Color.White,
       style = MaterialTheme.typography.titleMedium,
       fontWeight = FontWeight.SemiBold,
       maxLines = 2,

@@ -118,6 +118,7 @@ import echo.music.iad1tya.constants.InnerTubeCookieKey
 import echo.music.iad1tya.constants.ListItemHeight
 import echo.music.iad1tya.constants.ListThumbnailSize
 import echo.music.iad1tya.constants.RandomizeHomeOrderKey
+import echo.music.iad1tya.constants.ShowHomeMoodAndGenresKey
 import echo.music.iad1tya.constants.ShowSpeedDialKey
 import echo.music.iad1tya.constants.SmallGridThumbnailHeight
 import echo.music.iad1tya.constants.ThumbnailCornerRadius
@@ -609,6 +610,7 @@ fun HomeScreen(
   val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
   val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, DefaultRandomizeHomeOrder)
   val (showSpeedDial) = rememberPreference(ShowSpeedDialKey, true)
+  val (showHomeMoodAndGenres) = rememberPreference(ShowHomeMoodAndGenresKey, false)
   val (isWrappedDismissed, onDismissWrapped) = rememberPreference(EchoWrappedBannerDismissedKey, defaultValue = false)
 
   val isLoggedIn = remember(innerTubeCookie) { "SAPISID" in parseCookieString(innerTubeCookie) }
@@ -815,6 +817,7 @@ fun HomeScreen(
       similarRecommendations,
       homePage?.sections,
       explorePage?.moodAndGenres,
+      showHomeMoodAndGenres,
       aiRecommendedPlaylist,
       isPodcastPage,
       selectedChip
@@ -857,7 +860,9 @@ fun HomeScreen(
         }
       }
 
-      if (explorePage?.moodAndGenres != null) list.add(HomeSection.MoodAndGenres)
+      if (showHomeMoodAndGenres && explorePage?.moodAndGenres != null) {
+        list.add(HomeSection.MoodAndGenres)
+      }
 
       if (randomizeHomeOrder) {
         list.sortedByDescending { section ->

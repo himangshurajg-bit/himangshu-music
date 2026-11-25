@@ -27,7 +27,7 @@ object UpdateNotificationHelper {
         NotificationChannel(
           CHANNEL_ID,
           context.getString(R.string.app_updates_title),
-          NotificationManager.IMPORTANCE_DEFAULT
+          NotificationManager.IMPORTANCE_DEFAULT,
         )
       nm.createNotificationChannel(channel)
     }

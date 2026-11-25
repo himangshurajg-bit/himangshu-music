@@ -1,6 +1,8 @@
 package echo.music.iad1tya.api
 
+import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -22,9 +24,13 @@ object OpenRouterService {
   private const val ANTHROPIC_VERSION = "2023-06-01"
 
   private fun isAnthropic(url: String): Boolean =
-    url.contains("api.anthropic.com", ignoreCase = true) && url.contains("/messages", ignoreCase = true)
+    url.contains("api.anthropic.com", ignoreCase = true) &&
+      url.contains("/messages", ignoreCase = true)
 
-  /** Builds a chat request for either the OpenAI-compatible format or Anthropic's native Messages API. */
+  /**
+   * Builds a chat request for either the OpenAI-compatible format or Anthropic's native Messages
+   * API.
+   */
   private fun buildChatRequest(
     url: String,
     apiKey: String,
@@ -32,7 +38,7 @@ object OpenRouterService {
     system: String?,
     user: String,
     maxTokens: Int,
-    temperature: Double?
+    temperature: Double?,
   ): Request {
     val anthropic = isAnthropic(url)
     val body =
@@ -42,11 +48,12 @@ object OpenRouterService {
           if (!system.isNullOrBlank()) put("system", system)
           put(
             "messages",
-            JSONArray().put(JSONObject().put("role", "user").put("content", user))
+            JSONArray().put(JSONObject().put("role", "user").put("content", user)),
           )
         } else {
           val msgs = JSONArray()
-          if (!system.isNullOrBlank()) msgs.put(JSONObject().put("role", "system").put("content", system))
+          if (!system.isNullOrBlank())
+            msgs.put(JSONObject().put("role", "system").put("content", system))
           msgs.put(JSONObject().put("role", "user").put("content", user))
           put("messages", msgs)
         }
@@ -66,8 +73,8 @@ object OpenRouterService {
         if (anthropic) {
           addHeader("anthropic-version", ANTHROPIC_VERSION)
         } else {
-          addHeader("HTTP-Referer", "https://github.com/EchoMusicApp/Echo-Music")
-          addHeader("X-Title", "echomusic")
+          addHeader("HTTP-Referer", "https://github.com/himangshurajg-bit/himangshu-music")
+          addHeader("X-Title", "Himangshu Music")
         }
       }
       .addHeader("Content-Type", "application/json")
@@ -86,7 +93,12 @@ object OpenRouterService {
           .trim()
       if (text.isNotBlank()) return text
     }
-    return json.optJSONArray("choices")?.optJSONObject(0)?.optJSONObject("message")?.optString("content")?.trim()
+    return json
+      .optJSONArray("choices")
+      ?.optJSONObject(0)
+      ?.optJSONObject("message")
+      ?.optString("content")
+      ?.trim()
   }
 
   fun isUrlSafe(url: String): Boolean {
@@ -95,11 +107,70 @@ object OpenRouterService {
     val scheme = uri.scheme?.lowercase() ?: return false
     if (scheme != "https" && scheme != "http") return false
     val host = uri.host?.lowercase() ?: return false
-    if (host == "169.254.169.254" || host.startsWith("169.254.") || host == "metadata.google.internal" || host == "instance-data") {
+    if (
+      host == "169.254.169.254" ||
+        host.startsWith("169.254.") ||
+        host == "metadata.google.internal" ||
+        host == "instance-data"
+    ) {
       return false
     }
     return true
   }
+
+  /** Runs a grounded, non-streaming assistant turn through the configured chat provider. */
+  suspend fun chat(
+    systemPrompt: String,
+    userPrompt: String,
+    apiKey: String,
+    baseUrl: String,
+    model: String,
+    maxTokens: Int = 700,
+  ): Result<String> =
+    withContext(Dispatchers.IO) {
+      val effectiveUrl = baseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
+      if (!isUrlSafe(effectiveUrl)) {
+        return@withContext Result.failure(
+          SecurityException("Invalid or restricted endpoint destination")
+        )
+      }
+      if (apiKey.isBlank()) {
+        return@withContext Result.failure(IllegalStateException("AI API key is missing"))
+      }
+      if (userPrompt.isBlank()) {
+        return@withContext Result.failure(IllegalArgumentException("Question is empty"))
+      }
+      try {
+        val request =
+          buildChatRequest(
+            url = effectiveUrl,
+            apiKey = apiKey,
+            model = model,
+            system = systemPrompt,
+            user = userPrompt,
+            maxTokens = maxTokens.coerceIn(128, 2048),
+            temperature = 0.4,
+          )
+        val answer =
+          client.newCall(request).execute().use { response ->
+            val body = response.body?.string().orEmpty()
+            if (!response.isSuccessful) {
+              val detail =
+                runCatching { JSONObject(body).optJSONObject("error")?.optString("message") }
+                  .getOrNull()
+                  ?.takeIf { it.isNotBlank() }
+              throw IOException(detail ?: "AI request failed (HTTP ${response.code})")
+            }
+            extractContent(body)?.takeIf { it.isNotBlank() }
+              ?: throw IOException("The AI provider returned no answer")
+          }
+        Result.success(answer)
+      } catch (cancelled: CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        Result.failure(error)
+      }
+    }
 
   suspend fun translate(
     text: String,
@@ -110,12 +181,14 @@ object OpenRouterService {
     mode: String,
     maxRetries: Int = 3,
     sourceLanguage: String? = null,
-    onLog: ((String) -> Unit)? = null
+    onLog: ((String) -> Unit)? = null,
   ): Result<List<String>> =
     withContext(Dispatchers.IO) {
       val effectiveUrl = baseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
       if (!isUrlSafe(effectiveUrl)) {
-        return@withContext Result.failure(SecurityException("Invalid or restricted endpoint destination"))
+        return@withContext Result.failure(
+          SecurityException("Invalid or restricted endpoint destination"),
+        )
       }
       onLog?.invoke("Starting translation...")
       var currentAttempt = 0
@@ -210,7 +283,7 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
               system = systemPrompt,
               user = userPrompt,
               maxTokens = lineCount * 100,
-              temperature = 0.3
+              temperature = 0.3,
             )
 
           onLog?.invoke("Calling OpenRouter API (Attempt ${currentAttempt + 1})...")
@@ -306,12 +379,14 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
   suspend fun testConnection(
     baseUrl: String,
     apiKey: String,
-    model: String
+    model: String,
   ): Result<String> =
     withContext(Dispatchers.IO) {
       val effectiveUrl = baseUrl.ifBlank { "https://openrouter.ai/api/v1/chat/completions" }
       if (!isUrlSafe(effectiveUrl)) {
-        return@withContext Result.failure(SecurityException("Invalid or restricted endpoint destination"))
+        return@withContext Result.failure(
+          SecurityException("Invalid or restricted endpoint destination"),
+        )
       }
       try {
         val request =
@@ -322,7 +397,7 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
             system = null,
             user = "ping",
             maxTokens = 10,
-            temperature = null
+            temperature = null,
           )
 
         val response = client.newCall(request).execute()
@@ -354,4 +429,3 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
       }
     }
 }
-

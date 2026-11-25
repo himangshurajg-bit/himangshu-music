@@ -990,5 +990,42 @@
     <!-- Theme & UI -->
     <string name="theme_mode_monochrome">Monochrome</string>
     <string name="theme_mode_monochrome_desc">Une échelle de gris pure et neutre avec un contraste élevé</string>
+
+    <!-- Additional upstream translations; local values retained. -->
+    <string name="filter_podcasts">Podcasts</string>
+    <string name="filter_episodes">Épisodes</string>
+    <string name="podcast">Podcast</string>
+    <string name="library_podcast_empty">Les podcasts enregistrés apparaîtront ici</string>
+    <string name="remove_from_continue_listening">Retirer de Continuer l\'écoute</string>
+    <string name="episode_skip_back" translatable="false">-15s</string>
+    <string name="episode_skip_forward" translatable="false">+30s</string>
+    <string name="hide_played">Masquer les épisodes écoutés</string>
+    <string name="episode_details">Détails de l\'épisode</string>
+    <string name="episode_chapters">Chapitres</string>
+    <string name="unfollow">Ne plus suivre</string>
+    <string name="album_label">Album</string>
+    <string name="artist_label">Artiste</string>
+    <string name="continue_listening">Continuer l\'écoute</string>
+    <string name="episode_played">Écouté</string>
+    <string name="episode_remaining">%s restants</string>
+    <string name="follow">Suivre</string>
+    <string name="following">Suivi</string>
+    <string name="sort_newest">Plus récents</string>
+    <string name="sort_oldest">Plus anciens</string>
+    <string name="your_podcasts">Vos podcasts</string>
+    <string name="new_episodes">Nouveaux épisodes</string>
+    <plurals name="n_episode">
+        <item quantity="one">%d épisode</item>
+        <item quantity="other">%d épisodes</item>
+    </plurals>
+    <string name="in_app_library">Dans la bibliothèque de l\'application</string>
+    <string name="spotify_empty_title">Aucun contenu Spotify importé</string>
+    <string name="spotify_empty_desc">Aucun contenu Spotify importé n\'est disponible pour le moment.</string>
+    <string name="spotify_sync_success">Synchronisation avec Spotify réussie !</string>
+    <string name="spotify_sync_failed">Échec de la synchronisation avec Spotify.</string>
+    <string name="spotify_already_connected_refresh">Déjà connecté ? Touchez pour actualiser</string>
+    <string name="live_preview">Aperçu en direct</string>
+    <string name="preview_song_title">Sweet but Psycho</string>
+    <string name="preview_song_artist">Ava Max</string>
 </resources>
  

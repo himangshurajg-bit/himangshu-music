@@ -3,6 +3,8 @@
  * © Chartreux Westia — github.com/koiverse
  * GPL-3.0 License | Contributors: see git history
  * Do not remove or alter this notice. - Per GPL-3.0 Section 4 & Section 5
+ * Spotify authentication fallback approach adapted from Vivi Music (GPL-3.0):
+ * https://github.com/vivizzz007/vivi-music
  */
 
 package echo.music.iad1tya.spotify
@@ -48,7 +50,7 @@ object SpotifyAuth {
   private const val TOKEN_URL = "https://open.spotify.com/api/token"
   private const val SERVER_TIME_URL = "https://open.spotify.com/api/server-time"
   private const val NUANCE_GIST_URL =
-    "https://gist.githubusercontent.com/sonic-liberation/22ed9c6ba463899e933427f7de1f0eef/raw/"
+    "https://api.github.com/gists/22ed9c6ba463899e933427f7de1f0eef"
   private const val USER_AGENT =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
@@ -62,6 +64,18 @@ object SpotifyAuth {
 
   @Serializable private data class Nuance(val s: String, val v: Int)
 
+  // Keep authentication usable when GitHub or Spotify's clock endpoint is temporarily unavailable.
+  private val defaultNuance =
+    Nuance(
+      s = "GM3TMMJTGYZTQNZVGM4DINJZHA4TGOBYGMZTCMRTGEYDSMJRHE4TEOBUG4YTCMRUGQ4DQOJUGQYTAMRRGA2TCMJSHE3TCMBY",
+      v = 61,
+    )
+
+  @Volatile private var cachedNuance: Nuance = defaultNuance
+  @Volatile private var serverTimeOffsetSec: Long? = null
+
+  @Serializable private data class GistFile(val content: String)
+  @Serializable private data class GistFiles(val files: Map<String, GistFile>)
   @Serializable private data class ServerTimeResponse(val serverTime: Long)
 
   /**
@@ -74,9 +88,15 @@ object SpotifyAuth {
   suspend fun fetchAccessToken(
     spDc: String,
     spKey: String = "",
+    forceRefreshNuance: Boolean = false,
   ): Result<SpotifyInternalToken> {
     return try {
-      val nuance = retryTransientRequest { fetchNuance() }
+      val nuance =
+        if (forceRefreshNuance) {
+          retryTransientRequest { refreshNuance() }
+        } else {
+          cachedNuance
+        }
       val serverTimeSec = retryTransientRequest { fetchServerTime() }
       val totp = generateTotp(nuance.s, serverTimeSec)
 
@@ -103,6 +123,9 @@ object SpotifyAuth {
       val token = json.decodeFromString<SpotifyInternalToken>(body)
 
       if (token.isAnonymous || token.accessToken.isBlank()) {
+        if (!forceRefreshNuance) {
+          return fetchAccessToken(spDc, spKey, forceRefreshNuance = true)
+        }
         throw Spotify.SpotifyException(
           401,
           "Received anonymous token — sp_dc cookie is invalid or expired",
@@ -117,18 +140,37 @@ object SpotifyAuth {
     }
   }
 
-  private suspend fun fetchNuance(): Nuance =
+  private suspend fun refreshNuance(): Nuance =
     withContext(Dispatchers.IO) {
-      val body = httpGet(NUANCE_GIST_URL, emptyMap())
-      val nuances = json.decodeFromString<List<Nuance>>(body)
-      nuances.maxByOrNull { it.v }
-        ?: throw Spotify.SpotifyException(500, "No nuance data found in gist")
+      try {
+        val body = httpGet(NUANCE_GIST_URL, emptyMap())
+        val gist = json.decodeFromString<GistFiles>(body)
+        val content = gist.files.values.firstOrNull()?.content
+          ?: throw Spotify.SpotifyException(500, "Gist has no files")
+        val latest = json.decodeFromString<List<Nuance>>(content).maxByOrNull { it.v }
+          ?: defaultNuance
+        cachedNuance = latest
+        latest
+      } catch (error: Exception) {
+        if (error is CancellationException) throw error
+        cachedNuance
+      }
     }
 
   private suspend fun fetchServerTime(): Long =
     withContext(Dispatchers.IO) {
-      val body = httpGet(SERVER_TIME_URL, emptyMap())
-      json.decodeFromString<ServerTimeResponse>(body).serverTime
+      val now = System.currentTimeMillis() / 1000
+      serverTimeOffsetSec?.let { return@withContext now + it }
+      val serverTime =
+        try {
+          val body = httpGet(SERVER_TIME_URL, emptyMap())
+          json.decodeFromString<ServerTimeResponse>(body).serverTime
+        } catch (error: Exception) {
+          if (error is CancellationException) throw error
+          now
+        }
+      serverTimeOffsetSec = serverTime - now
+      serverTime
     }
 
   private suspend fun <T> retryTransientRequest(block: suspend () -> T): T {

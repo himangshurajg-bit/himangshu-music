@@ -31,11 +31,11 @@ android {
   ndkVersion = "28.2.13676358"
 
   defaultConfig {
-    applicationId = "echo.music.iad1tya"
+    applicationId = "com.himangshu.rajgogoi.music"
     minSdk = 26
     targetSdk = 36
-    versionCode = 183
-    versionName = "1.4.22"
+    versionCode = 184
+    versionName = "1.4.23"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables.useSupportLibrary = true
@@ -61,12 +61,12 @@ android {
       "String",
       "FLOW_NEURO_BASE_URL",
       project.findProperty("FLOW_NEURO_BASE_URL")?.toString()?.let { "\"$it\"" }
-        ?: "\"https://api.flowneuroengine.com\""
+        ?: "\"https://api.flowneuroengine.com\"",
     )
     buildConfigField(
       "String",
       "FLOW_NEURO_API_KEY",
-      project.findProperty("FLOW_NEURO_API_KEY")?.toString()?.let { "\"$it\"" } ?: "\"\""
+      project.findProperty("FLOW_NEURO_API_KEY")?.toString()?.let { "\"$it\"" } ?: "\"\"",
     )
 
     // add nightly build label support
@@ -360,6 +360,7 @@ dependencies {
   implementation("com.microsoft.onnxruntime:onnxruntime-android:1.28.0")
 
   testImplementation(libs.junit)
+  testImplementation(libs.json)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)
 }

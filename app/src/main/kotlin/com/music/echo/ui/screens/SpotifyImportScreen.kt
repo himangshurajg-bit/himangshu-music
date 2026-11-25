@@ -97,7 +97,7 @@ fun SpotifyImportScreen(
             spotifyImportItems(
               state = state,
               viewModel = spotifyImportViewModel,
-              onConnect = { showSpotifyLogin = true },
+              onConnect = { navController.navigate("settings/spotify_login") },
               onSelectSources = { showSpotifySources = true },
               onAddByLink = { showAddByLink = true },
             ),

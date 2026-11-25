@@ -494,7 +494,7 @@ fun PlayerMenu(
                     type = "text/plain"
                     putExtra(
                       android.content.Intent.EXTRA_TEXT,
-                      "https://music.youtube.com/watch?v=${mediaMetadata.id}"
+                      "https://share.echomusic.fun/watch?v=${mediaMetadata.id}"
                     )
                   }
                 context.startActivity(android.content.Intent.createChooser(intent, null))
@@ -733,7 +733,7 @@ fun PlayerMenu(
                         )
                         .show()
                     } else {
-                      val songUrl = "https://music.youtube.com/watch?v=${mediaMetadata.id}"
+                      val songUrl = "https://share.echomusic.fun/watch?v=${mediaMetadata.id}"
                       try {
                         context.startActivity(
                           createExternalDownloaderIntent(downloaderPackage, songUrl)
