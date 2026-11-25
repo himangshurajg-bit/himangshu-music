@@ -34,8 +34,8 @@ android {
     applicationId = "com.himangshu.rajgogoi.music"
     minSdk = 26
     targetSdk = 36
-    versionCode = 184
-    versionName = "1.4.23"
+    versionCode = 185
+    versionName = "1.4.24"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables.useSupportLibrary = true
