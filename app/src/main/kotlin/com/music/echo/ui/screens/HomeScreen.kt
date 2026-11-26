@@ -839,15 +839,18 @@ fun HomeScreen(
         return@remember list
       }
 
-      if (showSpeedDial && speedDialItems.isNotEmpty()) list.add(HomeSection.SpeedDial)
-      if (aiRecommendedPlaylist != null && aiRecommendedPlaylist!!.second.isNotEmpty())
-        list.add(HomeSection.AiRecommendations)
-      if (heroSongs.isNotEmpty() && selectedChip == null) list.add(HomeSection.HeroCarousel)
-      if (communityPlaylists?.isNotEmpty() == true) list.add(HomeSection.FromTheCommunity)
-      if (dailyDiscover?.isNotEmpty() == true) list.add(HomeSection.DailyDiscover)
-      if (keepListening?.isNotEmpty() == true) list.add(HomeSection.KeepListening)
-      if (accountPlaylists?.isNotEmpty() == true) list.add(HomeSection.AccountPlaylists)
-      if (forgottenFavorites?.isNotEmpty() == true) list.add(HomeSection.ForgottenFavorites)
+      // A selected chip shows only that chip's content; the personal sections live on the main Home.
+      if (selectedChip == null) {
+        if (showSpeedDial && speedDialItems.isNotEmpty()) list.add(HomeSection.SpeedDial)
+        if (aiRecommendedPlaylist != null && aiRecommendedPlaylist!!.second.isNotEmpty())
+          list.add(HomeSection.AiRecommendations)
+        if (showHeroCarousel && heroSongs.isNotEmpty()) list.add(HomeSection.HeroCarousel)
+        if (communityPlaylists?.isNotEmpty() == true) list.add(HomeSection.FromTheCommunity)
+        if (dailyDiscover?.isNotEmpty() == true) list.add(HomeSection.DailyDiscover)
+        if (keepListening?.isNotEmpty() == true) list.add(HomeSection.KeepListening)
+        if (accountPlaylists?.isNotEmpty() == true) list.add(HomeSection.AccountPlaylists)
+        if (forgottenFavorites?.isNotEmpty() == true) list.add(HomeSection.ForgottenFavorites)
+      }
 
       similarRecommendations?.indices?.forEach { i ->
         list.add(HomeSection.SimilarRecommendation(i))
