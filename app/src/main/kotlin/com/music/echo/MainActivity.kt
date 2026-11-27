@@ -946,7 +946,13 @@ class MainActivity : ComponentActivity() {
           )
 
         val (useFloatingNavBar) = rememberPreference(UseFloatingNavBarKey, defaultValue = false)
-        val floatingNavBarScrollConnection = rememberFloatingTabBarScrollConnection()
+        val floatingNavBarScrollConnection =
+          rememberFloatingTabBarScrollConnection(scrollThreshold = 20.dp)
+        val isDefaultNavCollapsed =
+          !useFloatingNavBar &&
+            !showRail &&
+            shouldShowNavigationBar &&
+            floatingNavBarScrollConnection.isInline
 
         val playerBottomSheetState =
           rememberBottomSheetState(
@@ -954,6 +960,8 @@ class MainActivity : ComponentActivity() {
             collapsedBound =
               if (useFloatingNavBar && !showRail && shouldShowNavigationBar) {
                 0.dp
+              } else if (isDefaultNavCollapsed) {
+                bottomInset + FloatingToolbarBottomPadding + MiniPlayerHeight
               } else {
                 bottomInset +
                   (if (!showRail && shouldShowNavigationBar) navPadding else 0.dp) +
@@ -961,6 +969,16 @@ class MainActivity : ComponentActivity() {
                   MiniPlayerHeight
               },
             expandedBound = maxHeight,
+            collapsedBoundAnimationSpec =
+              if (!useFloatingNavBar && !showRail && shouldShowNavigationBar) {
+                androidx.compose.animation.core.tween(
+                  durationMillis = 220,
+                  delayMillis = if (isDefaultNavCollapsed) 25 else 0,
+                  easing = androidx.compose.animation.core.FastOutSlowInEasing,
+                )
+              } else {
+                NavigationBarAnimationSpec
+              },
           )
 
         var expandQueueRequested by remember { mutableStateOf(false) }
@@ -1521,6 +1539,7 @@ class MainActivity : ComponentActivity() {
                     onPlayerMenuShown = { showPlayerMenuRequested = false },
                     showLyricsRequested = showLyricsRequested,
                     onLyricsShown = { showLyricsRequested = false },
+                    isInlineWithNav = isDefaultNavCollapsed,
                   )
 
                   val navSlideDistance =
@@ -1602,6 +1621,8 @@ class MainActivity : ComponentActivity() {
                           navController.navigate("wrapped") { launchSingleTop = true }
                         },
                         onSearchLongClick = onRailSearchLongClick,
+                        isCollapsed = isDefaultNavCollapsed && playerBottomSheetState.isCollapsed,
+                        onExpandClick = { floatingNavBarScrollConnection.expand() },
                         isSelected = { screen ->
                           currentRoute == screen.route ||
                             currentRoute?.startsWith("${screen.route}/") == true
@@ -1660,6 +1681,7 @@ class MainActivity : ComponentActivity() {
                     onPlayerMenuShown = { showPlayerMenuRequested = false },
                     showLyricsRequested = showLyricsRequested,
                     onLyricsShown = { showLyricsRequested = false },
+                    isInlineWithNav = isDefaultNavCollapsed,
                   )
                 }
 
@@ -1688,7 +1710,7 @@ class MainActivity : ComponentActivity() {
               Modifier.fillMaxSize()
                 .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                 .then(
-                  if (useFloatingNavBar) {
+                  if (!showRail && shouldShowNavigationBar) {
                     Modifier.nestedScroll(floatingNavBarScrollConnection)
                   } else {
                     Modifier
