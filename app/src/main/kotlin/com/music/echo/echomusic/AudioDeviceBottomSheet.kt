@@ -379,7 +379,7 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
         Spacer(modifier = Modifier.height(24.dp))
       }
 
-      EchoConnectQuickSwitcher(onDismiss = onDismiss)
+      HimangshuConnectQuickSwitcher(onDismiss = onDismiss)
 
       when {
         isLoading -> {
@@ -1379,7 +1379,7 @@ private fun ExtensionAudioSourceSelector(
 }
 
 @Composable
-private fun EchoConnectQuickSwitcher(onDismiss: () -> Unit) {
+private fun HimangshuConnectQuickSwitcher(onDismiss: () -> Unit) {
   val context = LocalContext.current
   val lanManager =
     remember(context) { echo.music.iad1tya.lansync.LanSyncManager.getInstance(context) }
@@ -1398,7 +1398,7 @@ private fun EchoConnectQuickSwitcher(onDismiss: () -> Unit) {
 
   Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
     Text(
-      text = "Echo Connect",
+      text = "Himangshu Connect",
       style = MaterialTheme.typography.titleMedium,
       color = MaterialTheme.colorScheme.onSurface,
       modifier = Modifier.padding(bottom = 10.dp),
@@ -1424,7 +1424,7 @@ private fun EchoConnectQuickSwitcher(onDismiss: () -> Unit) {
           horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
           Icon(
-            painter = androidx.compose.ui.res.painterResource(R.drawable.ic_echo_connect),
+            painter = androidx.compose.ui.res.painterResource(R.drawable.ic_himangshu_connect),
             contentDescription = null,
             tint =
               if (isLive) MaterialTheme.colorScheme.primary
@@ -1484,7 +1484,7 @@ private fun EchoConnectQuickSwitcher(onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun EchoConnectLanSection(onDismiss: () -> Unit) {
+private fun HimangshuConnectLanSection(onDismiss: () -> Unit) {
   val context = LocalContext.current
   val (lanSyncEnabled) =
     rememberPreference(echo.music.iad1tya.constants.LanSyncEnabledKey, defaultValue = true)
@@ -1506,7 +1506,7 @@ private fun EchoConnectLanSection(onDismiss: () -> Unit) {
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(
-      text = "Echo Connect",
+      text = "Himangshu Connect",
       style = MaterialTheme.typography.titleMedium,
       fontWeight = FontWeight.SemiBold,
       color = MaterialTheme.colorScheme.onSurface,

@@ -604,10 +604,10 @@ fun PlayerMenu(
             )
             add(
               Material3MenuItemData(
-                title = { Text(text = "Echo Connect") },
+                title = { Text(text = "Himangshu Connect") },
                 icon = {
                   Icon(
-                    painter = painterResource(R.drawable.ic_echo_connect),
+                    painter = painterResource(R.drawable.ic_himangshu_connect),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                   )

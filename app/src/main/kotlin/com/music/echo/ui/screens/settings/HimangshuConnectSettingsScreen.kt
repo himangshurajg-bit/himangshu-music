@@ -63,7 +63,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EchoConnectSettingsScreen(
+fun HimangshuConnectSettingsScreen(
   navController: NavController,
   scrollBehavior: TopAppBarScrollBehavior,
 ) {
@@ -84,7 +84,7 @@ fun EchoConnectSettingsScreen(
 
   Column(modifier = Modifier.fillMaxSize()) {
     TopAppBar(
-      title = { Text("Echo Connect") },
+      title = { Text("Himangshu Connect") },
       navigationIcon = {
         IconButton(
           onClick = navController::navigateUp,
@@ -125,7 +125,7 @@ fun EchoConnectSettingsScreen(
           ) {
             Box(contentAlignment = Alignment.Center) {
               Icon(
-                painter = painterResource(R.drawable.ic_echo_connect),
+                painter = painterResource(R.drawable.ic_himangshu_connect),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp),
@@ -134,7 +134,7 @@ fun EchoConnectSettingsScreen(
           }
           Column(modifier = Modifier.weight(1f)) {
             Text(
-              text = "Echo Connect",
+              text = "Himangshu Connect",
               style = MaterialTheme.typography.titleMedium,
               fontWeight = FontWeight.SemiBold,
             )
@@ -228,7 +228,7 @@ fun EchoConnectSettingsScreen(
               horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
               Icon(
-                painter = painterResource(R.drawable.ic_echo_connect),
+                painter = painterResource(R.drawable.ic_himangshu_connect),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(22.dp),
@@ -320,7 +320,7 @@ fun EchoConnectSettingsScreen(
           if (peers.isEmpty()) {
             listOf(
               Material3SettingsItem(
-                icon = painterResource(R.drawable.ic_echo_connect),
+                icon = painterResource(R.drawable.ic_himangshu_connect),
                 title = { Text("Searching Wi-Fi...") },
                 description = { Text("Open Echo Music on your Desktop on the same Wi-Fi") },
                 onClick = {},

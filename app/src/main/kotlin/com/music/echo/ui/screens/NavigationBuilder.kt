@@ -58,7 +58,7 @@ import echo.music.iad1tya.ui.screens.settings.BlockedArtistsScreen
 import echo.music.iad1tya.ui.screens.settings.ContentSettings
 import echo.music.iad1tya.ui.screens.settings.DarkMode
 import echo.music.iad1tya.ui.screens.settings.DislikedSongsScreen
-import echo.music.iad1tya.ui.screens.settings.EchoConnectSettingsScreen
+import echo.music.iad1tya.ui.screens.settings.HimangshuConnectSettingsScreen
 import echo.music.iad1tya.ui.screens.settings.GlassEffectSettings
 import echo.music.iad1tya.ui.screens.settings.MusicFlowSettings
 import echo.music.iad1tya.ui.screens.settings.PlayerSettings
@@ -342,9 +342,9 @@ fun NavGraphBuilder.navigationBuilder(
   }
 
   composable(
-    route = "settings/echo_connect",
+    route = "settings/himangshu_connect",
   ) {
-    EchoConnectSettingsScreen(navController, scrollBehavior)
+    HimangshuConnectSettingsScreen(navController, scrollBehavior)
   }
 
   composable(
