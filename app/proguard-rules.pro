@@ -184,3 +184,14 @@
 -keepclasseswithmembers class echo.music.iad1tya.listentogether.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+## ONNX Runtime (RajTune stem splitter, offline KUIELab)
+# Official ONNX Runtime consumer rules: keep JNI entry points.
+-keep class ai.onnxruntime.** { *; }
+-keep class ai.onnxruntime.**$$* { *; }
+-keepclasseswithmembers class ai.onnxruntime.** { *; }
+# jlargearrays (transitive via ONNX) references sun.misc.Cleaner,
+# unavailable on Android; suppress its phantom missing-class error.
+-dontwarn sun.misc.Cleaner
+-dontwarn pl.edu.icm.jlargearrays.**
+-keep class pl.edu.icm.jlargearrays.** { *; }
