@@ -913,3 +913,4 @@ enum class RecommendationSource {
 }
 
 val RecommendationSourceKey = stringPreferencesKey("recommendation_source")
+val LanSyncEnabledKey = booleanPreferencesKey("lanSyncEnabled")

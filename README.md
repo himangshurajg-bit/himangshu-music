@@ -28,6 +28,7 @@ RajTune delivers a seamless, premium listening experience by leveraging YouTube 
 - [Features](#features)
 - [Custom Home-Screen Shortcut](#custom-home-screen-shortcut)
 - [8D Stereo Audio](#8d-stereo-audio)
+- [Echo Connect (Cross-Device Sync & Handoff)](#echo-connect-cross-device-sync--handoff)
 - [320 kbps Audio Extension](#320-kbps-audio-extension)
 - [Lossless Audio Extension](#lossless-audio-extension)
 - [Installation & Setup](#installation--setup)
@@ -171,6 +172,20 @@ This custom name and image apply only to the pinned home-screen shortcut. They d
 Open **Settings → Player → 8D stereo audio** for the stereo motion modes and controls. The Media3 audio path applies equal-power left/right panning, beat/onset-reactive motion, and low/mid/high frequency-band positioning, alongside stereo width, bass enhancement, optional short ambience and echo, smoothed controls and peak limiting. Turning the feature off returns an unprocessed PCM path.
 
 Frequency bands are not isolated instruments or vocals: mixed tracks overlap, so the app cannot promise that a voice or instrument comes from its own side. This is stereo panning, not HRTF, binaural or true 360-degree localization. Mono cannot be spatially panned, multichannel input uses Media3's fallback path, and detected headset type does not test its stereo response. USB bit-perfect/offload routing and physical audio devices still need testing. See the [8D audio engine notes](docs/8d-audio-engine.md) for architecture, limitations and repeatable checks.
+
+## Echo Connect (Cross-Device Sync & Handoff)
+
+**Echo Connect** links **Himangshu Music (Android)** with **[Echo Music Desktop](https://github.com/EchoMusicApp/Desktop)** over your local Wi-Fi network — with zero cloud servers.
+
+### Key Capabilities
+- **6-Digit Device Pairing**: Open **Settings → Echo Connect** (right below **Account**) and tap your Desktop to generate a 6-digit code (auto-refreshes every 60s), or initiate pairing from Desktop and enter the code in the Android popup.
+- **Automatic Google Account Login**: Automatically signs Desktop into your YouTube Music Google account upon binding.
+- **Bidirectional Local & Spotify Playlist Sync**: Keeps locally created playlists synced between Android and Desktop with zero overlap/duplicates, and syncs your connected Spotify playlists to Desktop's Library.
+- **Podcast Progress Sync**: Merges episode timestamps and finished status across devices.
+- **5-Minute Auto-Sync & Force Sync**: Automatically syncs every 5 minutes in the background, with a **Force Sync** button and timestamped sync history log showing what synced and when.
+- **Seamless Playback Handoff & Remote Control**: Switch playback between **This Phone** and your paired Desktop from the player's audio output sheet or **Settings → Echo Connect**. Control play/pause, exact seek position, next/previous, volume, shuffle, and repeat from either device.
+
+📖 **Full Guide**: See [docs/ECHO_CONNECT.md](./docs/ECHO_CONNECT.md) for step-by-step setup, pairing, sync details, and troubleshooting.
 
 ---
 

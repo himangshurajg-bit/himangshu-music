@@ -173,9 +173,8 @@ fun LibrarySpotifyScreen(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
+              Modifier.fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp),
           )
         }
 
@@ -185,10 +184,7 @@ fun LibrarySpotifyScreen(
           contentType = CONTENT_TYPE_HEADER,
         ) {
           Row(
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
           ) {
             Icon(
@@ -263,7 +259,7 @@ fun LibrarySpotifyScreen(
                 ).show()
               }
             },
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 4.dp),
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
           )
         }
 
@@ -275,9 +271,9 @@ fun LibrarySpotifyScreen(
         ) {
           val totalPlaylists = uiState.playlists.size + 1
           Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
+            modifier =
+              Modifier.fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
           ) {

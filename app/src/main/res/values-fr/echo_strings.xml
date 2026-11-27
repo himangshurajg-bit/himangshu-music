@@ -503,7 +503,7 @@
     <string name="wrapped_playlist_saved">Playlist enregistrée</string>
 
     <!-- Égaliseur (UI) -->
-        <plurals name="profiles_count">
+    <plurals name="profiles_count">
         <item quantity="one">%d profil</item>
         <item quantity="other">%d profils</item>
     </plurals>
@@ -1109,4 +1109,12 @@
     <string name="decryption_library_newpipe_desc">Bibliothèque officielle TeamNewPipe. La plus à jour face aux changements de YouTube. Recommandée par défaut. Basculement automatique vers l\'API PipePipe en cas d\'échec.</string>
     <string name="decryption_library_pipepipe_api">API PipePipe</string>
     <string name="decryption_library_pipepipe_api_desc">Déchiffrement basé sur une API utilisant MetroExtractor. Plus rapide, mais dépend d\'une API externe. Basculement automatique vers NewPipe en cas d\'échec.</string>
+	<string name="home_made_for_you">Conçu pour vous</string>
+    <string name="home_surprise_me">Surprenez-moi</string>
+    <string name="home_shortcuts">Raccourcis</string>
+    <string name="home_shortcuts_desc">Afficher vos éléments épinglés et les plus écoutés en haut de l\'accueil</string>
+    <string name="home_featured_carousel">Carrousel à la une</string>
+    <string name="home_featured_carousel_desc">Afficher le grand carrousel à défilement automatique sur l\'accueil</string>
+    <string name="home_community_desc">Afficher les playlists communautaires sur l\'accueil</string>
+    <string name="home_mood_and_genres_desc">Afficher les raccourcis d\'ambiances et de genres sur l\'accueil</string>
 </resources>

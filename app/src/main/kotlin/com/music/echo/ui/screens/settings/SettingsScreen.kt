@@ -149,6 +149,22 @@ fun SettingsScreen(
       }
 
       if (
+        "echo connect".contains(searchLower) ||
+          "sync".contains(searchLower) ||
+          "desktop".contains(searchLower)
+      ) {
+        add(
+          Material3SettingsItem(
+            isHighlighted = (highlightKey == "Echo Connect"),
+            icon = painterResource(R.drawable.ic_echo_connect),
+            title = { Text("Echo Connect") },
+            description = { Text("Pair with Desktop, sync account, playlists & playback") },
+            onClick = { navController.navigate("settings/echo_connect") },
+          ),
+        )
+      }
+
+      if (
         aiLyricsText.lowercase().contains(searchLower) ||
           aiLyricsDesc.lowercase().contains(searchLower)
       ) {
@@ -441,11 +457,11 @@ fun SettingsScreen(
       Spacer(modifier = Modifier.height(16.dp))
 
       // Let's just create groups manually using itemsList which preserves order
-      val accountGroup = itemsList.take(2) // Account, AI
-      val listeningSummaryGroup = itemsList.drop(2).take(1) // Listening Summary
-      val playerGroup = itemsList.drop(3).take(4) // Appearance, Player, Music Flow, Listen Together
-      val dataGroup = itemsList.drop(7).take(4) // Content, Privacy, Storage, Backup
-      val systemGroup = itemsList.drop(11) // Update, Links, About
+      val accountGroup = itemsList.take(3) // Account, Echo Connect, AI
+      val listeningSummaryGroup = itemsList.drop(3).take(2) // Listening Summary, Echo Wrapped
+      val playerGroup = itemsList.drop(5).take(4) // Appearance, Player, Music Flow, Listen Together
+      val dataGroup = itemsList.drop(9).take(4) // Content, Privacy, Storage, Backup
+      val systemGroup = itemsList.drop(13) // Update, Links, About
 
       if (accountGroup.isNotEmpty()) {
         Material3SettingsGroup(scrollState = scrollState, items = accountGroup)
