@@ -1907,7 +1907,7 @@ class MainActivity : ComponentActivity() {
                     androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
                 ) {
                   Text(
-                    "Enter the 6-digit Echo Connect code shown on ${pairReq.peer.name} to bind devices and sync.",
+                    "Enter the 6-digit Himangshu Connect code shown on ${pairReq.peer.name} to bind devices and sync.",
                   )
                   androidx.compose.material3.OutlinedTextField(
                     value = codeInput,
