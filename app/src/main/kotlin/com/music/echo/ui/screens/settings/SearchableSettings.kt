@@ -496,6 +496,18 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
       "settings/player",
     ),
     SearchableSetting(
+      "Hi-Res Audio",
+      "Play through a USB DAC at the track's native rate",
+      "Player and audio",
+      "settings/player",
+    ),
+    SearchableSetting(
+      "Maximum sample rate",
+      "Cap Hi-Res playback at 48, 96 or 192 kHz",
+      "Player and audio",
+      "settings/player",
+    ),
+    SearchableSetting(
       stringResource(R.string.crossfade_gapless),
       stringResource(R.string.crossfade_gapless_desc),
       "Player and audio",

@@ -173,6 +173,7 @@ import coil3.request.allowHardware
 import coil3.size.Size as CoilSize
 import coil3.toBitmap
 import com.music.echo.ui.component.BitPerfectBadge
+import com.music.echo.ui.component.HiResFormatBadge
 import com.music.innertube.models.PODCAST_BROWSE_PREFIX
 import com.music.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.Companion.MUSIC_VIDEO_TYPE_PODCAST_EPISODE
 import dagger.hilt.android.EntryPointAccessors
@@ -316,6 +317,10 @@ fun BottomSheetPlayer(
   val (musicFlowEnabled) = rememberPreference(MusicFlowEnabledKey, defaultValue = true)
   val showCodecOnPlayer by
     rememberPreference(echo.music.iad1tya.constants.ShowCodecOnPlayerKey, false)
+  val hiResEnabledOnPlayer by
+    rememberPreference(echo.music.iad1tya.constants.HiResEnabledKey, false)
+  val hiResMaxRateOnPlayer by
+    rememberPreference(echo.music.iad1tya.constants.HiResMaxSampleRateKey, "auto")
   val hidePlayerSlider by
     rememberPreference(echo.music.iad1tya.constants.HidePlayerSliderKey, false)
   val (hidePlayerThumbnail, onHidePlayerThumbnailChange) =
@@ -2587,13 +2592,23 @@ fun BottomSheetPlayer(
           if (dacDeviceState is DacDeviceState.Connected) {
             val connectedDac = dacDeviceState as DacDeviceState.Connected
             val caps = connectedDac.capabilities
-            val bestRate = caps.supportedSampleRates.maxOrNull() ?: 96000
-            val bestBits = caps.supportedFormats.maxOfOrNull { it.bitDepth } ?: 24
-            BitPerfectBadge(
-              sampleRate = bestRate,
-              bitDepth = bestBits,
-              uacVersion = caps.uacVersion,
-            )
+            if (hiResEnabledOnPlayer) {
+              val bestBits = caps.supportedFormats.maxOfOrNull { it.bitDepth }
+              HiResFormatBadge(
+                dacRates = caps.supportedSampleRates,
+                bestBits = bestBits,
+                uacVersion = caps.uacVersion,
+                userCap = hiResMaxRateOnPlayer,
+              )
+            } else {
+              val bestRate = caps.supportedSampleRates.maxOrNull() ?: 96000
+              val bestBits = caps.supportedFormats.maxOfOrNull { it.bitDepth } ?: 24
+              BitPerfectBadge(
+                sampleRate = bestRate,
+                bitDepth = bestBits,
+                uacVersion = caps.uacVersion,
+              )
+            }
           }
 
           if (sleepTimerEnabled || shouldShowCodecBox) {
