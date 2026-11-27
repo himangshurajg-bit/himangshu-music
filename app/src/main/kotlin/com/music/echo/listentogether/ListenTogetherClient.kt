@@ -438,7 +438,7 @@ class ListenTogetherClient @Inject constructor(private val context: Context) {
     val serverUrl = getServerUrl()
     log(LogLevel.INFO, "Connecting to server", serverUrl)
 
-    codec.format = MessageFormat.JSON
+    codec.format = MessageFormat.PROTOBUF
     codec.compressionEnabled = false
 
     val request = Request.Builder().url(serverUrl).build()
