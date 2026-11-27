@@ -48,6 +48,7 @@ internal fun StemSplitterScreen(
 ) {
   val context = LocalContext.current
   val state by viewModel.state.collectAsState()
+  val mixer by viewModel.mixerState.collectAsState()
   val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
     uri?.let(viewModel::select)
   }
@@ -193,6 +194,18 @@ internal fun StemSplitterScreen(
                 runCatching { context.startActivity(intent) }
               }) { Text("Play") }
             }
+          }
+        }
+        item {
+          if (state.cloudMode) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+              Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Offline mixer", style = MaterialTheme.typography.titleMedium)
+                Text("The professional mixer and equalizer are offline-only and apply to on-device stems. Cloud stems above are for simple playback only; turn off Cloud and run Separate four stems to mix and EQ on this device.", style = MaterialTheme.typography.bodyMedium)
+              }
+            }
+          } else {
+            StemMixerSection(mixer = mixer, viewModel = viewModel)
           }
         }
       }

@@ -87,6 +87,16 @@ If it still exits `-9`, free memory / increase the builder machine — that is a
 - **Models (both paths):** KUIELab-MDX-Net (Kim et al. 2021), Zenodo record `6513062`, **CC BY 4.0**. Attribution shown on the splitter screen and in `MODEL_NOTICES.md`. Archive MD5 `39eb4bb43137a6c209caecdbcfd1d8e2` + per-file SHA-256 verified before use.
 - **Cloud service:** same CC BY 4.0 models, fresh implementation. No AGPL code copied.
 
+## Professional mixer + equalizer (v1.4.27)
+
+- **Per-stem mixer (live + export):** vocals/bass/drums/other (and any re-run models) each get volume (-40..+12 dB), pan (constant-power), mute, solo, EQ and optional per-stem loop. Master bus gets its own 6-band EQ, master fader (-40..+12 dB), playback speed/pitch (0.5–2.0×), timeline trim/loop and A/B original compare.
+- **Equalizer (offline only):** 6 bands at 63 Hz–12 kHz (low/high shelf + peaking) with per-band gain (-12..+12 dB) and Q (0.5–4.0, persisted). Presets: Flat, Vocal Boost, Bass Boost, Drum Punch, Warm, Bright, Club, Gentle Low Cut + save/restore named presets per stem.
+- **Real audio paths:** live playback uses Media3 `StemGainPanAudioProcessor` (gain/pan) and the existing `CustomEqualizerAudioProcessor` biquad chain per stem. Export uses FFmpeg `volume`, `pan` (constant-power coefficients), `equalizer`, `amix`, `atempo`/`asetrate`, `atrim`. The same settings drive both.
+- **Project/session save:** mixer state persists via DataStore (`stem_mixer`), auto-saving every change. Snapshot JSON includes per-stem gain/pan/mute/solo/EQ/trim, master EQ/speed/pitch/trim/loop, source mode and named presets.
+- **Waveform/level:** each stem card shows computed WAV peaks with a playhead. Level % is the waveform peak of the file.
+- **Export:** WAV (pcm_s16le) or MP3 (libmp3lame 320k/192k/128k). Saved to `Music/RajTune Stems`, shareable via the standard Android share sheet. Export applies per-stem + master EQ/gain/pan/trim/speed/pitch in the FFmpeg graph.
+- **Scope (offline only):** the mixer/EQ/FFmpeg mix-down apply to on-device offline stems only. Cloud stems keep the existing simple Play list; the splitter screen shows an offline-mixer notice in Cloud mode and the mixer stays disabled there. No cloud/web EQ was added and the cloud worker is unchanged. No extra upload is performed by the mixer.
+
 ## What's verified vs. still needs a phone / host
 
 - ✅ Cloud API auth + job lifecycle tests (14 passed) + real ONNX e2e: synthetic WAV → 4 WAV stems downloaded (see test report).
