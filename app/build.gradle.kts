@@ -358,6 +358,7 @@ dependencies {
   implementation(libs.ffmpeg.kit.audio)
   implementation("io.github.dokar3:quickjs-kt-android:1.0.14")
   implementation("com.microsoft.onnxruntime:onnxruntime-android:1.28.0")
+  implementation("com.github.wendykierp:JTransforms:3.1")
 
   testImplementation(libs.junit)
   testImplementation(libs.json)

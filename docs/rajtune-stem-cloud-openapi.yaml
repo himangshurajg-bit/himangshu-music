@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: RajTune Stem Separation API
+  version: 1.0.0
+  description: >-
+    Proposed contract only; no deployed host exists. All routes require RajTune-issued
+    short-lived bearer tokens. Job and output access is owner-scoped.
+servers:
+  - url: https://{host}
+    variables:
+      host:
+        default: api.example.invalid
+security:
+  - bearerAuth: []
+paths:
+  /v1/stem-jobs:
+    post:
+      summary: Upload audio and queue a stem separation job
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 16, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio]
+              properties:
+                audio: { type: string, format: binary }
+      responses:
+        '202':
+          description: Job accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+        '413': { description: Upload exceeds configured limit }
+        '415': { description: Unsupported or invalid audio }
+        '429': { description: User or global quota exceeded }
+  /v1/stem-jobs/{job_id}:
+    get:
+      summary: Read an owned job's state and progress
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+        '404': { description: Job missing or not owned by caller }
+    delete:
+      summary: Cancel queued work and request deletion of job media
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '202': { description: Cancellation or deletion request accepted }
+        '404': { description: Job missing or not owned by caller }
+  /v1/stem-jobs/{job_id}/events:
+    get:
+      summary: Stream progress events for an owned job (optional)
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: Server-Sent Events stream; polling remains supported
+          content:
+            text/event-stream:
+              schema: { type: string }
+        '404': { description: Job missing or not owned by caller }
+  /v1/stem-jobs/{job_id}/stems/{stem}:
+    get:
+      summary: Download one owned WAV output
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+        - in: path
+          name: stem
+          required: true
+          schema:
+            type: string
+            enum: [vocals, drums, bass, other]
+      responses:
+        '200':
+          description: WAV stream after ownership and completion checks
+          content:
+            audio/wav:
+              schema: { type: string, format: binary }
+        '404': { description: Job missing, not owned, or output unavailable }
+        '409': { description: Job has not completed }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    JobId:
+      in: path
+      name: job_id
+      required: true
+      schema: { type: string, minLength: 20, maxLength: 128 }
+  schemas:
+    Job:
+      type: object
+      required: [job_id, state, status_url]
+      properties:
+        job_id: { type: string }
+        state:
+          type: string
+          enum: [queued, processing, complete, failed, cancelled]
+        progress_percent: { type: integer, minimum: 0, maximum: 100 }
+        status_url: { type: string, format: uri-reference }
+        error:
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [code, message, retryable]
+              properties:
+                code: { type: string }
+                message: { type: string }
+                retryable: { type: boolean }

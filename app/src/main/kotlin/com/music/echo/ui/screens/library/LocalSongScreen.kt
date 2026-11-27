@@ -475,6 +475,12 @@ fun LocalSongScreen(
                   contentDescription = stringResource(R.string.settings),
                 )
               }
+              IconButton(onClick = { navController.navigate("stem_splitter") }) {
+                Icon(
+                  painter = painterResource(R.drawable.graphic_eq),
+                  contentDescription = stringResource(R.string.stem_splitter),
+                )
+              }
             },
             colors =
               TopAppBarDefaults.largeTopAppBarColors(

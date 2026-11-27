@@ -47,6 +47,7 @@ import echo.music.iad1tya.ui.screens.recognition.RecognitionHistoryScreen
 import echo.music.iad1tya.ui.screens.recognition.RecognitionScreen
 import echo.music.iad1tya.ui.screens.search.OnlineSearchResult
 import echo.music.iad1tya.ui.screens.search.SearchScreen
+import echo.music.iad1tya.stems.StemSplitterScreen
 import echo.music.iad1tya.ui.screens.settings.AboutScreen
 import echo.music.iad1tya.ui.screens.settings.AccountSettingsScreen
 import echo.music.iad1tya.ui.screens.settings.AiSettings
@@ -131,6 +132,8 @@ fun NavGraphBuilder.navigationBuilder(
   }
 
   composable("local_songs") { LocalSongScreen(navController) }
+
+  composable("stem_splitter") { StemSplitterScreen(navController) }
 
   composable("stats") { StatsScreen(navController) }
 
