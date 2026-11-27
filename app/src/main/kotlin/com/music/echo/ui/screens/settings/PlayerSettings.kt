@@ -57,6 +57,8 @@ import echo.music.iad1tya.constants.DownloadWithMetadataKey
 import echo.music.iad1tya.constants.DefaultExternalDownloaderPackage
 import echo.music.iad1tya.constants.ExternalDownloaderAppKey
 import echo.music.iad1tya.constants.EnableBitPerfectUsbDacKey
+import echo.music.iad1tya.constants.HiResEnabledKey
+import echo.music.iad1tya.constants.HiResMaxSampleRateKey
 import echo.music.iad1tya.constants.EnableExportAsMp3Key
 import echo.music.iad1tya.constants.EnableGoogleCastKey
 import echo.music.iad1tya.constants.HistoryDuration
@@ -146,6 +148,12 @@ fun PlayerSettings(
   val (enableBitPerfectUsbDac, onEnableBitPerfectUsbDacChange) =
     rememberPreference(key = EnableBitPerfectUsbDacKey, defaultValue = false)
 
+  val (hiResEnabled, onHiResEnabledChange) =
+    rememberPreference(key = HiResEnabledKey, defaultValue = false)
+
+  val (hiResMaxSampleRate, onHiResMaxSampleRateChange) =
+    rememberPreference(key = HiResMaxSampleRateKey, defaultValue = "auto")
+
   val (usbDacVolumeMode, onUsbDacVolumeModeChange) =
     rememberPreference(key = UsbDacVolumeModeKey, defaultValue = "PURE_BIT_PERFECT")
 
@@ -217,6 +225,7 @@ fun PlayerSettings(
   var showDownloadQualityDialog by remember { mutableStateOf(false) }
   var showExternalDownloaderDialog by remember { mutableStateOf(false) }
   var showPlaybackEngineDialog by remember { mutableStateOf(false) }
+  var showHiResCapDialog by remember { mutableStateOf(false) }
 
   val (playbackEngine, onPlaybackEngineChange) =
     rememberEnumPreference(
@@ -229,6 +238,35 @@ fun PlayerSettings(
       echo.music.iad1tya.constants.DownloadQualityKey,
       defaultValue = echo.music.iad1tya.constants.DownloadQuality.YOUTUBE,
     )
+
+  if (showHiResCapDialog) {
+    EnumDialog(
+      onDismiss = { showHiResCapDialog = false },
+      onSelect = {
+        onHiResMaxSampleRateChange(it)
+        showHiResCapDialog = false
+      },
+      title = "Maximum sample rate",
+      current = hiResMaxSampleRate,
+      values = listOf("auto", "48000", "96000", "192000"),
+      valueText = {
+        when (it) {
+          "48000" -> "48 kHz"
+          "96000" -> "96 kHz"
+          "192000" -> "192 kHz"
+          else -> "Auto (DAC's highest rate)"
+        }
+      },
+      valueDescription = {
+        when (it) {
+          "48000" -> "Cap playback at 48 kHz"
+          "96000" -> "Cap playback at 96 kHz"
+          "192000" -> "Cap playback at 192 kHz"
+          else -> "Use the highest rate your DAC reports"
+        }
+      },
+    )
+  }
 
   if (showAudioQualityWifiDialog) {
     EnumDialog(
@@ -783,6 +821,65 @@ fun PlayerSettings(
                 )
               },
               onClick = { onEnableBitPerfectUsbDacChange(!enableBitPerfectUsbDac) },
+            ),
+          )
+
+          add(
+            Material3SettingsItem(
+              isHighlighted = (highlightKey == "Hi-Res Audio"),
+              icon = painterResource(R.drawable.volume_up),
+              title = { Text("Hi-Res Audio") },
+              description = {
+                Text("Play through a USB DAC at the track's native rate (up to the cap below). Needs a USB DAC; without one, normal output is used.")
+              },
+              trailingContent = {
+                Switch(
+                  checked = hiResEnabled,
+                  onCheckedChange = onHiResEnabledChange,
+                  thumbContent = {
+                    Icon(
+                      painter =
+                        painterResource(
+                          id = if (hiResEnabled) R.drawable.check else R.drawable.close,
+                        ),
+                      contentDescription = null,
+                      modifier = Modifier.size(SwitchDefaults.IconSize),
+                    )
+                  },
+                )
+              },
+              onClick = { onHiResEnabledChange(!hiResEnabled) },
+            ),
+          )
+
+          add(
+            Material3SettingsItem(
+              isHighlighted = false,
+              icon = painterResource(R.drawable.volume_up),
+              title = { Text("Maximum sample rate") },
+              description = {
+                Text(
+                  when (hiResMaxSampleRate) {
+                    "48000" -> "Cap playback at 48 kHz"
+                    "96000" -> "Cap playback at 96 kHz"
+                    "192000" -> "Cap playback at 192 kHz"
+                    else -> "Use the highest rate your DAC reports"
+                  },
+                )
+              },
+              trailingContent = {
+                Text(
+                  text =
+                    when (hiResMaxSampleRate) {
+                      "48000" -> "48 kHz"
+                      "96000" -> "96 kHz"
+                      "192000" -> "192 kHz"
+                      else -> "Auto"
+                    },
+                )
+              },
+              enabled = hiResEnabled,
+              onClick = { if (hiResEnabled) showHiResCapDialog = true },
             ),
           )
 

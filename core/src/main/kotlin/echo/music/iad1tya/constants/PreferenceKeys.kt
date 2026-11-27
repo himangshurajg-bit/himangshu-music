@@ -907,6 +907,11 @@ val DislikedSongsKey = androidx.datastore.preferences.core.stringSetPreferencesK
 val EnableBitPerfectUsbDacKey = booleanPreferencesKey("enable_bit_perfect_usb_dac")
 val UsbDacVolumeModeKey = stringPreferencesKey("usb_dac_volume_mode")
 
+// Hi-Res Audio extension (opt-in). Routes to the USB DAC at the track's native rate up to a
+// user-chosen cap, on top of the existing bit-perfect path. "auto" means the DAC's own max.
+val HiResEnabledKey = booleanPreferencesKey("hires_enabled")
+val HiResMaxSampleRateKey = stringPreferencesKey("hires_max_sample_rate")
+
 enum class RecommendationSource {
   YOUTUBE,
   SPOTIFY,

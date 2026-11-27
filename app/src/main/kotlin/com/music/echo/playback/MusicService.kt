@@ -92,6 +92,8 @@ import echo.music.iad1tya.constants.StopMusicOnTaskClearKey
 import echo.music.iad1tya.constants.DisableLoadMoreWhenRepeatAllKey
 import echo.music.iad1tya.constants.DiscordTokenKey
 import echo.music.iad1tya.constants.EnableBitPerfectUsbDacKey
+import echo.music.iad1tya.constants.HiResEnabledKey
+import echo.music.iad1tya.constants.HiResMaxSampleRateKey
 import echo.music.iad1tya.constants.EnableDiscordRPCKey
 import echo.music.iad1tya.constants.EnableLastFMScrobblingKey
 import echo.music.iad1tya.constants.ForceOpusKey
@@ -310,7 +312,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
   val usbDacManager by lazy {
     UsbDacManager(this, usbAudioDriver).apply {
       onDeviceDetachedCallback = {
-        if (isBitPerfectEnabled) {
+        if (isBitPerfectEnabled || isHiResEnabled) {
           player.pause()
         }
       }
@@ -318,6 +320,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
   }
 
   @Volatile private var isBitPerfectEnabled = false
+  @Volatile private var isHiResEnabled = false
 
   private var crossfadeEnabled = false
   private var crossfadeDuration = 5000f
@@ -977,6 +980,21 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
         .distinctUntilChanged()
         .collect { enabled ->
           isBitPerfectEnabled = enabled
+          if (player.playbackState == Player.STATE_READY && player.isPlaying) {
+            player.seekTo(player.currentPosition)
+          }
+        }
+    }
+
+    scope.launch {
+      dataStore.data
+        .map {
+          (it[HiResEnabledKey] ?: false) to (it[HiResMaxSampleRateKey] ?: "auto")
+        }
+        .distinctUntilChanged()
+        .collect { pair ->
+          val (enabled, _) = pair
+          isHiResEnabled = enabled
           if (player.playbackState == Player.STATE_READY && player.isPlaying) {
             player.seekTo(player.currentPosition)
           }
@@ -5072,7 +5090,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
           usbDacAudioSink = usbSink,
           isBitPerfectActive = {
             val dacConnected = usbDacManager.activeDacFlow.value is echo.music.usbaudio.DacDeviceState.Connected
-            isBitPerfectEnabled && dacConnected
+            (isBitPerfectEnabled || isHiResEnabled) && dacConnected
           }
         )
       }
@@ -6033,7 +6051,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
 
     val savedRepeatMode = player.repeatMode
     val savedShuffleEnabled = player.shuffleModeEnabled
-    if (isBitPerfectEnabled && usbDacManager.activeDacFlow.value is echo.music.usbaudio.DacDeviceState.Connected) {
+    if ((isBitPerfectEnabled || isHiResEnabled) && usbDacManager.activeDacFlow.value is echo.music.usbaudio.DacDeviceState.Connected) {
       return
     }
     val targetIndex =
@@ -6085,7 +6103,7 @@ class MusicService : MediaLibraryService(), Player.Listener, PlaybackStatsListen
 
   private fun startCrossfade(plan: AutomixPlan? = null) {
     if (isCrossfading.value) return
-    if (isBitPerfectEnabled && usbDacManager.activeDacFlow.value is echo.music.usbaudio.DacDeviceState.Connected) {
+    if ((isBitPerfectEnabled || isHiResEnabled) && usbDacManager.activeDacFlow.value is echo.music.usbaudio.DacDeviceState.Connected) {
       return
     }
 

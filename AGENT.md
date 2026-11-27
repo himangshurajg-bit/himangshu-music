@@ -400,3 +400,11 @@ Ambient Mode keeps the existing album-art square and layers muted Canvas artwork
 ## Android System Music Screensaver
 
 `playback/MusicDreamService.kt` is the separate Android DreamService, while `ui/screens/AodScreen.kt` remains the in-app dimmed player. The system service reads the app's Media3 session, including artwork URI fallback and lyric metadata; users enable it in Android's Screen saver settings. Do not claim device-tested behavior without a physical-device check.
+
+## Hi-Res Audio extension (feature/hires-usb-dac-2026-11-27)
+
+- **Policy (pure, tested):** `usbaudio/.../model/HiResPolicy.kt` + `HiResPolicyTest` — JAS tier rule (above 48 kHz or above 16-bit), user cap parsing (`auto`/`48000`/`96000`/`192000`), effective max from the DAC's parsed descriptor rates only (never invent a ceiling), best negotiated rate at the track's native rate.
+- **Routing:** `MusicService` also activates the existing `UsbDacAudioSink` routing when `HiResEnabledKey` is on (plus DAC connected). Bit-perfect-only behaviour is unchanged when Hi-Res is off. Crossfade/secondary-player guards and DAC-detach pause cover Hi-Res too.
+- **Settings:** Player settings → "Hi-Res Audio" switch `HiResEnabledKey` + "Maximum sample rate" `HiResMaxSampleRateKey` (Auto/48/96/192, `EnumDialog`). Searchable as "Hi-Res Audio" / "Maximum sample rate".
+- **Player badge:** `HiResFormatBadge` (shown instead of `BitPerfectBadge` when Hi-Res is on) reads only descriptor-reported `DacCapabilities` + the user's cap; hidden when DAC rates are unknown.
+- **Honesty limits:** no synthetic upsampling/dithering, no DSD/DoP claims, no "exclusive OTG mode" claim beyond the existing UAC driver bypass. Volume-mode preference (`UsbDacVolumeModeKey`) remains untouched by this extension (unused in playback path).
