@@ -118,6 +118,7 @@ import echo.music.iad1tya.constants.InnerTubeCookieKey
 import echo.music.iad1tya.constants.ListItemHeight
 import echo.music.iad1tya.constants.ListThumbnailSize
 import echo.music.iad1tya.constants.RandomizeHomeOrderKey
+import echo.music.iad1tya.constants.ShowHomeHeroCarouselKey
 import echo.music.iad1tya.constants.ShowHomeMoodAndGenresKey
 import echo.music.iad1tya.constants.ShowSpeedDialKey
 import echo.music.iad1tya.constants.SmallGridThumbnailHeight
@@ -610,6 +611,7 @@ fun HomeScreen(
   val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
   val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, DefaultRandomizeHomeOrder)
   val (showSpeedDial) = rememberPreference(ShowSpeedDialKey, true)
+  val (showHeroCarousel) = rememberPreference(ShowHomeHeroCarouselKey, true)
   val (showHomeMoodAndGenres) = rememberPreference(ShowHomeMoodAndGenresKey, false)
   val (isWrappedDismissed, onDismissWrapped) = rememberPreference(EchoWrappedBannerDismissedKey, defaultValue = false)
 
@@ -818,6 +820,8 @@ fun HomeScreen(
       homePage?.sections,
       explorePage?.moodAndGenres,
       showHomeMoodAndGenres,
+      showSpeedDial,
+      showHeroCarousel,
       aiRecommendedPlaylist,
       isPodcastPage,
       selectedChip
