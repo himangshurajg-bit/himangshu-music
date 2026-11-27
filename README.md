@@ -310,7 +310,7 @@ This fork is maintained by Himangshu Raj Gogoi and retains required original-sou
 
 <!-- readme: contributors -start -->
 <table>
-<tr><td align="center"><a href="https://github.com/himangshurajg-bit"><img src="https://avatars.githubusercontent.com/u/251873442?v=4" width="60" height="60" /></a></td></tr>
+<tr><td align="center"><a href="https://github.com/himangshurajg-bit"><img src="https://avatars.githubusercontent.com/u/251873442?v=4" width="60" height="60" /></a></td><td align="center"><a href="https://github.com/iad1tya"><img src="https://avatars.githubusercontent.com/u/147871321?v=4" width="60" height="60" /></a></td><td align="center"><a href="https://github.com/Mickael81"><img src="https://avatars.githubusercontent.com/u/184148670?v=4" width="60" height="60" /></a></td><td align="center"><a href="https://github.com/gerry02"><img src="https://avatars.githubusercontent.com/u/33490327?v=4" width="60" height="60" /></a></td></tr>
 </table>
 <!-- readme: contributors -end -->
 
