@@ -86,7 +86,7 @@ enum class PracticeMode(val label: String) {
 
   companion object {
     fun from(value: String?): PracticeMode =
-      entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: Practice
+      entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: Advanced
   }
 }
 
