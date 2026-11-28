@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 
 @Composable
 internal fun StemMixerSection(
@@ -38,6 +39,30 @@ internal fun StemMixerSection(
       "One editable mix of your separated stems. Every control is real audio processing — volume, pan, 6-band EQ per stem + master EQ, mute, solo, loop/trim, speed/pitch — applied live and in the export.",
       style = MaterialTheme.typography.bodyMedium,
     )
+    Spacer(Modifier.height(4.dp))
+
+    // Mode + six-lane parity (StemDeck-style, implemented here; no StemDeck code used)
+    Card(modifier = Modifier.fillMaxWidth()) {
+      Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          PracticeMode.entries.forEach { mode ->
+            if (mixer.practiceMode == mode) Button(onClick = { viewModel.setPracticeMode(mode) }) { Text(mode.label) }
+            else OutlinedButton(onClick = { viewModel.setPracticeMode(mode) }) { Text(mode.label) }
+          }
+        }
+        Text("Six lanes (vocals, drums, bass, guitar, piano, other)", style = MaterialTheme.typography.titleSmall)
+        StemDeckParity.sixStems.forEach { stem ->
+          Text(
+            stem.label + " — " + stem.routingNote,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (stem.isSeparatelySeparated) Color.Unspecified else Color.Gray,
+          )
+        }
+        if (!mixer.practiceMode.showsAdvancedControls) {
+          Text("Practice mode hides EQ, saved presets and loudness. Switch to Advanced to use them.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
+      }
+    }
     Spacer(Modifier.height(4.dp))
 
     // MASTER BUS
@@ -79,6 +104,11 @@ internal fun StemMixerSection(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
           Text("Pitch ${"%.2f".format(mixer.master.pitch)}×", modifier = Modifier.fillMaxWidth(0.18f))
           Slider(value = mixer.master.pitch, onValueChange = viewModel::setPitch, valueRange = 0.5f..2f, enabled = mixer.ready, modifier = Modifier.fillMaxWidth())
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          val semis = mixer.transposeSemitones
+          Text("Key ${if (semis > 0) "+" else ""}$semis st", modifier = Modifier.fillMaxWidth(0.18f))
+          Slider(value = semis.toFloat(), onValueChange = { viewModel.setTransposeSemitones(it.roundToInt()) }, valueRange = -12f..12f, steps = 24, enabled = mixer.ready, modifier = Modifier.fillMaxWidth())
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
           Text("Master ${"%.1f".format(mixer.master.masterGainDb)} dB", modifier = Modifier.fillMaxWidth(0.2f))
@@ -141,8 +171,42 @@ internal fun StemMixerSection(
             else OutlinedButton(onClick = { viewModel.setExportQuality(q) }, enabled = !mixer.exporting) { Text(q.name) }
           }
         }
+        if (mixer.practiceMode.showsAdvancedControls) {
+          Text("Loudness target", style = MaterialTheme.typography.titleSmall)
+          Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            LoudnessTarget.entries.forEach { target ->
+              if (mixer.loudness == target) Button(onClick = { viewModel.setLoudness(target) }) { Text(target.label) }
+              else OutlinedButton(onClick = { viewModel.setLoudness(target) }) { Text(target.label) }
+            }
+          }
+        }
+        Text("Click + count-in (mixed into exports)", style = MaterialTheme.typography.titleSmall)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+          Text("Click enabled")
+          Switch(checked = mixer.click.enabled, onCheckedChange = viewModel::setClickEnabled, enabled = mixer.ready)
+        }
+        if (mixer.click.enabled) {
+          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("BPM ${mixer.click.bpm}", modifier = Modifier.fillMaxWidth(0.22f))
+            Slider(value = mixer.click.bpm.toFloat(), onValueChange = { viewModel.setClickBpm(it.roundToInt()) }, valueRange = 40f..240f, enabled = mixer.ready, modifier = Modifier.fillMaxWidth())
+          }
+          Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf(2, 3, 4, 6).forEach { beats ->
+              if (mixer.click.beatsPerBar == beats) Button(onClick = { viewModel.setClickBeatsPerBar(beats) }) { Text("$beats/4") }
+              else OutlinedButton(onClick = { viewModel.setClickBeatsPerBar(beats) }) { Text("$beats/4") }
+            }
+          }
+          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Count-in ${mixer.click.countInBars} bar(s)", modifier = Modifier.fillMaxWidth(0.35f))
+            Slider(value = mixer.click.countInBars.toFloat(), onValueChange = { viewModel.setClickCountInBars(it.roundToInt()) }, valueRange = 0f..4f, enabled = mixer.ready, modifier = Modifier.fillMaxWidth())
+          }
+          Text("Click is rendered into the exported mix only. Live metronome needs a beat grid, which RajTune does not have.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
         Button(onClick = viewModel::export, enabled = mixer.ready && !mixer.exporting, modifier = Modifier.fillMaxWidth()) {
           Text(if (mixer.exporting) "Exporting…" else "Export mix")
+        }
+        OutlinedButton(onClick = viewModel::exportZip, enabled = mixer.ready && !mixer.exporting, modifier = Modifier.fillMaxWidth()) {
+          Text("Export stems as ZIP")
         }
         if (mixer.exporting) {
           LinearProgressIndicator(progress = { mixer.exportProgress / 100f }, modifier = Modifier.fillMaxWidth())
@@ -189,6 +253,7 @@ internal fun StemMixerSection(
         onApplySavedPreset = { key -> viewModel.applySavedStemPreset(key) },
         onLoop = { loop -> viewModel.setStemLoop(settings.stemId, loop) },
         savedPresets = mixer.savedPresets,
+        practiceMode = mixer.practiceMode,
       )
     }
   }
@@ -201,6 +266,7 @@ private fun StemChannelCard(
   positionSec: Float,
   durationSec: Float,
   enabled: Boolean,
+  practiceMode: PracticeMode = PracticeMode.Advanced,
   onGain: (Float) -> Unit,
   onPan: (Float) -> Unit,
   onMute: () -> Unit,
@@ -241,7 +307,8 @@ private fun StemChannelCard(
         Switch(checked = settings.loopEnabled, onCheckedChange = onLoop, enabled = enabled)
       }
 
-      // EQ
+      // EQ (Advanced only)
+      if (practiceMode.showsAdvancedControls) {
       Text("Equalizer", style = MaterialTheme.typography.titleSmall)
       Row(
         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -275,6 +342,9 @@ private fun StemChannelCard(
       }
       OutlinedButton(onClick = { onSavePreset(settings.stemId.label.take(2).uppercase() + "-" + (settings.eqBands.hashCode() % 100).toString()) }, enabled = enabled) {
         Text("Save this EQ as preset")
+      }
+      } else {
+        Text("Advanced EQ is hidden in Practice mode.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
       }
     }
   }

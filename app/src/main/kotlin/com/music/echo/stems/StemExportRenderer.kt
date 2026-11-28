@@ -45,6 +45,8 @@ internal class StemExportRenderer @Inject constructor(
     master: MasterMixSettings,
     format: StemExportFormat,
     quality: StemExportQuality,
+    loudness: LoudnessTarget = LoudnessTarget.None,
+    click: ClickSettings = ClickSettings(),
     onProgress: (String, Int) -> Unit,
   ): List<ExportResult> = withContext(Dispatchers.IO) {
     require(outputs.isNotEmpty()) { "No stems to export" }
@@ -62,6 +64,17 @@ internal class StemExportRenderer @Inject constructor(
       }
       if (inputs.isEmpty()) error("No stems found for export")
 
+      // Optional click/count-in track (StemDeck parity, export-only):
+      // generated locally as WAV and mixed into the render via amix.
+      var clickInput: File? = null
+      if (click.enabled) {
+        val normalized = click.normalized()
+        val durationSec = master.trimEndSec ?: maxOf(10.0, (master.trimStartSec + 10f).toDouble())
+        val clickFile = File(context.cacheDir, "stem-click-${UUID.randomUUID()}.wav").also(tempFiles::add)
+        clickFile.writeBytes(ClickTrackWriter.generateWavBytes(normalized, durationSec))
+        clickInput = clickFile
+      }
+
       val exportTmp = File(context.cacheDir, "mix-${UUID.randomUUID()}.wav").also(tempFiles::add)
       onProgress("Rendering mix", 20)
 
@@ -70,12 +83,20 @@ internal class StemExportRenderer @Inject constructor(
         settings = settings,
         master = master,
         someSoloed = someSoloed,
+        loudness = loudness,
       )
       val args = mutableListOf<String>()
       for (input in inputs) {
         args += listOf("-i", input.absolutePath)
       }
-      args += listOf("-filter_complex", filterGraph)
+      clickInput?.let { args += listOf("-i", it.absolutePath) }
+      if (clickInput != null) {
+        // Mix the click track over the stem mix (count-in + song-length click).
+        val mixed = filterGraph.removeSuffix("[mixed]") + "[mixbase];[mixbase][${inputs.size}:a]amix=inputs=2:normalize=0[mixed]"
+        args += listOf("-filter_complex", mixed)
+      } else {
+        args += listOf("-filter_complex", filterGraph)
+      }
       args += listOf("-map", "[mixed]")
       if (format == StemExportFormat.WAV) {
         args += listOf("-c:a", "pcm_s16le", "-ar", "44100", "-ac", "2")
@@ -109,6 +130,7 @@ internal class StemExportRenderer @Inject constructor(
     settings: Map<StemId, StemMixSettings>,
     master: MasterMixSettings,
     someSoloed: Boolean,
+    loudness: LoudnessTarget = LoudnessTarget.None,
   ): String {
     val filters = stems.mapIndexed { index, idString ->
       val id = StemId.from(idString)
@@ -122,7 +144,9 @@ internal class StemExportRenderer @Inject constructor(
     val asetrate = if (master.pitch != 1f) ",asetrate=${master.pitch * master.speed}" else ""
     val trim = ",atrim=start=${master.trimStartSec}:end=${(master.trimEndSec ?: 2147483.647f)}"
     val resample = ",aresample=44100:async=1"
-    return "$amix,$masterEq$atempo$asetrate$trim$resample[mixed]"
+    val loud = loudness.toFfmpegLoudnormFilter()?.let { ",$it" } ?: ""
+    // Loudness normalization runs last, on the mixed bus.
+    return "$amix,$masterEq$atempo$asetrate$trim$loud$resample[mixed]"
   }
 
   private fun buildStemFilterChain(
@@ -175,6 +199,62 @@ internal class StemExportRenderer @Inject constructor(
         "equalizer=f=${band.frequency}:width_type=o:width=$width:g=${band.gainDb}"
       }
     return if (eqFilters.isEmpty()) "anull" else eqFilters
+  }
+
+  /**
+   * STEM ZIP export (StemDeck parity): every stem as its own WAV inside one
+   * ZIP, offline. Saves to Music/RajTune Stems via MediaStore.
+   */
+  suspend fun exportZip(
+    outputs: List<SeparatedStem>,
+    sourceTitle: String,
+    onProgress: (String, Int) -> Unit,
+  ): List<ExportResult> = withContext(Dispatchers.IO) {
+    require(outputs.isNotEmpty()) { "No stems to export" }
+    onProgress("Preparing stem ZIP", 5)
+    val tempFiles = mutableListOf<File>()
+    try {
+      val zipTmp = File(context.cacheDir, "stems-${UUID.randomUUID()}.zip").also(tempFiles::add)
+      val entries = StemDeckParity.zipEntries(outputs)
+      java.util.zip.ZipOutputStream(java.io.FileOutputStream(zipTmp)).use { zip ->
+        entries.forEachIndexed { index, (entryName, output) ->
+          onProgress("Zipping $entryName", (10 + (index + 1) * 80 / entries.size).coerceIn(10, 95))
+          zip.putNextEntry(java.util.zip.ZipEntry(entryName))
+          context.contentResolver.openInputStream(output.uri)?.use { input -> input.copyTo(zip) }
+            ?: error("Could not read stem file: ${output.name}")
+          zip.closeEntry()
+        }
+      }
+      onProgress("Saving stem ZIP", 98)
+      val base = sourceTitle.substringBeforeLast('.', sourceTitle).ifBlank { "Mix" }
+        .replace(Regex("[\\\\/:*?\"<>|]"), "_").take(90)
+      val values = ContentValues().apply {
+        put(MediaStore.Audio.Media.DISPLAY_NAME, "$base - RajTune stems.zip")
+        put(MediaStore.Audio.Media.TITLE, "$base - RajTune stems")
+        put(MediaStore.Audio.Media.ARTIST, "RajTune Stem Mixer")
+        put(MediaStore.Audio.Media.MIME_TYPE, "application/zip")
+        put(MediaStore.Audio.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MUSIC}/RajTune Stems")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) put(MediaStore.Audio.Media.IS_PENDING, 1)
+      }
+      val uri = context.contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values)
+        ?: error("Could not create stem ZIP")
+      try {
+        context.contentResolver.openOutputStream(uri, "w")?.use { output ->
+          zipTmp.inputStream().use { input -> input.copyTo(output) }
+        } ?: error("Could not write stem ZIP")
+        val clearPending = ContentValues().apply {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) put(MediaStore.Audio.Media.IS_PENDING, 0)
+        }
+        check(context.contentResolver.update(uri, clearPending, null, null) > 0) { "Could not publish stem ZIP" }
+      } catch (e: Throwable) {
+        context.contentResolver.delete(uri, null, null)
+        throw e
+      }
+      onProgress("Stem ZIP saved", 100)
+      listOf(ExportResult(uri, "zip"))
+    } finally {
+      tempFiles.forEach(File::delete)
+    }
   }
 
   private fun copyUriToFile(uri: Uri, dest: File) {

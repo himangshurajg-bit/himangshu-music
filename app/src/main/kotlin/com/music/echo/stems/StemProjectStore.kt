@@ -31,6 +31,21 @@ internal class StemProjectStore @Inject constructor(
       prefs[stringPreferencesKey("mixer_snapshot")]
     }.first()
     if (json.isNullOrBlank()) return StemMixerSnapshot()
+        stems, master, presets, obj.optLong("savedAt", 0L),
+        PracticeMode.from(obj.optJSONObject("parity")?.optString("mode")),
+        obj.optJSONObject("parity")?.optInt("transposeSemitones", 0)?.coerceIn(-12, 12) ?: 0,
+        run {
+          val c = obj.optJSONObject("parity")?.optJSONObject("click")
+          if (c == null) ClickSettings() else ClickSettings(
+            enabled = c.optBoolean("enabled"),
+            bpm = c.optInt("bpm", 120),
+            beatsPerBar = c.optInt("beatsPerBar", 4),
+            countInBars = c.optInt("countInBars", 1),
+            volume = c.optDouble("volume", 0.5).toFloat(),
+          )
+        },
+        LoudnessTarget.from(obj.optJSONObject("parity")?.optString("loudness")),
+      )
     return runCatching { StemMixerSnapshot.fromJson(JSONObject(json)) }.getOrNull() ?: StemMixerSnapshot()
   }
 
@@ -61,6 +76,10 @@ data class StemMixerSnapshot(
   /** Named user presets per stem key "stemId:presetName". */
   val savedPresets: Map<String, SavedPreset> = emptyMap(),
   val lastSavedAtEpochMs: Long = 0L,
+  val practiceMode: PracticeMode = PracticeMode.Advanced,
+  val transposeSemitones: Int = 0,
+  val click: ClickSettings = ClickSettings(),
+  val loudness: LoudnessTarget = LoudnessTarget.None,
 ) {
   fun toJson(): JSONObject {
     val root = JSONObject()
@@ -98,6 +117,22 @@ data class StemMixerSnapshot(
       presets.put(k, JSONObject().put("stemId", v.stemId).put("bands", bandsToJson(v.bands)))
     }
     root.put("savedPresets", presets)
+    root.put(
+      "parity",
+      JSONObject()
+        .put("mode", practiceMode.name)
+        .put("transposeSemitones", transposeSemitones)
+        .put(
+          "click",
+          JSONObject()
+            .put("enabled", click.enabled)
+            .put("bpm", click.bpm)
+            .put("beatsPerBar", click.beatsPerBar)
+            .put("countInBars", click.countInBars)
+            .put("volume", click.volume),
+        )
+        .put("loudness", loudness.name),
+    )
     return root
   }
 
@@ -142,7 +177,21 @@ data class StemMixerSnapshot(
         val v = presetsJson.optJSONObject(k) ?: continue
         presets[k] = SavedPreset(v.optString("stemId"), parseBands(v.optJSONArray("bands")) ?: emptyList())
       }
-      return StemMixerSnapshot(stems, master, presets, obj.optLong("savedAt", 0L))
+      val parity = obj.optJSONObject("parity")
+      val clickJson = parity?.optJSONObject("click")
+      return StemMixerSnapshot(
+        stems, master, presets, obj.optLong("savedAt", 0L),
+        PracticeMode.from(parity?.optString("mode")),
+        (parity?.optInt("transposeSemitones", 0) ?: 0).coerceIn(-12, 12),
+        if (clickJson == null) ClickSettings() else ClickSettings(
+          enabled = clickJson.optBoolean("enabled"),
+          bpm = clickJson.optInt("bpm", 120),
+          beatsPerBar = clickJson.optInt("beatsPerBar", 4),
+          countInBars = clickJson.optInt("countInBars", 1),
+          volume = clickJson.optDouble("volume", 0.5).toFloat(),
+        ),
+        LoudnessTarget.from(parity?.optString("loudness")),
+      )
     }
 
     private fun bandsToJson(bands: List<StemEqBand>): JSONArray {

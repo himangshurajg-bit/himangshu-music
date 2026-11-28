@@ -49,6 +49,10 @@ data class StemMixerUiState(
   val exportError: String? = null,
   val savedPresets: Map<String, SavedPreset> = emptyMap(),
   val lastSavedAt: Long = 0L,
+  val practiceMode: PracticeMode = PracticeMode.Advanced,
+  val transposeSemitones: Int = 0,
+  val click: ClickSettings = ClickSettings(),
+  val loudness: LoudnessTarget = LoudnessTarget.None,
 )
 
 @HiltViewModel
@@ -80,6 +84,10 @@ internal class StemSplitterViewModel @Inject constructor(
       master = snapshot.master,
       savedPresets = snapshot.savedPresets,
       lastSavedAt = snapshot.lastSavedAtEpochMs,
+      practiceMode = snapshot.practiceMode,
+      transposeSemitones = snapshot.transposeSemitones,
+      click = snapshot.click,
+      loudness = snapshot.loudness,
     )
     if (_state.value.outputs.isNotEmpty()) rebuildTracks()
   }
@@ -143,6 +151,10 @@ internal class StemSplitterViewModel @Inject constructor(
       master = m.master,
       savedPresets = m.savedPresets,
       lastSavedAtEpochMs = System.currentTimeMillis(),
+      practiceMode = m.practiceMode,
+      transposeSemitones = m.transposeSemitones,
+      click = m.click,
+      loudness = m.loudness,
     )
     viewModelScope.launch { store.save(snapshot) }
     _mixer.update { it.copy(lastSavedAt = snapshot.lastSavedAtEpochMs) }
@@ -420,6 +432,8 @@ internal class StemSplitterViewModel @Inject constructor(
           master = m.master,
           format = m.exportFormat,
           quality = m.exportQuality,
+          loudness = m.loudness,
+          click = m.click,
         ) { label, percent ->
           _mixer.update { it.copy(exportLabel = label, exportProgress = percent) }
         }
@@ -429,6 +443,81 @@ internal class StemSplitterViewModel @Inject constructor(
         throw e
       } catch (e: Throwable) {
         _mixer.update { it.copy(exporting = false, exportError = e.message ?: "Export failed") }
+      }
+    }
+  }
+
+  // ---------- StemDeck-parity (offline-only) ----------
+
+  fun setPracticeMode(mode: PracticeMode) {
+    _mixer.update { it.copy(practiceMode = mode) }
+    persist()
+  }
+
+  /**
+   * Key transposition in semitones (-12..+12), mapped onto the existing
+   * master pitch multiplier so live playback and export stay in sync.
+   */
+  fun setTransposeSemitones(semitones: Int) {
+    val s = semitones.coerceIn(-12, 12)
+    val pitch = StemDeckParity.semitonesToPitch(s)
+    _mixer.update { it.copy(transposeSemitones = s, master = it.master.copy(pitch = pitch)) }
+    applyPlayerSettings()
+    persist()
+  }
+
+  fun setClickEnabled(enabled: Boolean) {
+    _mixer.update { it.copy(click = it.click.copy(enabled = enabled)) }
+    persist()
+  }
+
+  fun setClickBpm(bpm: Int) {
+    _mixer.update { it.copy(click = it.click.copy(bpm = bpm.coerceIn(40, 240))) }
+    persist()
+  }
+
+  fun setClickBeatsPerBar(beats: Int) {
+    _mixer.update { it.copy(click = it.click.copy(beatsPerBar = beats)) }
+    persist()
+  }
+
+  fun setClickCountInBars(bars: Int) {
+    _mixer.update { it.copy(click = it.click.copy(countInBars = bars.coerceIn(0, 4))) }
+    persist()
+  }
+
+  fun setClickVolume(volume: Float) {
+    _mixer.update { it.copy(click = it.click.copy(volume = volume.coerceIn(0f, 1f))) }
+    persist()
+  }
+
+  fun setLoudness(target: LoudnessTarget) {
+    _mixer.update { it.copy(loudness = target) }
+    persist()
+  }
+
+  fun exportZip() {
+    val outputs = _state.value.outputs
+    if (_state.value.cloudMode) {
+      _mixer.update { it.copy(exportError = "Stem ZIP is offline-only. Turn off Cloud to export on this device.") }
+      return
+    }
+    if (outputs.isEmpty() || _mixer.value.exporting) return
+    viewModelScope.launch {
+      _mixer.update { it.copy(exporting = true, exportError = null, exportProgress = 0) }
+      try {
+        val results = exporter.exportZip(
+          outputs = outputs,
+          sourceTitle = _state.value.sourceName ?: "Mix",
+        ) { label, percent ->
+          _mixer.update { it.copy(exportLabel = label, exportProgress = percent) }
+        }
+        _mixer.update { it.copy(lastExportUri = results.firstOrNull()?.uri, exporting = false, exportProgress = 100) }
+      } catch (e: CancellationException) {
+        _mixer.update { it.copy(exporting = false, exportError = "ZIP export cancelled") }
+        throw e
+      } catch (e: Throwable) {
+        _mixer.update { it.copy(exporting = false, exportError = e.message ?: "ZIP export failed") }
       }
     }
   }
