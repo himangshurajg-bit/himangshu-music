@@ -257,6 +257,86 @@ internal class StemExportRenderer @Inject constructor(
     }
   }
 
+  /**
+   * Video export (offline): mixed audio + solid-colour canvas, 720p or 1080p.
+   * No waveform image is embedded — this is an audio-led MP4 for sharing/preview.
+   * Implemented with FFmpeg lavfi colour source; duration follows the mix.
+   */
+  suspend fun exportVideo(
+    outputs: List<SeparatedStem>,
+    sourceTitle: String,
+    settings: Map<StemId, StemMixSettings>,
+    master: MasterMixSettings,
+    quality: VideoExportQuality,
+    loudness: LoudnessTarget = LoudnessTarget.None,
+    click: ClickSettings = ClickSettings(),
+    onProgress: (String, Int) -> Unit,
+  ): List<ExportResult> = withContext(Dispatchers.IO) {
+    require(outputs.isNotEmpty()) { "No stems to export" }
+    onProgress("Rendering video mix", 5)
+    val tempFiles = mutableListOf<File>()
+    try {
+      // Reuse the mix path (audio is already verified) then mux video.
+      val mixResults = exportMix(outputs, sourceTitle, settings, master, StemExportFormat.WAV, StemExportQuality.WAV_16BIT, loudness, click, onProgress)
+      val mixUri = mixResults.firstOrNull()?.uri ?: error("Mix render failed")
+      val mixTmp = File(context.cacheDir, "video-mix-${UUID.randomUUID()}.wav").also(tempFiles::add)
+      copyUriToFile(mixUri, mixTmp)
+      onProgress("Rendering video", 70)
+      val videoTmp = File(context.cacheDir, "video-${UUID.randomUUID()}.mp4").also(tempFiles::add)
+      val size = "${quality.width}x${quality.height}"
+      val args = listOf(
+        "-f", "lavfi", "-i", "color=c=0x1a2733:s=$size",
+        "-i", mixTmp.absolutePath,
+        "-shortest", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30",
+        "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart",
+        "-y", videoTmp.absolutePath,
+      )
+      runFfmpeg(args, "Video export failed", "ffmpeg video")
+      onProgress("Saving video", 90)
+      val base = sourceTitle.substringBeforeLast('.', sourceTitle).ifBlank { "Mix" }
+        .replace(Regex("[\\\\/:*?\"<>|]"), "_").take(90)
+      val displayName = "$base - RajTune mix ${quality.label}.mp4"
+      val uri = saveVideoToMediaStore(displayName, videoTmp, "video/mp4")
+      onProgress("Video saved", 100)
+      listOf(ExportResult(uri, "video"))
+    } finally {
+      tempFiles.forEach(File::delete)
+    }
+  }
+
+  private fun saveVideoToMediaStore(displayName: String, source: File, mime: String): Uri {
+    val values = ContentValues().apply {
+      put(MediaStore.Video.Media.DISPLAY_NAME, displayName)
+      put(MediaStore.Video.Media.TITLE, displayName.substringBeforeLast('.'))
+      put(MediaStore.Video.Media.ARTIST, "RajTune Stem Mixer")
+      put(MediaStore.Video.Media.MIME_TYPE, mime)
+      put(MediaStore.Video.Media.RELATIVE_PATH, "${Environment.DIRECTORY_MOVIES}/RajTune Stems")
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) put(MediaStore.Video.Media.IS_PENDING, 1)
+    }
+    val uri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+      ?: error("Could not create video file")
+    try {
+      context.contentResolver.openOutputStream(uri, "w")?.use { output ->
+        source.inputStream().use { input ->
+          val buf = ByteArray(64 * 1024)
+          while (true) {
+            val n = input.read(buf)
+            if (n < 0) break
+            output.write(buf, 0, n)
+          }
+        }
+      } ?: error("Could not write video file")
+      val clearPending = ContentValues().apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) put(MediaStore.Video.Media.IS_PENDING, 0)
+      }
+      check(context.contentResolver.update(uri, clearPending, null, null) > 0) { "Could not publish video" }
+      return uri
+    } catch (e: Throwable) {
+      context.contentResolver.delete(uri, null, null)
+      throw e
+    }
+  }
+
   private fun copyUriToFile(uri: Uri, dest: File) {
     context.contentResolver.openInputStream(uri)?.use { input ->
       FileOutputStream(dest).use { output ->

@@ -65,6 +65,14 @@ data class StemMixerSnapshot(
   val transposeSemitones: Int = 0,
   val click: ClickSettings = ClickSettings(),
   val loudness: LoudnessTarget = LoudnessTarget.None,
+  val markers: List<StemMarker> = emptyList(),
+  val library: List<StemLibraryEntry> = emptyList(),
+  val queue: List<StemQueueItem> = emptyList(),
+  val metronomeLive: Boolean = false,
+  val manualKey: String = "",
+  val manualTempo: Int? = null,
+  val videoQuality: VideoExportQuality = VideoExportQuality.HD720,
+  val stemPick: List<String> = listOf("vocals", "drums", "bass", "other"),
 ) {
   fun toJson(): JSONObject {
     val root = JSONObject()
@@ -116,7 +124,15 @@ data class StemMixerSnapshot(
             .put("countInBars", click.countInBars)
             .put("volume", click.volume),
         )
-        .put("loudness", loudness.name),
+        .put("loudness", loudness.name)
+        .put("metronomeLive", metronomeLive)
+        .put("manualKey", manualKey)
+        .put("manualTempo", manualTempo ?: JSONObject.NULL)
+        .put("videoQuality", videoQuality.name)
+        .put("markers", markersToJson(markers))
+        .put("library", libraryToJson(library))
+        .put("queue", queueToJson(queue))
+        .put("stemPick", stemPickToJson(stemPick)),
     )
     return root
   }
@@ -176,7 +192,84 @@ data class StemMixerSnapshot(
           volume = clickJson.optDouble("volume", 0.5).toFloat(),
         ),
         LoudnessTarget.from(parity?.optString("loudness")),
+        parseMarkers(parity?.optJSONArray("markers")),
+        parseLibrary(parity?.optJSONArray("library")),
+        parseQueue(parity?.optJSONArray("queue")),
+        parity?.optBoolean("metronomeLive", false) ?: false,
+        parity?.optString("manualKey", "") ?: "",
+        (if (parity != null && !parity.isNull("manualTempo")) parity.optInt("manualTempo", 0) else 0).takeIf { it != 0 && parity != null && !parity.isNull("manualTempo") },
+        VideoExportQuality.from(parity?.optString("videoQuality")),
+        parseStemPick(parity?.optJSONArray("stemPick")),
       )
+    }
+
+    private fun markersToJson(list: List<StemMarker>): JSONArray {
+      val arr = JSONArray()
+      for (m in list) arr.put(JSONObject().put("id", m.id).put("timeSec", m.timeSec.toDouble()).put("label", m.label))
+      return arr
+    }
+    private fun libraryToJson(list: List<StemLibraryEntry>): JSONArray {
+      val arr = JSONArray()
+      for (e in list) {
+        val tags = JSONArray()
+        for (tag in e.tags) tags.put(tag)
+        arr.put(JSONObject().put("displayName", e.displayName).put("uriString", e.uriString).put("kind", e.kind).put("folder", e.folder).put("tags", tags).put("favorite", e.favorite).put("trashed", e.trashed))
+      }
+      return arr
+    }
+    private fun queueToJson(list: List<StemQueueItem>): JSONArray {
+      val arr = JSONArray()
+      for (q in list) {
+        val pick = JSONArray()
+        for (s in q.pickedStemIds) pick.put(s)
+        arr.put(JSONObject().put("uriString", q.uriString).put("name", q.name).put("picked", pick))
+      }
+      return arr
+    }
+    private fun parseMarkers(arr: JSONArray?): List<StemMarker> {
+      if (arr == null) return emptyList()
+      val out = ArrayList<StemMarker>()
+      for (i in 0 until arr.length()) {
+        val o = arr.optJSONObject(i) ?: continue
+        out.add(StemMarker(id = o.optString("id"), timeSec = o.optDouble("timeSec", 0.0).toFloat(), label = o.optString("label")))
+      }
+      return out
+    }
+    private fun parseLibrary(arr: JSONArray?): List<StemLibraryEntry> {
+      if (arr == null) return emptyList()
+      val out = ArrayList<StemLibraryEntry>()
+      for (i in 0 until arr.length()) {
+        val o = arr.optJSONObject(i) ?: continue
+        val tags = ArrayList<String>()
+        val tagArr = o.optJSONArray("tags")
+        if (tagArr != null) for (j in 0 until tagArr.length()) tagArr.optString(j).takeIf { it.isNotBlank() }?.let(tags::add)
+        out.add(StemLibraryEntry(o.optString("displayName"), o.optString("uriString"), o.optString("kind", "mix"), o.optString("folder", "Music/RajTune Stems"), tags, o.optBoolean("favorite"), o.optBoolean("trashed")))
+      }
+      return out
+    }
+    private fun parseQueue(arr: JSONArray?): List<StemQueueItem> {
+      if (arr == null) return emptyList()
+      val out = ArrayList<StemQueueItem>()
+      for (i in 0 until arr.length()) {
+        val o = arr.optJSONObject(i) ?: continue
+        val pick = ArrayList<String>()
+        val pickArr = o.optJSONArray("picked")
+        if (pickArr != null) for (j in 0 until pickArr.length()) pickArr.optString(j).takeIf { it.isNotBlank() }?.let(pick::add)
+        out.add(StemQueueItem(o.optString("uriString"), o.optString("name"), QueueLogic.normalizePick(pick)))
+      }
+      return out
+    }
+
+    private fun stemPickToJson(pick: List<String>): JSONArray {
+      val arr = JSONArray()
+      for (s in QueueLogic.normalizePick(pick)) arr.put(s)
+      return arr
+    }
+    private fun parseStemPick(arr: JSONArray?): List<String> {
+      if (arr == null) return listOf("vocals", "drums", "bass", "other")
+      val out = ArrayList<String>()
+      for (i in 0 until arr.length()) arr.optString(i).takeIf { it.isNotBlank() }?.let(out::add)
+      return QueueLogic.normalizePick(out)
     }
 
     private fun bandsToJson(bands: List<StemEqBand>): JSONArray {

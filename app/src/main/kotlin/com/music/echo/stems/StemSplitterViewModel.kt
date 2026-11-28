@@ -2,6 +2,8 @@ package echo.music.iad1tya.stems
 
 import android.content.Context
 import android.net.Uri
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -53,6 +55,15 @@ data class StemMixerUiState(
   val transposeSemitones: Int = 0,
   val click: ClickSettings = ClickSettings(),
   val loudness: LoudnessTarget = LoudnessTarget.None,
+  val markers: List<StemMarker> = emptyList(),
+  val library: List<StemLibraryEntry> = emptyList(),
+  val queue: List<StemQueueItem> = emptyList(),
+  val metronomeLive: Boolean = false,
+  val liveBeat: LiveBeatState? = null,
+  val manualKey: String = "",
+  val manualTempo: Int? = null,
+  val videoQuality: VideoExportQuality = VideoExportQuality.HD720,
+  val stemPick: List<String> = listOf("vocals", "drums", "bass", "other"),
 )
 
 @HiltViewModel
@@ -71,6 +82,9 @@ internal class StemSplitterViewModel @Inject constructor(
   private var job: Job? = null
   private val mixerPlayer = StemMixerPlayer(context)
   private var positionMonitor: Job? = null
+  private val tapTimes = ArrayDeque<Long>()
+  private var lastTickBeat: Long = -1L
+  private var toneGenerator: ToneGenerator? = null
 
   init {
     viewModelScope.launch { loadMixerSnapshot() }
@@ -88,6 +102,14 @@ internal class StemSplitterViewModel @Inject constructor(
       transposeSemitones = snapshot.transposeSemitones,
       click = snapshot.click,
       loudness = snapshot.loudness,
+      markers = snapshot.markers,
+      library = snapshot.library,
+      queue = snapshot.queue,
+      metronomeLive = snapshot.metronomeLive,
+      manualKey = snapshot.manualKey,
+      manualTempo = snapshot.manualTempo,
+      videoQuality = snapshot.videoQuality,
+      stemPick = snapshot.stemPick,
     )
     if (_state.value.outputs.isNotEmpty()) rebuildTracks()
   }
@@ -101,7 +123,15 @@ internal class StemSplitterViewModel @Inject constructor(
           val posSec = mixerPlayer.currentPositionSec()
           val dur = mixerPlayer.durationMs().let { if (it > 0) it / 1000f else m.durationSec }
           val shouldUpdate = posSec != m.positionSec || dur != m.durationSec
-          if (shouldUpdate) _mixer.update { it.copy(positionSec = posSec, durationSec = dur) }
+          val liveState = if (m.metronomeLive) LiveBeatClock.stateAt(m.click, posSec, m.master.trimStartSec) else null
+          if (shouldUpdate || liveState != m.liveBeat) _mixer.update { it.copy(positionSec = posSec, durationSec = dur, liveBeat = liveState) }
+          // Live metronome audible tick (manual BPM only, no beat grid)
+          if (m.metronomeLive && m.playing && liveState != null) {
+            if (liveState.beatIndex != lastTickBeat) {
+              lastTickBeat = liveState.beatIndex
+              playTick(liveState.isDownbeat, m.click.volume)
+            }
+          }
           // Loop / trim handling
           val master = m.master
           val loopEnd = master.trimEndSec ?: dur.takeIf { it > 0f }
@@ -127,7 +157,7 @@ internal class StemSplitterViewModel @Inject constructor(
       return
     }
     mixerPlayer.setTracks(outputs, sourceUri, m.master)
-    mixerPlayer.applySettings(m.stems, m.master)
+    mixerPlayer.applySettings(effectiveStems(m), m.master)
     mixerPlayer.setOriginalOnly(m.master.originalOnly)
     mixerPlayer.pause()
     // Load waveforms in IO
@@ -155,6 +185,14 @@ internal class StemSplitterViewModel @Inject constructor(
       transposeSemitones = m.transposeSemitones,
       click = m.click,
       loudness = m.loudness,
+      markers = m.markers,
+      library = m.library,
+      queue = m.queue,
+      metronomeLive = m.metronomeLive,
+      manualKey = m.manualKey,
+      manualTempo = m.manualTempo,
+      videoQuality = m.videoQuality,
+      stemPick = m.stemPick,
     )
     viewModelScope.launch { store.save(snapshot) }
     _mixer.update { it.copy(lastSavedAt = snapshot.lastSavedAtEpochMs) }
@@ -408,10 +446,21 @@ internal class StemSplitterViewModel @Inject constructor(
     _mixer.update { it.copy(exportQuality = q) }
   }
 
+  /**
+   * Effective stem settings after applying the stem pick.
+   * Non-picked stems are muted (without mutating stored settings, so
+   * re-picking restores them). Used for live playback and mix/loop/video export.
+   * ZIP export intentionally keeps all four separated files.
+   */
+  private fun effectiveStems(m: StemMixerUiState): Map<StemId, StemMixSettings> {
+    val pickedIds = QueueLogic.normalizePick(m.stemPick).map { StemId.from(it) }.toSet()
+    return m.stems.mapValues { (id, s) -> if (id in pickedIds) s else s.copy(muted = true) }
+  }
+
   private fun applyPlayerSettings() {
     if (!_mixer.value.ready) return
     val m = _mixer.value
-    mixerPlayer.applySettings(m.stems, m.master)
+    mixerPlayer.applySettings(effectiveStems(m), m.master)
   }
 
   fun export() {
@@ -428,7 +477,7 @@ internal class StemSplitterViewModel @Inject constructor(
         val results = exporter.exportMix(
           outputs = outputs,
           sourceTitle = _state.value.sourceName ?: "Mix",
-          settings = m.stems,
+          settings = effectiveStems(m),
           master = m.master,
           format = m.exportFormat,
           quality = m.exportQuality,
@@ -437,6 +486,7 @@ internal class StemSplitterViewModel @Inject constructor(
         ) { label, percent ->
           _mixer.update { it.copy(exportLabel = label, exportProgress = percent) }
         }
+        addToLibrary(results.firstOrNull()?.uri, "mix")
         _mixer.update { it.copy(lastExportUri = results.firstOrNull()?.uri, exporting = false, exportProgress = 100) }
       } catch (e: CancellationException) {
         _mixer.update { it.copy(exporting = false, exportError = "Export cancelled") }
@@ -496,6 +546,199 @@ internal class StemSplitterViewModel @Inject constructor(
     persist()
   }
 
+  // ---------- Advanced offline parity (metronome, markers, loop, queue, library, metadata, video) ----------
+
+  fun setMetronomeLive(on: Boolean) {
+    _mixer.update { it.copy(metronomeLive = on) }
+    persist()
+  }
+
+  /** Tap tempo: caller should invoke on every tap; computes median BPM and sets click BPM. */
+  fun tapTempo() {
+    val now = System.currentTimeMillis()
+    tapTimes.addLast(now)
+    while (tapTimes.size > TapTempoCalculator.MAX_TAPS) tapTimes.removeFirst()
+    // Drop taps outside the 3s window for responsiveness.
+    while (tapTimes.isNotEmpty() && now - tapTimes.first() > TapTempoCalculator.WINDOW_MS) tapTimes.removeFirst()
+    val bpm = TapTempoCalculator.bpmFromTaps(tapTimes.toList(), now)
+    if (bpm != null) {
+      _mixer.update { it.copy(click = it.click.copy(bpm = bpm), manualTempo = bpm) }
+    }
+    persist()
+  }
+
+  fun clearTapTempo() {
+    tapTimes.clear()
+    persist()
+  }
+
+  private fun playTick(downbeat: Boolean, volume: Float) {
+    // ToneGenerator.startTone blocks, so run off the position-monitor thread.
+    runCatching {
+      Thread {
+        runCatching {
+          val vol = (volume.coerceIn(0f, 1f) * 100).toInt()
+          if (toneGenerator == null) {
+            toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, vol)
+          }
+          val tg = toneGenerator ?: return@runCatching
+          // Downbeat is a slightly longer tick so it is distinguishable.
+          tg.startTone(ToneGenerator.TONE_CDMA_ANSWER, if (downbeat) 90 else 60)
+        }
+      }.apply { isDaemon = true; start() }
+    }
+  }
+
+  fun addMarkerAtCurrent() {
+    val pos = _mixer.value.positionSec
+    val id = "m" + System.currentTimeMillis()
+    val label = "Marker " + (_mixer.value.markers.size + 1) + " %.1fs".format(pos)
+    val next = (_mixer.value.markers + StemMarker(id = id, timeSec = pos, label = label)).sortedBy { it.timeSec }
+    _mixer.update { it.copy(markers = next) }
+    persist()
+  }
+
+  fun removeMarker(id: String) {
+    _mixer.update { it.copy(markers = it.markers.filter { m -> m.id != id }) }
+    persist()
+  }
+
+  fun seekToMarker(marker: StemMarker) { seekMixer(marker.timeSec) }
+
+  fun setLoopStartAtPosition() {
+    val pos = _mixer.value.positionSec
+    val cur = _mixer.value.master
+    _mixer.update { it.copy(master = cur.copy(trimStartSec = pos.coerceAtLeast(0f), loopEnabled = true)) }
+    persist()
+  }
+
+  fun setLoopEndAtPosition() {
+    val pos = _mixer.value.positionSec
+    val cur = _mixer.value.master
+    _mixer.update { it.copy(master = cur.copy(trimEndSec = pos.coerceAtLeast(cur.trimStartSec), loopEnabled = true)) }
+    persist()
+  }
+
+  fun clearLoop() {
+    val cur = _mixer.value.master
+    _mixer.update { it.copy(master = cur.copy(trimStartSec = 0f, trimEndSec = null, loopEnabled = false)) }
+    persist()
+  }
+
+  fun setManualKey(key: String) {
+    _mixer.update { it.copy(manualKey = key.take(8)) }
+    persist()
+  }
+
+  fun setManualTempo(bpm: Int?) {
+    _mixer.update { it.copy(manualTempo = bpm?.coerceIn(40, 240)) }
+    persist()
+  }
+
+  fun setVideoQuality(q: VideoExportQuality) {
+    _mixer.update { it.copy(videoQuality = q) }
+    persist()
+  }
+
+  fun setStemPick(pick: List<String>) {
+    _mixer.update { it.copy(stemPick = QueueLogic.normalizePick(pick)) }
+    applyPlayerSettings()
+    persist()
+  }
+
+  fun addToQueue(uriString: String, name: String) {
+    val item = StemQueueItem(uriString = uriString, name = name, pickedStemIds = _mixer.value.stemPick)
+    _mixer.update { it.copy(queue = it.queue + item) }
+    persist()
+  }
+
+  fun removeFromQueue(index: Int) {
+    _mixer.update { it.copy(queue = it.queue.filterIndexed { i, _ -> i != index }) }
+    persist()
+  }
+
+  fun clearQueue() {
+    _mixer.update { it.copy(queue = emptyList()) }
+    persist()
+  }
+
+  fun toggleFavoriteLibrary(displayName: String) {
+    _mixer.update { it.copy(library = LibraryLogic.toggleFavorite(it.library, displayName)) }
+    persist()
+  }
+
+  fun trashLibrary(displayName: String) {
+    _mixer.update { it.copy(library = LibraryLogic.trashByName(it.library, displayName)) }
+    persist()
+  }
+
+  private fun addToLibrary(uri: android.net.Uri?, kind: String) {
+    val u = uri?.toString() ?: return
+    val name = runCatching {
+      context.contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)
+        ?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+    }.getOrNull() ?: "RajTune export"
+    val entry = StemLibraryEntry(displayName = name, uriString = u, kind = kind)
+    _mixer.update { it.copy(library = (it.library + entry).takeLast(100)) }
+    persist()
+  }
+
+  /** Export only the current loop/trim range (honest trim export; length = end-start). */
+  fun exportLoop() {
+    val outputs = _state.value.outputs
+    val m = _mixer.value
+    if (_state.value.cloudMode) {
+      _mixer.update { it.copy(exportError = "Loop export is offline-only. Turn off Cloud.") }
+      return
+    }
+    if (outputs.isEmpty() || m.exporting) return
+    if (m.master.trimEndSec == null) {
+      _mixer.update { it.copy(exportError = "Set an A-B loop first (Set A, then Set B), then export loop.") }
+      return
+    }
+    viewModelScope.launch {
+      _mixer.update { it.copy(exporting = true, exportError = null, exportProgress = 0) }
+      try {
+        val results = exporter.exportMix(outputs, _state.value.sourceName ?: "Mix", effectiveStems(m), m.master, m.exportFormat, m.exportQuality, m.loudness, m.click) { label, percent ->
+          _mixer.update { it.copy(exportLabel = label, exportProgress = percent) }
+        }
+        addToLibrary(results.firstOrNull()?.uri, "mix")
+        _mixer.update { it.copy(lastExportUri = results.firstOrNull()?.uri, exporting = false, exportProgress = 100) }
+      } catch (e: CancellationException) {
+        _mixer.update { it.copy(exporting = false, exportError = "Loop export cancelled") }
+        throw e
+      } catch (e: Throwable) {
+        _mixer.update { it.copy(exporting = false, exportError = e.message ?: "Loop export failed") }
+      }
+    }
+  }
+
+  /** Video export: mixed audio + solid-colour canvas (720p/1080p), offline via FFmpeg. */
+  fun exportVideo() {
+    val outputs = _state.value.outputs
+    val m = _mixer.value
+    if (_state.value.cloudMode) {
+      _mixer.update { it.copy(exportError = "Video export is offline-only. Turn off Cloud.") }
+      return
+    }
+    if (outputs.isEmpty() || m.exporting) return
+    viewModelScope.launch {
+      _mixer.update { it.copy(exporting = true, exportError = null, exportProgress = 0) }
+      try {
+        val results = exporter.exportVideo(outputs, _state.value.sourceName ?: "Mix", effectiveStems(m), m.master, m.videoQuality, m.loudness, m.click) { label, percent ->
+          _mixer.update { it.copy(exportLabel = label, exportProgress = percent) }
+        }
+        addToLibrary(results.firstOrNull()?.uri, "video")
+        _mixer.update { it.copy(lastExportUri = results.firstOrNull()?.uri, exporting = false, exportProgress = 100) }
+      } catch (e: CancellationException) {
+        _mixer.update { it.copy(exporting = false, exportError = "Video export cancelled") }
+        throw e
+      } catch (e: Throwable) {
+        _mixer.update { it.copy(exporting = false, exportError = e.message ?: "Video export failed") }
+      }
+    }
+  }
+
   fun exportZip() {
     val outputs = _state.value.outputs
     if (_state.value.cloudMode) {
@@ -512,6 +755,7 @@ internal class StemSplitterViewModel @Inject constructor(
         ) { label, percent ->
           _mixer.update { it.copy(exportLabel = label, exportProgress = percent) }
         }
+        addToLibrary(results.firstOrNull()?.uri, "zip")
         _mixer.update { it.copy(lastExportUri = results.firstOrNull()?.uri, exporting = false, exportProgress = 100) }
       } catch (e: CancellationException) {
         _mixer.update { it.copy(exporting = false, exportError = "ZIP export cancelled") }
@@ -523,6 +767,7 @@ internal class StemSplitterViewModel @Inject constructor(
   }
 
   override fun onCleared() {
+    runCatching { toneGenerator?.release() }
     positionMonitor?.cancel()
     mixerPlayer.close()
     super.onCleared()

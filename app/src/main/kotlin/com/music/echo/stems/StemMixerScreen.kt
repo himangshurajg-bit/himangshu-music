@@ -200,7 +200,7 @@ internal fun StemMixerSection(
             Text("Count-in ${mixer.click.countInBars} bar(s)", modifier = Modifier.fillMaxWidth(0.35f))
             Slider(value = mixer.click.countInBars.toFloat(), onValueChange = { viewModel.setClickCountInBars(it.roundToInt()) }, valueRange = 0f..4f, enabled = mixer.ready, modifier = Modifier.fillMaxWidth())
           }
-          Text("Click is rendered into the exported mix only. Live metronome needs a beat grid, which RajTune does not have.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+          Text("Click is rendered into exports. Live metronome below uses manual BPM + tap (no beat-grid auto-detect).", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
         Button(onClick = viewModel::export, enabled = mixer.ready && !mixer.exporting, modifier = Modifier.fillMaxWidth()) {
           Text(if (mixer.exporting) "Exporting…" else "Export mix")
@@ -230,6 +230,117 @@ internal fun StemMixerSection(
         if (mixer.lastSavedAt > 0) {
           Text("Mixer auto-saves after every change", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
+      }
+    }
+
+    // LIVE METRONOME (manual BPM + tap, no beat grid)
+    Card(modifier = Modifier.fillMaxWidth()) {
+      Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Live metronome", style = MaterialTheme.typography.titleMedium)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+          Text("Audible click during playback")
+          Switch(checked = mixer.metronomeLive, onCheckedChange = viewModel::setMetronomeLive, enabled = mixer.ready)
+        }
+        Text("Manual BPM — no beat-grid auto-detect. Tap to tempo, then play.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        Text("BPM " + mixer.click.bpm.toString() + " · " + mixer.click.beatsPerBar.toString() + "/4", style = MaterialTheme.typography.bodySmall)
+        mixer.liveBeat?.let { beat ->
+          Text("Beat " + beat.beatInBar.toString() + " (" + (if (beat.isDownbeat) "downbeat" else "tick") + ")", style = MaterialTheme.typography.bodySmall)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          Button(onClick = viewModel::tapTempo, enabled = mixer.ready) { Text("Tap tempo") }
+          OutlinedButton(onClick = viewModel::clearTapTempo, enabled = mixer.ready) { Text("Clear taps") }
+        }
+      }
+    }
+
+    // A-B LOOP + MARKERS
+    Card(modifier = Modifier.fillMaxWidth()) {
+      Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("A-B loop", style = MaterialTheme.typography.titleMedium)
+        val trimDur = (mixer.master.trimEndSec ?: mixer.durationSec) - mixer.master.trimStartSec
+        Text("Range: " + "%.1f".format(mixer.master.trimStartSec) + "s – " + (if (mixer.master.trimEndSec != null) "%.1f".format(mixer.master.trimEndSec) + "s" else "end") + " (" + "%.1fs".format(trimDur) + ")", style = MaterialTheme.typography.bodySmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          Button(onClick = viewModel::setLoopStartAtPosition, enabled = mixer.ready) { Text("Set A here") }
+          Button(onClick = viewModel::setLoopEndAtPosition, enabled = mixer.ready) { Text("Set B here") }
+          OutlinedButton(onClick = viewModel::clearLoop, enabled = mixer.ready) { Text("Clear") }
+        }
+        Button(onClick = viewModel::exportLoop, enabled = mixer.ready && !mixer.exporting, modifier = Modifier.fillMaxWidth()) { Text("Export loop only") }
+        Text("Markers", style = MaterialTheme.typography.titleSmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          OutlinedButton(onClick = viewModel::addMarkerAtCurrent, enabled = mixer.ready) { Text("Add marker at playhead") }
+        }
+        mixer.markers.forEach { marker ->
+          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            Text(marker.label, style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+              OutlinedButton(onClick = { viewModel.seekToMarker(marker) }, enabled = mixer.ready) { Text("Go") }
+              OutlinedButton(onClick = { viewModel.removeMarker(marker.id) }, enabled = mixer.ready) { Text("Delete") }
+            }
+          }
+        }
+      }
+    }
+
+    // STEM PICK + QUEUE + LIBRARY + METADATA + VIDEO
+    Card(modifier = Modifier.fillMaxWidth()) {
+      Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Stem pick (applies to next separation)", style = MaterialTheme.typography.titleSmall)
+        Text("Pick which stems you hear and export as mix/video/loop. Separation still produces all four outputs on this device; ZIP keeps all four as an archive.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          listOf("vocals", "drums", "bass", "other").forEach { id ->
+            val picked = mixer.stemPick.contains(id)
+            if (picked) Button(onClick = { viewModel.setStemPick(mixer.stemPick.filter { it != id }) }) { Text(id.replaceFirstChar { it.uppercase() }) }
+            else OutlinedButton(onClick = { viewModel.setStemPick(mixer.stemPick + id) }) { Text(id.replaceFirstChar { it.uppercase() }) }
+          }
+        }
+        Text("Pick: " + mixer.stemPick.joinToString(", ") { it.replaceFirstChar { c -> c.uppercase() } }, style = MaterialTheme.typography.bodySmall)
+        Text("Playlist queue", style = MaterialTheme.typography.titleSmall)
+        if (mixer.queue.isEmpty()) {
+          Text("Queue is empty. Use the picker above to add songs, or save stems and queue them here.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        } else {
+          mixer.queue.forEachIndexed { index, item ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+              Text((index + 1).toString() + ". " + item.name, style = MaterialTheme.typography.bodySmall)
+              OutlinedButton(onClick = { viewModel.removeFromQueue(index) }) { Text("Remove") }
+            }
+          }
+          OutlinedButton(onClick = viewModel::clearQueue, modifier = Modifier.fillMaxWidth()) { Text("Clear queue") }
+        }
+        Text("Library (saved offline)", style = MaterialTheme.typography.titleSmall)
+        val visibleLib = LibraryLogic.visible(mixer.library)
+        if (visibleLib.isEmpty()) {
+          Text("Exports (mix, ZIP, video) appear here for offline favourite/trash.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        } else {
+          visibleLib.forEach { entry ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+              Text(entry.displayName, style = MaterialTheme.typography.bodySmall)
+              Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                OutlinedButton(onClick = { viewModel.toggleFavoriteLibrary(entry.displayName) }) { Text(if (entry.favorite) "★" else "☆") }
+                OutlinedButton(onClick = { viewModel.trashLibrary(entry.displayName) }) { Text("Trash") }
+              }
+            }
+          }
+        }
+        Text("Metadata (offline, manual)", style = MaterialTheme.typography.titleSmall)
+        val meta = SongMetadata(key = mixer.manualKey, tempoBpm = mixer.manualTempo, loudnessLabel = mixer.loudness.label, durationSec = mixer.durationSec)
+        Text(meta.readout(), style = MaterialTheme.typography.bodySmall)
+        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          MetadataLogic.commonKeys.take(12).forEach { key ->
+            if (mixer.manualKey == key) Button(onClick = { viewModel.setManualKey("") }) { Text(key) }
+            else OutlinedButton(onClick = { viewModel.setManualKey(key) }) { Text(key) }
+          }
+        }
+        Text("Manual key: " + (if (mixer.manualKey.isBlank()) "—" else mixer.manualKey), style = MaterialTheme.typography.bodySmall)
+        Text("Manual tempo: " + (mixer.manualTempo?.toString() ?: "—"), style = MaterialTheme.typography.bodySmall)
+        Text("Video export (audio-led MP4)", style = MaterialTheme.typography.titleSmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          VideoExportQuality.entries.forEach { q ->
+            if (mixer.videoQuality == q) Button(onClick = { viewModel.setVideoQuality(q) }) { Text(q.label) }
+            else OutlinedButton(onClick = { viewModel.setVideoQuality(q) }) { Text(q.label) }
+          }
+        }
+        Button(onClick = viewModel::exportVideo, enabled = mixer.ready && !mixer.exporting, modifier = Modifier.fillMaxWidth()) { Text("Export MP4 video") }
+        Text("Video is a solid-colour canvas + your mix (720p/1080p), for sharing. No waveform image is embedded.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
       }
     }
 
