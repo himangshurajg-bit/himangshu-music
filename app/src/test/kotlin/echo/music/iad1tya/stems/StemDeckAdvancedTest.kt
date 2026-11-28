@@ -70,15 +70,15 @@ class StemDeckAdvancedTest {
   fun loopRangeNormalizedAndValid() {
     val r = LoopRangeLogic.normalized(startSec = -5f, endSec = 10f, durationSec = 60f)
     assertEquals(0f, r.startSec, 0.001f)
-    assertEquals(10f, r.endSec, 0.001f)
+    assertEquals(10f, r.endSec!!, 0.001f)
     assertTrue(r.isValid)
-    assertEquals(10f, r.durationSec, 0.001f)
+    assertEquals(10f, r.durationSec!!, 0.001f)
     assertTrue(r.contains(5f))
     assertFalse(r.contains(10f))
     // End before start clamps to start
     val r2 = LoopRangeLogic.normalized(startSec = 30f, endSec = 10f, durationSec = 60f)
     assertEquals(30f, r2.startSec, 0.001f)
-    assertEquals(30f, r2.endSec, 0.001f)
+    assertEquals(30f, r2.endSec!!, 0.001f)
     assertFalse(r2.isValid)
     // Null end = open loop
     val r3 = LoopRangeLogic.normalized(startSec = 0f, endSec = null, durationSec = 60f)
