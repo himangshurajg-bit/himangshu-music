@@ -31,21 +31,6 @@ internal class StemProjectStore @Inject constructor(
       prefs[stringPreferencesKey("mixer_snapshot")]
     }.first()
     if (json.isNullOrBlank()) return StemMixerSnapshot()
-        stems, master, presets, obj.optLong("savedAt", 0L),
-        PracticeMode.from(obj.optJSONObject("parity")?.optString("mode")),
-        obj.optJSONObject("parity")?.optInt("transposeSemitones", 0)?.coerceIn(-12, 12) ?: 0,
-        run {
-          val c = obj.optJSONObject("parity")?.optJSONObject("click")
-          if (c == null) ClickSettings() else ClickSettings(
-            enabled = c.optBoolean("enabled"),
-            bpm = c.optInt("bpm", 120),
-            beatsPerBar = c.optInt("beatsPerBar", 4),
-            countInBars = c.optInt("countInBars", 1),
-            volume = c.optDouble("volume", 0.5).toFloat(),
-          )
-        },
-        LoudnessTarget.from(obj.optJSONObject("parity")?.optString("loudness")),
-      )
     return runCatching { StemMixerSnapshot.fromJson(JSONObject(json)) }.getOrNull() ?: StemMixerSnapshot()
   }
 

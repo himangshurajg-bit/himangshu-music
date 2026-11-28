@@ -65,7 +65,7 @@ object StemDeckParity {
   val slowPresets: List<Float> = listOf(0.5f, 0.75f, 0.85f, 0.9f, 0.95f, 1.0f)
 
   /** ZIP entry names for every stem, mirroring StemDeck's "every part as a .zip". */
-  fun zipEntries(outputs: List<SeparatedStem>): List<Pair<String, SeparatedStem>> {
+  internal fun zipEntries(outputs: List<SeparatedStem>): List<Pair<String, SeparatedStem>> {
     val ordered = outputs.sortedBy { StemId.from(it.name).ordinal }
     return ordered.map { output ->
       val base = StemId.from(output.name).id

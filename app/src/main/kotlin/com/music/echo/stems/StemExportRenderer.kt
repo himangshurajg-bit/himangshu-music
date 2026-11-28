@@ -69,7 +69,7 @@ internal class StemExportRenderer @Inject constructor(
       var clickInput: File? = null
       if (click.enabled) {
         val normalized = click.normalized()
-        val durationSec = master.trimEndSec ?: maxOf(10.0, (master.trimStartSec + 10f).toDouble())
+        val durationSec = (master.trimEndSec ?: maxOf(10f, master.trimStartSec + 10f)).toDouble()
         val clickFile = File(context.cacheDir, "stem-click-${UUID.randomUUID()}.wav").also(tempFiles::add)
         clickFile.writeBytes(ClickTrackWriter.generateWavBytes(normalized, durationSec))
         clickInput = clickFile
